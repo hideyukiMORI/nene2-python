@@ -5,7 +5,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
 from nene2.database import DatabaseQueryExecutorInterface, SqlAlchemyTransactionManager
-from nene2.database.exceptions import DatabaseConnectionException
 
 
 def _manager() -> SqlAlchemyTransactionManager:
