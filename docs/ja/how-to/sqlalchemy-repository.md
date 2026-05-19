@@ -222,3 +222,118 @@ def _make_repo() -> SqlAlchemyBookRepository:
     ensure_schema(executor)
     return SqlAlchemyBookRepository(executor)
 ```
+
+---
+
+## 5. `transactional()` を使った原子的マルチライト
+
+複数テーブルへの書き込みを原子的に行う UseCase では、`SqlAlchemyTransactionManager.transactional()` と `_in_tx` リポジトリメソッドを組み合わせます。
+
+### インターフェースに `_in_tx` メソッドを定義する
+
+`transactional()` コールバック内からのみ呼ぶ専用メソッドを用意し、明示的な `executor` を受け取ります。
+
+```python
+from nene2.database import DatabaseQueryExecutorInterface
+from abc import ABC, abstractmethod
+
+class AccountRepositoryInterface(ABC):
+    @abstractmethod
+    def find_by_id(self, account_id: int) -> Account | None: ...
+
+    # _in_tx バリアント — transactional() コールバック内からのみ呼ぶ
+    @abstractmethod
+    def find_by_id_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int
+    ) -> Account | None: ...
+
+    @abstractmethod
+    def update_balance_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int, delta_cents: int
+    ) -> None: ...
+```
+
+### SQLAlchemy リポジトリで `_in_tx` を実装する
+
+`_in_tx` メソッドは `self._executor` の代わりに渡された `executor` を使うため、同じトランザクションに参加します。
+
+```python
+class SqlAlchemyAccountRepository(AccountRepositoryInterface):
+    def __init__(self, executor: SqlAlchemyQueryExecutor) -> None:
+        self._executor = executor
+
+    def find_by_id(self, account_id: int) -> Account | None:
+        row = self._executor.fetch_one(
+            "SELECT id, name, balance_cents FROM accounts WHERE id = :id",
+            {"id": account_id},
+        )
+        return self._to_entity(row) if row else None
+
+    def find_by_id_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int
+    ) -> Account | None:
+        row = executor.fetch_one(
+            "SELECT id, name, balance_cents FROM accounts WHERE id = :id",
+            {"id": account_id},
+        )
+        return self._to_entity(row) if row else None
+
+    def update_balance_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int, delta_cents: int
+    ) -> None:
+        executor.write(
+            "UPDATE accounts SET balance_cents = balance_cents + :delta WHERE id = :id",
+            {"delta": delta_cents, "id": account_id},
+        )
+```
+
+### UseCase に `SqlAlchemyTransactionManager` を配線する
+
+```python
+from nene2.database import SqlAlchemyTransactionManager
+
+engine = create_engine(cfg.db_url, connect_args={"check_same_thread": False})
+transaction_manager = SqlAlchemyTransactionManager(engine)
+
+transfer_use_case = TransferUseCase(transaction_manager, account_repo, transfer_repo)
+```
+
+### InMemory 版での単体テスト
+
+InMemory 実装は executor を無視してインメモリストアに直接書き込みます。`InMemoryTransactionManager` はコールバックを no-op executor で即座に呼び出します。
+
+```python
+from nene2.database import DatabaseQueryExecutorInterface, DatabaseTransactionManagerInterface
+from collections.abc import Callable
+
+class InMemoryAccountRepository(AccountRepositoryInterface):
+    def find_by_id_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int
+    ) -> Account | None:
+        return self._accounts.get(account_id)
+
+    def update_balance_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int, delta_cents: int
+    ) -> None:
+        account = self._accounts[account_id]
+        self._accounts[account_id] = Account(
+            id=account.id, name=account.name, balance_cents=account.balance_cents + delta_cents
+        )
+
+class _NoOpExecutor(DatabaseQueryExecutorInterface):
+    def fetch_all(self, sql: str, params: dict[str, object] | None = None) -> list[dict[str, object]]:
+        return []
+    def fetch_one(self, sql: str, params: dict[str, object] | None = None) -> dict[str, object] | None:
+        return None
+    def write(self, sql: str, params: dict[str, object] | None = None) -> int:
+        return 0
+
+class InMemoryTransactionManager(DatabaseTransactionManagerInterface):
+    def transactional[T](self, callback: Callable[[DatabaseQueryExecutorInterface], T]) -> T:
+        return callback(_NoOpExecutor())
+    def begin(self) -> None: pass
+    def commit(self) -> None: pass
+    def rollback(self) -> None: pass
+```
+
+> **ロールバックのタイミング**: `SqlAlchemyTransactionManager.transactional()` は `engine.begin()` を使用します。コールバック内で例外が発生すると自動的にロールバックされます。ドメイン例外（`AccountNotFoundException` 等）はロールバック後に正常に伝播します。

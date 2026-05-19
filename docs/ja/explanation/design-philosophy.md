@@ -6,7 +6,7 @@ nene2-python は PHP 版 NENE2 と同一の設計思想を持ちます。
 
 ### API First
 
-JSON API と OpenAPI 契約を中心に据えます。DB 設計より先に API の形を定義し、スキーマを `uv run export-openapi` で生成します。
+JSON API と OpenAPI 契約を中心に据えます。DB 設計より先に API の形を定義し、スキーマを `uv run python src/scripts/export_openapi.py` で生成します。
 
 ### 薄い HTTP 層
 

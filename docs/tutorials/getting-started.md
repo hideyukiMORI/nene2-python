@@ -47,7 +47,7 @@ curl http://localhost:8080/notes
 uv run pytest
 ```
 
-All 165+ tests should pass.
+All 167+ tests should pass.
 
 ## Next steps
 

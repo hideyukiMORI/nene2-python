@@ -6,7 +6,7 @@ nene2-python shares the same design philosophy as PHP NENE2.
 
 ### API First
 
-The JSON API contract and OpenAPI schema are defined before the database schema. Use `uv run export-openapi` to export a static `openapi.yaml` at any time.
+The JSON API contract and OpenAPI schema are defined before the database schema. Use `uv run python src/scripts/export_openapi.py` to export a static `openapi.yaml` at any time.
 
 ### Thin HTTP layer
 

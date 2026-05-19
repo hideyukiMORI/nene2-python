@@ -103,10 +103,10 @@ THROTTLE_LIMIT=100
 THROTTLE_WINDOW=60
 
 CORS_ENABLED=true
-CORS_ORIGINS=https://example.com,https://app.example.com
+CORS_ORIGINS=["https://example.com","https://app.example.com"]
 
 BEARER_TOKEN_ENABLED=true
-BEARER_TOKENS=secret-token-1,secret-token-2
+BEARER_TOKENS=["secret-token-1","secret-token-2"]
 
 DB_ADAPTER=mysql
 DB_HOST=db.example.com
