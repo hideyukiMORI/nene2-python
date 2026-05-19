@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
-from nene2.auth import BearerTokenMiddleware, LocalTokenVerifier
+from nene2.auth import ApiKeyAuthMiddleware, BearerTokenMiddleware, LocalTokenVerifier
 from nene2.config import AppSettings
 from nene2.database import (
     DatabaseHealthCheck,
@@ -78,6 +78,11 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         openapi_url="/openapi.json",
     )
 
+    if cfg.api_key_enabled:
+        app.add_middleware(
+            ApiKeyAuthMiddleware,
+            verifier=LocalTokenVerifier(cfg.api_keys),
+        )
     if cfg.bearer_token_enabled:
         app.add_middleware(
             BearerTokenMiddleware,
