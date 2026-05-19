@@ -16,6 +16,7 @@ def parse_db_datetime(value: str | datetime) -> datetime:
 
         from nene2.database import parse_db_datetime
 
+
         def _to_post(row: dict[str, Any]) -> Post:
             return Post(
                 id=row["id"],
