@@ -75,3 +75,34 @@ server = create_mcp_server()
 server.run(transport="sse")          # Server-Sent Events
 server.run(transport="streamable-http")  # HTTP ストリーミング
 ```
+
+---
+
+## MCP サーバーと HTTP API でデータを共有する
+
+MCP サーバーは HTTP API とは**別プロセス**として起動します。
+`InMemoryXxxRepository` はプロセスごとに独立したストアを持つため、
+MCP で書き込んだデータは HTTP API からは見えません（逆も同様）。
+
+データを共有するには、両者が同じ永続化 DB ファイルを参照するように設定します。
+
+**HTTP API の `.env`**:
+
+```dotenv
+DB_ADAPTER=sqlite
+DB_NAME=/absolute/path/to/shared.db
+```
+
+**Claude Desktop の `claude_desktop_config.json`**:
+
+```json
+"env": {
+  "DB_ADAPTER": "sqlite",
+  "DB_NAME": "/absolute/path/to/shared.db"
+}
+```
+
+両プロセスが SQLAlchemy 経由で同じ SQLite ファイルを開きます。
+SQLite の WAL モードは軽量な同時アクセスを安全に処理します。
+
+> 高並列のプロダクション環境では MySQL や PostgreSQL を推奨します。
