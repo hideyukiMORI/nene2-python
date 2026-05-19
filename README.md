@@ -1,56 +1,166 @@
 # nene2-python
 
-NENE2 の設計哲学を Python で実装したリファレンスフレームワーク。
+A Python reference framework implementing the [NENE2](https://github.com/hideyukiMORI/NENE2) design philosophy — clean architecture, security-first, and AI-readable code.
 
-[NENE2 (PHP)](https://github.com/hideyukiMORI/NENE2) と同一の原則を持ち、Python エコシステムに最適化している。
+[![CI](https://github.com/hideyukiMORI/nene2-python/actions/workflows/ci.yml/badge.svg)](https://github.com/hideyukiMORI/nene2-python/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## 特徴
+---
 
-- **FastAPI + Pydantic v2** — モダン Python API スタック
-- **クリーンアーキテクチャ** — UseCase / Domain を HTTP・DB から分離
-- **mypy strict** — PHP 版 PHPStan level 8 相当の型安全性
-- **ruff** — Lint + Format 一体型ツール
-- **RFC 9457 Problem Details** — 統一エラーレスポンス
-- **Bearer Token / API Key 認証** — `LocalTokenVerifier` で設定ゼロ
-- **MCP 対応** — `LocalMcpServer` で UseCase を AI エージェントに公開
-- **SQLAlchemy Core** — ORM なし・生 SQL でシンプルな永続化
+## Features
 
-## 開発コマンド
+- **FastAPI + Pydantic v2** — modern Python API stack with automatic OpenAPI docs
+- **Clean Architecture** — UseCase / Domain layer fully decoupled from HTTP and DB
+- **`mypy --strict`** — equivalent to PHPStan level 8 type safety
+- **ruff** — lint and format in one tool (replaces flake8, isort, black, bandit)
+- **RFC 9457 Problem Details** — uniform error responses across all endpoints
+- **Bearer Token / API Key auth** — zero-config `LocalTokenVerifier`
+- **MCP support** — expose UseCases as AI agent tools via `LocalMcpServer`
+- **SQLAlchemy Core** — parameterised SQL without ORM overhead
+- **Security middleware** — CSP, X-Frame-Options, rate limiting, request size limit, CORS
+- **structlog** — structured JSON logging with request ID correlation
 
-```bash
-uv sync                        # 依存インストール
-uv run pytest                  # テスト
-uv run mypy src/               # 型チェック
-uv run ruff check src/ tests/  # Lint
-uv run ruff format src/ tests/ # Format
-uv run uvicorn src.example.app:app --reload --port 8080  # 開発サーバー
-```
+---
 
-全チェック（CI と同等）:
+## Installation
 
 ```bash
-uv run pytest && uv run mypy src/ && uv run ruff check src/ tests/ && uv run ruff format --check src/ tests/
+pip install nene2-python
+# or
+uv add nene2-python
 ```
 
-## Docker
+Requires Python 3.12+.
+
+---
+
+## Quick Start
+
+```python
+from fastapi import FastAPI
+from nene2.config import AppSettings
+from nene2.middleware import (
+    ErrorHandlerMiddleware,
+    RequestIdMiddleware,
+    SecurityHeadersMiddleware,
+    ThrottleMiddleware,
+)
+
+cfg = AppSettings()
+app = FastAPI()
+
+app.add_middleware(ErrorHandlerMiddleware, debug=cfg.app_debug)
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestIdMiddleware)
+app.add_middleware(ThrottleMiddleware, limit=cfg.throttle_limit, window=cfg.throttle_window)
+```
+
+### Define a domain
+
+```python
+from dataclasses import dataclass
+from abc import ABC, abstractmethod
+
+@dataclass(frozen=True, slots=True)
+class Note:
+    id: int
+    title: str
+    body: str
+
+class NoteRepositoryInterface(ABC):
+    @abstractmethod
+    def find_by_id(self, note_id: int) -> Note | None: ...
+
+@dataclass(frozen=True, slots=True)
+class GetNoteInput:
+    note_id: int
+
+class GetNoteUseCase:
+    def __init__(self, repository: NoteRepositoryInterface) -> None:
+        self._repository = repository
+
+    def execute(self, input_: GetNoteInput) -> Note:
+        note = self._repository.find_by_id(input_.note_id)
+        if note is None:
+            raise NoteNotFoundException(input_.note_id)
+        return note
+```
+
+### Wire to HTTP
+
+```python
+from fastapi import APIRouter
+from fastapi.responses import JSONResponse
+from nene2.http import problem_details_response
+
+router = APIRouter(prefix="/notes", tags=["notes"])
+
+@router.get("/{note_id}")
+async def get_note(note_id: int) -> JSONResponse:
+    note = get_use_case.execute(GetNoteInput(note_id))
+    return JSONResponse({"id": note.id, "title": note.title, "body": note.body})
+```
+
+See the full working example in [`src/example/`](src/example/).
+
+---
+
+## Development Commands
 
 ```bash
-docker compose up app
-curl http://localhost:8080/health
-curl http://localhost:8080/notes
+uv sync                         # install dependencies
+uv run pytest                   # run tests (coverage enforced at 80%)
+uv run mypy src/                # type check
+uv run ruff check src/ tests/   # lint
+uv run ruff format src/ tests/  # format
+uv run uvicorn src.example.app:app --reload --port 8080  # dev server
 ```
 
-## PHP 版との対応
+Full CI check (equivalent to GitHub Actions):
+
+```bash
+uv run pytest && \
+uv run mypy src/ && \
+uv run ruff check src/ tests/ && \
+uv run ruff format --check src/ tests/ && \
+uv run pip-audit
+```
+
+---
+
+## Framework Modules
+
+| Module | Purpose |
+|---|---|
+| `nene2.http` | `PaginationQueryParser`, `PaginationResponse`, `problem_details_response()` |
+| `nene2.middleware` | `ErrorHandlerMiddleware`, `SecurityHeadersMiddleware`, `RequestIdMiddleware`, `RequestLoggingMiddleware`, `RequestSizeLimitMiddleware`, `ThrottleMiddleware` |
+| `nene2.auth` | `BearerTokenMiddleware`, `ApiKeyAuthMiddleware`, `LocalTokenVerifier`, `TokenVerifierProtocol` |
+| `nene2.database` | `SqlAlchemyQueryExecutor`, `SqlAlchemyTransactionManager`, `DatabaseHealthCheck` |
+| `nene2.config` | `AppSettings` (pydantic-settings, reads from env / `.env`) |
+| `nene2.validation` | `ValidationException`, `ValidationError` |
+| `nene2.mcp` | `LocalMcpServer`, `HttpxMcpClient` |
+| `nene2.log` | `setup_logging()` (structlog, JSON in production) |
+| `nene2.use_case` | `UseCaseProtocol[I, O]`, `AsyncUseCaseProtocol[I, O]` |
+
+---
+
+## PHP NENE2 Correspondence
 
 | PHP | Python |
 |---|---|
-| `readonly class` | `dataclass(frozen=True)` |
+| `readonly class` | `dataclass(frozen=True, slots=True)` |
 | `PHPStan level 8` | `mypy --strict` |
 | `PHP-CS-Fixer` | `ruff format` |
-| `composer check` | `uv run pytest && mypy && ruff` |
+| `composer check` | `uv run pytest && mypy && ruff check && ruff format --check && pip-audit` |
 | `ValidationException` | `nene2.validation.ValidationException` |
 | `PaginationQueryParser` | `nene2.http.PaginationQueryParser` |
+| `ErrorHandlerMiddleware` | `nene2.middleware.ErrorHandlerMiddleware` |
+| `LocalMcpServer` | `nene2.mcp.LocalMcpServer` |
 
-## 関連リポジトリ
+---
 
-- [NENE2 (PHP)](https://github.com/hideyukiMORI/NENE2) — PHP リファレンス実装
+## Related
+
+- [NENE2 (PHP)](https://github.com/hideyukiMORI/NENE2) — PHP reference implementation
+- [Documentation](https://hideyukimori.github.io/nene2-python/) — full docs (Diátaxis structure)
