@@ -12,7 +12,7 @@ from nene2.database import (
     SqlAlchemyQueryExecutor,
 )
 from nene2.http import HealthStatus
-from nene2.middleware import ErrorHandlerMiddleware, SecurityHeadersMiddleware
+from nene2.middleware import ErrorHandlerMiddleware, RequestIdMiddleware, SecurityHeadersMiddleware
 from nene2.validation.exceptions import ValidationException
 
 from .note.exceptions import NoteNotFoundExceptionHandler
@@ -67,6 +67,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         openapi_url="/openapi.json",
     )
 
+    app.add_middleware(RequestIdMiddleware)
     if cfg.security_headers_enabled:
         app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(
