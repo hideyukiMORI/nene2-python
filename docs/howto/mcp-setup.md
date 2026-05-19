@@ -75,3 +75,34 @@ server = create_mcp_server()
 server.run(transport="sse")          # Server-Sent Events
 server.run(transport="streamable-http")  # HTTP streaming
 ```
+
+---
+
+## Sharing state between MCP server and HTTP API
+
+The MCP server runs as a **separate process** from the HTTP API.
+`InMemoryXxxRepository` creates its own isolated store per process —
+data written via MCP is not visible to the HTTP API, and vice versa.
+
+To share state, point both processes at the same persistent database:
+
+**HTTP API `.env`**:
+
+```dotenv
+DB_ADAPTER=sqlite
+DB_NAME=/absolute/path/to/shared.db
+```
+
+**Claude Desktop `claude_desktop_config.json`**:
+
+```json
+"env": {
+  "DB_ADAPTER": "sqlite",
+  "DB_NAME": "/absolute/path/to/shared.db"
+}
+```
+
+Both processes open the same SQLite file via SQLAlchemy.
+SQLite's WAL mode handles concurrent reads safely for light workloads.
+
+> For high-concurrency production use, prefer MySQL or PostgreSQL.
