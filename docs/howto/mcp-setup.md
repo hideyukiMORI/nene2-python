@@ -12,7 +12,14 @@ Once configured, Claude Desktop and the `claude` CLI can perform CRUD operations
 
 ## Claude Desktop configuration
 
-Add the following to `claude_desktop_config.json`:
+`claude_desktop_config.json` is located at:
+
+| OS | Path |
+|---|---|
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+
+### macOS / Linux (native)
 
 ```json
 {
@@ -37,6 +44,48 @@ Add the following to `claude_desktop_config.json`:
 ```
 
 Replace `/path/to/nene2-python` with the absolute path to this repository.
+
+### Windows + WSL2
+
+Claude Desktop runs on Windows but the project lives inside WSL2.
+Use `wsl` as the command to bridge them:
+
+```json
+{
+  "mcpServers": {
+    "nene2-example": {
+      "command": "wsl",
+      "args": [
+        "-e", "bash", "-c",
+        "cd /home/<user>/nene2-python && PYTHONPATH=src uv run python -m example.mcp"
+      ],
+      "env": {
+        "DB_ADAPTER": "sqlite",
+        "DB_NAME": "/home/<user>/nene2-python/data/nene2.db"
+      }
+    }
+  }
+}
+```
+
+> All paths must be **WSL Linux paths** (e.g. `/home/user/...`), not Windows paths.
+> The `DB_NAME` must also be a Linux path so SQLite creates the file inside WSL.
+
+For a project installed via `uv add git+...` (not the nene2-python repo itself):
+
+```json
+{
+  "mcpServers": {
+    "myapp": {
+      "command": "wsl",
+      "args": [
+        "-e", "bash", "-c",
+        "cd /home/<user>/my-project && PYTHONPATH=src uv run python -m mcp_server"
+      ]
+    }
+  }
+}
+```
 
 ## Available tools
 
