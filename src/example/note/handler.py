@@ -10,9 +10,13 @@ from nene2.validation.exceptions import ValidationError, ValidationException
 from .use_case import (
     CreateNoteInput,
     CreateNoteUseCase,
+    DeleteNoteInput,
+    DeleteNoteUseCase,
     GetNoteUseCase,
     ListNotesInput,
     ListNotesUseCase,
+    UpdateNoteInput,
+    UpdateNoteUseCase,
 )
 
 router = APIRouter(prefix="/notes", tags=["notes"])
@@ -23,10 +27,17 @@ class CreateNoteBody(BaseModel):
     body: str
 
 
+class UpdateNoteBody(BaseModel):
+    title: str
+    body: str
+
+
 def make_note_router(
     list_use_case: ListNotesUseCase,
     get_use_case: GetNoteUseCase,
     create_use_case: CreateNoteUseCase,
+    update_use_case: UpdateNoteUseCase,
+    delete_use_case: DeleteNoteUseCase,
 ) -> APIRouter:
     @router.get("")
     async def list_notes(request: Request) -> JSONResponse:
@@ -58,5 +69,20 @@ def make_note_router(
         return JSONResponse(
             {"id": note.id, "title": note.title, "body": note.body}, status_code=201
         )
+
+    @router.put("/{note_id}")
+    async def update_note(note_id: int, body: UpdateNoteBody) -> JSONResponse:
+        errors: list[ValidationError] = []
+        if not body.title.strip():
+            errors.append(ValidationError("title", "Title must not be empty.", "required"))
+        if errors:
+            raise ValidationException(errors)
+
+        note = update_use_case.execute(UpdateNoteInput(note_id, body.title, body.body))
+        return JSONResponse({"id": note.id, "title": note.title, "body": note.body})
+
+    @router.delete("/{note_id}", status_code=204)
+    async def delete_note(note_id: int) -> None:
+        delete_use_case.execute(DeleteNoteInput(note_id))
 
     return router
