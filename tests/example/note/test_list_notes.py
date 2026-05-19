@@ -42,6 +42,47 @@ def test_get_nonexistent_note_returns_404() -> None:
     assert r.status_code == 404
 
 
+def test_update_note_returns_200() -> None:
+    client = _client()
+    r = client.post("/notes", json={"title": "Old", "body": "Old body"})
+    note_id = r.json()["id"]
+
+    r2 = client.put(f"/notes/{note_id}", json={"title": "New", "body": "New body"})
+    assert r2.status_code == 200
+    assert r2.json()["title"] == "New"
+    assert r2.json()["body"] == "New body"
+
+
+def test_update_nonexistent_note_returns_404() -> None:
+    r = _client().put("/notes/9999", json={"title": "T", "body": "B"})
+    assert r.status_code == 404
+
+
+def test_update_note_empty_title_returns_422() -> None:
+    client = _client()
+    r = client.post("/notes", json={"title": "T", "body": "B"})
+    note_id = r.json()["id"]
+    r2 = client.put(f"/notes/{note_id}", json={"title": "", "body": "B"})
+    assert r2.status_code == 422
+
+
+def test_delete_note_returns_204() -> None:
+    client = _client()
+    r = client.post("/notes", json={"title": "T", "body": "B"})
+    note_id = r.json()["id"]
+
+    r2 = client.delete(f"/notes/{note_id}")
+    assert r2.status_code == 204
+
+    r3 = client.get(f"/notes/{note_id}")
+    assert r3.status_code == 404
+
+
+def test_delete_nonexistent_note_returns_404() -> None:
+    r = _client().delete("/notes/9999")
+    assert r.status_code == 404
+
+
 def test_health() -> None:
     r = _client().get("/health")
     assert r.status_code == 200

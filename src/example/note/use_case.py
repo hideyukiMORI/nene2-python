@@ -59,3 +59,36 @@ class GetNoteUseCase:
         if note is None:
             raise NoteNotFoundException(note_id)
         return note
+
+
+@dataclass(frozen=True)
+class UpdateNoteInput:
+    note_id: int
+    title: str
+    body: str
+
+
+class UpdateNoteUseCase:
+    def __init__(self, repository: NoteRepositoryInterface) -> None:
+        self._repository = repository
+
+    def execute(self, input_: UpdateNoteInput) -> Note:
+        note = self._repository.update(input_.note_id, input_.title, input_.body)
+        if note is None:
+            raise NoteNotFoundException(input_.note_id)
+        return note
+
+
+@dataclass(frozen=True)
+class DeleteNoteInput:
+    note_id: int
+
+
+class DeleteNoteUseCase:
+    def __init__(self, repository: NoteRepositoryInterface) -> None:
+        self._repository = repository
+
+    def execute(self, input_: DeleteNoteInput) -> None:
+        deleted = self._repository.delete(input_.note_id)
+        if not deleted:
+            raise NoteNotFoundException(input_.note_id)

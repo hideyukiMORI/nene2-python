@@ -16,6 +16,12 @@ class NoteRepositoryInterface(ABC):
     def save(self, title: str, body: str) -> Note: ...
 
     @abstractmethod
+    def update(self, note_id: int, title: str, body: str) -> Note | None: ...
+
+    @abstractmethod
+    def delete(self, note_id: int) -> bool: ...
+
+    @abstractmethod
     def count(self) -> int: ...
 
 
@@ -38,6 +44,19 @@ class InMemoryNoteRepository(NoteRepositoryInterface):
         self._store[self._next_id] = note
         self._next_id += 1
         return note
+
+    def update(self, note_id: int, title: str, body: str) -> Note | None:
+        if note_id not in self._store:
+            return None
+        updated = Note(id=note_id, title=title, body=body)
+        self._store[note_id] = updated
+        return updated
+
+    def delete(self, note_id: int) -> bool:
+        if note_id not in self._store:
+            return False
+        del self._store[note_id]
+        return True
 
     def count(self) -> int:
         return len(self._store)
