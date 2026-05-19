@@ -7,13 +7,13 @@ from .exceptions import NoteNotFoundException
 from .repository import NoteRepositoryInterface
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ListNotesInput:
     limit: int
     offset: int
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ListNotesOutput:
     items: list[Note]
     limit: int
@@ -36,7 +36,7 @@ class ListNotesUseCase:
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class CreateNoteInput:
     title: str
     body: str
@@ -61,7 +61,7 @@ class GetNoteUseCase:
         return note
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class UpdateNoteInput:
     note_id: int
     title: str
@@ -79,7 +79,7 @@ class UpdateNoteUseCase:
         return note
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class DeleteNoteInput:
     note_id: int
 
