@@ -7,7 +7,7 @@ Raised by handlers or use-cases to produce a 422 validation-failed Problem Detai
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ValidationError:
     """A single field-level validation failure."""
 

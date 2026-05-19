@@ -27,10 +27,17 @@ class ListCommentsOutput:
 
 
 class ListCommentsUseCase:
-    def __init__(self, repository: CommentRepositoryInterface) -> None:
-        self._repository = repository
+    def __init__(
+        self,
+        comment_repository: CommentRepositoryInterface,
+        note_repository: NoteRepositoryInterface,
+    ) -> None:
+        self._repository = comment_repository
+        self._note_repository = note_repository
 
     def execute(self, input_: ListCommentsInput) -> ListCommentsOutput:
+        if self._note_repository.find_by_id(input_.note_id) is None:
+            raise NoteNotFoundException(input_.note_id)
         items = self._repository.find_all_by_note(input_.note_id, input_.limit, input_.offset)
         total = self._repository.count_by_note(input_.note_id)
         return ListCommentsOutput(

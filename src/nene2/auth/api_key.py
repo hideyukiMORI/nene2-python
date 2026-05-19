@@ -15,13 +15,6 @@ from .interfaces import TokenVerifierProtocol
 
 _API_KEY_HEADER = "X-Api-Key"
 
-_UNAUTHORIZED = problem_details_response(
-    "unauthorized",
-    "Unauthorized",
-    401,
-    "A valid X-Api-Key header is required.",
-)
-
 
 class ApiKeyAuthMiddleware(BaseHTTPMiddleware):
     """Require a valid X-Api-Key header on every request."""
@@ -37,5 +30,10 @@ class ApiKeyAuthMiddleware(BaseHTTPMiddleware):
         except TokenVerificationException:
             verified = False
         if not verified:
-            return _UNAUTHORIZED
+            return problem_details_response(
+                "unauthorized",
+                "Unauthorized",
+                401,
+                "A valid X-Api-Key header is required.",
+            )
         return await call_next(request)

@@ -5,7 +5,7 @@ Routes are nested under /notes/{note_id}/comments.
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from nene2.http import PaginationQueryParser, PaginationResponse
 from nene2.validation.exceptions import ValidationError, ValidationException
@@ -27,11 +27,11 @@ from .use_case import (
 
 
 class CreateCommentBody(BaseModel):
-    body: str
+    body: str = Field(max_length=5_000, description="Comment body.")
 
 
 class UpdateCommentBody(BaseModel):
-    body: str
+    body: str = Field(max_length=5_000, description="Comment body.")
 
 
 def _comment_dict(comment: Comment) -> dict[str, object]:
