@@ -44,3 +44,25 @@ def test_no_content_length_passes() -> None:
     client = TestClient(_make_app(max_bytes=10_000))
     response = client.post("/upload", json={"data": "small"})
     assert response.status_code == 200
+
+
+def test_oversized_body_without_content_length_returns_413() -> None:
+    """Chunked-transfer (no Content-Length) must also be caught."""
+    client = TestClient(_make_app(max_bytes=100))
+    response = client.post(
+        "/upload",
+        content=b"x" * 200,
+        headers={"Content-Type": "application/octet-stream"},
+    )
+    assert response.status_code == 413
+
+
+def test_malformed_content_length_is_tolerated() -> None:
+    """Non-integer Content-Length header must not crash the middleware."""
+    client = TestClient(_make_app(max_bytes=1000))
+    response = client.post(
+        "/upload",
+        content=b"hello",
+        headers={"Content-Length": "abc", "Content-Type": "application/octet-stream"},
+    )
+    assert response.status_code == 200
