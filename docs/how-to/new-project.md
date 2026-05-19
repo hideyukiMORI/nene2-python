@@ -105,6 +105,23 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             limit=settings.throttle_limit,
             window=settings.throttle_window,
         )
+    # Auth middleware — registered before CORS so it sits inside the CORS layer.
+    if settings.bearer_token_enabled:
+        app.add_middleware(BearerTokenMiddleware, verifier=LocalTokenVerifier(settings.bearer_tokens))
+    if settings.api_key_enabled:
+        app.add_middleware(ApiKeyAuthMiddleware, verifier=LocalTokenVerifier(settings.api_keys))
+    # CORS must be the outermost layer — register it last.
+    # OPTIONS preflight requests must reach CORSMiddleware before any auth check.
+    # If CORSMiddleware is registered before auth middleware, the auth layer becomes
+    # outermost and returns 401 on preflight, breaking CORS for all browsers.
+    if settings.cors_enabled:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=settings.cors_origins,
+            allow_credentials=settings.cors_allow_credentials,
+            allow_methods=settings.cors_allow_methods,
+            allow_headers=settings.cors_allow_headers,
+        )
 
     # Convert Pydantic BaseModel validation errors to RFC 9457 Problem Details
     app.add_exception_handler(RequestValidationError, request_validation_error_handler)  # type: ignore[arg-type]
@@ -116,6 +133,8 @@ app = create_app()
 ```
 
 > **Middleware ordering note:** Starlette's `add_middleware` applies middleware in reverse registration order — the last registered becomes the outermost layer. Register `ErrorHandlerMiddleware` first so it wraps everything and catches all unhandled exceptions.
+
+> **CORS + Auth rule**: Always register `CORSMiddleware` *after* any auth middleware. In Starlette's reverse order, "last registered = outermost" means CORS wraps auth, so browser preflight (`OPTIONS`) requests are handled before authentication.
 
 ## 6. Run the development server
 

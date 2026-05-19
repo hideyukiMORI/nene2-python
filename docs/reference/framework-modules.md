@@ -149,10 +149,13 @@ Starlette applies middleware in **reverse registration order** — the last regi
 | `RequestSizeLimitMiddleware` | `max_bytes: int` | `1_048_576` (1 MiB) |
 | `ThrottleMiddleware` | `limit: int`, `window: int` | `60`, `60` |
 
-`ThrottleMiddleware` has no `enabled` flag — wrap with `if settings.throttle_enabled:` to disable it:
+`ThrottleMiddleware` has no `enabled` flag — wrap with `if settings.throttle_enabled:` to disable it.
+
+#### Full registration order with optional middleware
 
 ```python
-# Correct registration order (innermost → outermost)
+# Registration order: innermost first, outermost last.
+# Starlette executes in reverse — the last registered wraps all others.
 app.add_middleware(ErrorHandlerMiddleware, debug=settings.app_debug, domain_handlers=[...])
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestIdMiddleware)
@@ -160,7 +163,28 @@ app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RequestSizeLimitMiddleware, max_bytes=settings.max_body_size)
 if settings.throttle_enabled:
     app.add_middleware(ThrottleMiddleware, limit=settings.throttle_limit, window=settings.throttle_window)
+# Auth middleware — registered before CORS so it sits inside the CORS layer
+if settings.bearer_token_enabled:
+    app.add_middleware(BearerTokenMiddleware, verifier=LocalTokenVerifier(settings.bearer_tokens))
+if settings.api_key_enabled:
+    app.add_middleware(ApiKeyAuthMiddleware, verifier=LocalTokenVerifier(settings.api_keys))
+# CORS must be the outermost layer — register it last.
+# OPTIONS preflight requests must reach CORSMiddleware before any auth check.
+# If CORSMiddleware is registered before auth middleware, the auth layer becomes
+# outermost and returns 401 on preflight, breaking CORS for all browsers.
+if settings.cors_enabled:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=settings.cors_allow_credentials,
+        allow_methods=settings.cors_allow_methods,
+        allow_headers=settings.cors_allow_headers,
+    )
 ```
+
+> **CORS + Auth rule**: Always register `CORSMiddleware` *after* any auth middleware.
+> In Starlette's reverse order, "last registered = outermost" means CORS wraps auth,
+> so browser preflight (`OPTIONS`) requests are handled before authentication.
 
 ---
 
