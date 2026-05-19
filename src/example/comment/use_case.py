@@ -2,6 +2,9 @@
 
 from dataclasses import dataclass
 
+from example.note.exceptions import NoteNotFoundException
+from example.note.repository import NoteRepositoryInterface
+
 from .entity import Comment
 from .exceptions import CommentNotFoundException
 from .repository import CommentRepositoryInterface
@@ -39,14 +42,19 @@ class ListCommentsUseCase:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class GetCommentInput:
+    comment_id: int
+
+
 class GetCommentUseCase:
     def __init__(self, repository: CommentRepositoryInterface) -> None:
         self._repository = repository
 
-    def execute(self, comment_id: int) -> Comment:
-        comment = self._repository.find_by_id(comment_id)
+    def execute(self, input_: GetCommentInput) -> Comment:
+        comment = self._repository.find_by_id(input_.comment_id)
         if comment is None:
-            raise CommentNotFoundException(comment_id)
+            raise CommentNotFoundException(input_.comment_id)
         return comment
 
 
@@ -57,11 +65,18 @@ class CreateCommentInput:
 
 
 class CreateCommentUseCase:
-    def __init__(self, repository: CommentRepositoryInterface) -> None:
-        self._repository = repository
+    def __init__(
+        self,
+        comment_repository: CommentRepositoryInterface,
+        note_repository: NoteRepositoryInterface,
+    ) -> None:
+        self._comment_repository = comment_repository
+        self._note_repository = note_repository
 
     def execute(self, input_: CreateCommentInput) -> Comment:
-        return self._repository.save(input_.note_id, input_.body)
+        if self._note_repository.find_by_id(input_.note_id) is None:
+            raise NoteNotFoundException(input_.note_id)
+        return self._comment_repository.save(input_.note_id, input_.body)
 
 
 @dataclass(frozen=True, slots=True)

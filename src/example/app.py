@@ -183,7 +183,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         make_comment_router(
             ListCommentsUseCase(comment_repo),
             GetCommentUseCase(comment_repo),
-            CreateCommentUseCase(comment_repo),
+            CreateCommentUseCase(comment_repo, note_repo),
             UpdateCommentUseCase(comment_repo),
             DeleteCommentUseCase(comment_repo),
         )
