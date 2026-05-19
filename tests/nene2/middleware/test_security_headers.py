@@ -29,6 +29,16 @@ def test_security_headers_present() -> None:
     assert "Permissions-Policy" in response.headers
 
 
+def test_csp_absent_on_openapi_paths() -> None:
+    client = TestClient(_make_app())
+    for path in ("/docs", "/redoc", "/openapi.json"):
+        response = client.get(path)
+        assert "Content-Security-Policy" not in response.headers, (
+            f"CSP should not be set for {path}"
+        )
+        assert response.headers["X-Content-Type-Options"] == "nosniff"
+
+
 def test_security_headers_on_error_response() -> None:
     app = FastAPI()
     app.add_middleware(SecurityHeadersMiddleware)
