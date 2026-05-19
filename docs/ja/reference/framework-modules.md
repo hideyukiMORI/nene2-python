@@ -349,18 +349,24 @@ from nene2.mcp import HttpxMcpClient
 client = HttpxMcpClient("bearer-token")
 response = client.get("http://localhost:8080", "/notes")
 response.is_successful()   # True
-response.body              # dict | list — パース済み JSON
+response.body              # str — 生のレスポンステキスト
 response.status_code       # int
+response.request_id()      # str | None — X-Request-ID ヘッダーの値
 ```
 
 ### `McpHttpResponse`
 
-`HttpxMcpClient` メソッドの戻り値型。フィールド: `status_code: int`、`body: dict | list`。
-メソッド: `is_successful() -> bool`（`200 ≤ status_code < 300` のとき `True`）。
+`HttpxMcpClient` メソッドの戻り値型。
+
+フィールド: `status_code: int`、`headers: dict[str, str]`、`body: str`（生のレスポンステキスト）。
+
+メソッド:
+- `is_successful() -> bool`（`200 ≤ status_code < 300` のとき `True`）
+- `request_id() -> str | None` — `X-Request-ID` レスポンスヘッダーの値を返す（なければ `None`）
 
 ### `McpHttpClientProtocol`
 
-カスタム MCP HTTP クライアントの構造的契約。`get()`・`post()`・`put()`・`delete()` を実装して `McpHttpResponse` を返します。
+カスタム MCP HTTP クライアントの構造的契約。`get()`・`post()`・`put()`・`delete()` で `McpHttpResponse` を返し、`has_authentication() -> bool` を実装します。
 
 ---
 

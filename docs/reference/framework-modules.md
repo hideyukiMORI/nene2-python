@@ -394,17 +394,24 @@ from nene2.mcp import HttpxMcpClient
 client = HttpxMcpClient("bearer-token")
 response = client.get("http://localhost:8080", "/notes")
 response.is_successful()   # True
-response.body              # dict | list — parsed JSON
+response.body              # str — raw response text
 response.status_code       # int
+response.request_id()      # str | None — value of X-Request-ID header
 ```
 
 ### `McpHttpResponse`
 
-Return type of `HttpxMcpClient` methods. Fields: `status_code: int`, `body: dict | list`. Method: `is_successful() -> bool` (`True` when `200 ≤ status_code < 300`).
+Return type of `HttpxMcpClient` methods.
+
+Fields: `status_code: int`, `headers: dict[str, str]`, `body: str` (raw response text).
+
+Methods:
+- `is_successful() -> bool` — `True` when `200 ≤ status_code < 300`
+- `request_id() -> str | None` — returns the `X-Request-ID` response header value, or `None`
 
 ### `McpHttpClientProtocol`
 
-Structural contract for custom MCP HTTP clients. Implement `get()`, `post()`, `put()`, `delete()` returning `McpHttpResponse`.
+Structural contract for custom MCP HTTP clients. Implement `get()`, `post()`, `put()`, `delete()` returning `McpHttpResponse`, and `has_authentication() -> bool`.
 
 ---
 
