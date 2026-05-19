@@ -22,7 +22,12 @@ class AppSettings(BaseSettings):
     cors_origins: list[str] = []
     cors_allow_credentials: bool = False
     cors_allow_methods: list[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    cors_allow_headers: list[str] = ["*"]
+    cors_allow_headers: list[str] = [
+        "Content-Type",
+        "Authorization",
+        "X-Api-Key",
+        "X-Request-Id",
+    ]
 
     bearer_token_enabled: bool = False
     bearer_tokens: list[str] = []
