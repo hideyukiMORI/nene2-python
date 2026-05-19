@@ -5,6 +5,52 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.4.0] — 2026-05-20
+
+FT11 (BearerTokenMiddleware + HttpxMcpClient) field trial — auth usability improvements.
+
+### Added
+- `BearerTokenMiddleware` — `exclude_paths` parameter to bypass auth for `/docs`, `/openapi.json`, `/health`, etc.
+- `ApiKeyAuthMiddleware` — same `exclude_paths` parameter
+- `LocalTokenVerifier.from_env(env_var, *, separator=",")` — create a verifier from a comma-delimited environment variable, with whitespace trimming and custom separator support
+- `docs/how-to/configure-auth.md` — three new sections: `from_env` usage, `exclude_paths` usage, MCP server fail-fast token check pattern
+- Field trial report: `docs/field-trials/2026-05-field-trial-11.md`
+
+---
+
+## [1.3.0] — 2026-05-20
+
+FT10 (MySQL adapter) field trial — pagination and serialization improvements.
+
+### Added
+- `PaginationQueryParser.__init__` — makes the class usable as a FastAPI `Depends()` parameter directly: `Annotated[PaginationQueryParser, Depends()]`
+- `PaginationResponse.to_dict()` — auto-serializes `dataclass(frozen=True, slots=True)` items via `dataclasses.asdict()` (previously raised `TypeError` for slotted dataclasses)
+- Field trial report: `docs/field-trials/2026-05-field-trial-10.md`
+- How-to guide: MySQL adapter setup (`docs/how-to/use-mysql.md`)
+
+---
+
+## [1.2.0] — 2026-05-19
+
+FT9 (MCP server standalone) field trial — MCP server and HTTP client improvements.
+
+### Added
+- `LocalMcpServer` — `port` and `host` constructor parameters (previously hardcoded)
+- `McpHttpError` — raised by `HttpxMcpClient.raise_for_error()` on 4xx/5xx responses, maps to MCP `isError: true`
+- Field trial report: `docs/field-trials/2026-05-field-trial-9.md`
+
+---
+
+## [1.1.0] — 2026-05-19
+
+FT8 (nested resources + datetime) field trial — database datetime handling.
+
+### Added
+- `nene2.database.utils.parse_db_datetime(value)` — normalises SQLite string timestamps and MySQL naive `datetime` objects to UTC-aware `datetime`; handles both adapters transparently
+- Field trial report: `docs/field-trials/2026-05-field-trial-8.md`
+
+---
+
 ## [1.0.0] — 2026-05-19
 
 First stable release. Feature parity with PHP NENE2 v1.4.0.
