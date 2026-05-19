@@ -1,30 +1,30 @@
-# Start a new project with nene2
+# nene2 を使った新しいプロジェクトを作る
 
-This guide walks you through creating a new project that uses nene2 as a dependency — not a clone of this repository.
+このガイドは、このリポジトリを clone するのではなく、nene2 を依存関係として使う新しいプロジェクトを作成する手順を説明します。
 
-## Prerequisites
+## 前提条件
 
 - Python 3.12+
-- [uv](https://docs.astral.sh/uv/) installed
+- [uv](https://docs.astral.sh/uv/) がインストール済み
 
-## 1. Initialize your project
+## 1. プロジェクトを初期化する
 
 ```bash
 mkdir my-api && cd my-api
 uv init --name my-api --no-workspace
 ```
 
-## 2. Add nene2 as a dependency
+## 2. nene2 を依存関係として追加する
 
-Install from GitHub (stable, latest release):
+GitHub からインストールします（最新の安定版）:
 
 ```bash
 uv add "nene2-python @ git+https://github.com/hideyukiMORI/nene2-python.git"
 ```
 
-## 3. Project layout
+## 3. プロジェクト構成
 
-Organize your source under `src/`:
+`src/` 以下にソースを配置します:
 
 ```
 my-api/
@@ -36,25 +36,24 @@ my-api/
       exceptions.py
       use_case.py
       handler.py
-      sqlalchemy_repository.py   # optional — skip for InMemory only
-    app.py                       # FastAPI application factory
+      sqlalchemy_repository.py   # 任意 — InMemory のみの場合は省略可
+    app.py                       # FastAPI アプリケーションファクトリ
   .env
   pyproject.toml
 ```
 
-## 4. Create a domain
+## 4. ドメインを作る
 
-Follow the [Implement a new domain](../tutorials/first-domain.md) tutorial.
-Use `InMemoryXxxRepository` during development — wire in `SqlAlchemyXxxRepository` when you need persistence.
+[新しいドメインを実装する](../tutorials/first-domain.md) チュートリアルに従ってください。
+開発中は `InMemoryXxxRepository` を使い、永続化が必要になったら `SqlAlchemyXxxRepository` に切り替えます。
 
-## 5. Wire up the application
+## 5. アプリケーションを配線する
 
-Create `src/app.py`:
+`src/app.py` を作成します:
 
 ```python
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-
 from fastapi.middleware.cors import CORSMiddleware
 
 from nene2.auth import ApiKeyAuthMiddleware, BearerTokenMiddleware, LocalTokenVerifier
@@ -91,8 +90,8 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         delete_use_case=DeleteMyUseCase(repo),
     ))
 
-    # Middleware is applied in reverse order of registration.
-    # Add the innermost (error handler) first, outermost (throttle) last.
+    # ミドルウェアは登録の逆順に適用されます。
+    # 最内側（エラーハンドラー）を最初に、最外側（スロットル）を最後に登録します。
     app.add_middleware(
         ErrorHandlerMiddleware,
         debug=settings.app_debug,
@@ -108,15 +107,14 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             limit=settings.throttle_limit,
             window=settings.throttle_window,
         )
-    # Auth middleware — registered before CORS so it sits inside the CORS layer.
+    # Auth ミドルウェア — CORS より前に登録して CORS レイヤーの内側に配置する
     if settings.bearer_token_enabled:
         app.add_middleware(BearerTokenMiddleware, verifier=LocalTokenVerifier(settings.bearer_tokens))
     if settings.api_key_enabled:
         app.add_middleware(ApiKeyAuthMiddleware, verifier=LocalTokenVerifier(settings.api_keys))
-    # CORS must be the outermost layer — register it last.
-    # OPTIONS preflight requests must reach CORSMiddleware before any auth check.
-    # If CORSMiddleware is registered before auth middleware, the auth layer becomes
-    # outermost and returns 401 on preflight, breaking CORS for all browsers.
+    # CORS は最外側に配置 — 必ず最後に登録する。
+    # OPTIONS preflight リクエストは Auth チェックの前に CORSMiddleware に到達しなければならない。
+    # CORSMiddleware を Auth より前に登録すると、Auth が最外側になり preflight が 401 になる。
     if settings.cors_enabled:
         app.add_middleware(
             CORSMiddleware,
@@ -126,7 +124,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             allow_headers=settings.cors_allow_headers,
         )
 
-    # Convert Pydantic BaseModel validation errors to RFC 9457 Problem Details
+    # Pydantic BaseModel の検証エラーを RFC 9457 Problem Details に変換
     app.add_exception_handler(RequestValidationError, request_validation_error_handler)  # type: ignore[arg-type]
 
     return app
@@ -135,25 +133,25 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
 app = create_app()
 ```
 
-> **Middleware ordering note:** Starlette's `add_middleware` applies middleware in reverse registration order — the last registered becomes the outermost layer. Register `ErrorHandlerMiddleware` first so it wraps everything and catches all unhandled exceptions.
+> **ミドルウェア登録順の注意:** Starlette の `add_middleware` は逆順に適用されます — 最後に登録したものが最外側のレイヤーになります。`ErrorHandlerMiddleware` を最初に登録することですべての例外をキャッチします。
 
-> **CORS + Auth rule**: Always register `CORSMiddleware` *after* any auth middleware. In Starlette's reverse order, "last registered = outermost" means CORS wraps auth, so browser preflight (`OPTIONS`) requests are handled before authentication.
+> **CORS + Auth ルール**: `CORSMiddleware` は Auth ミドルウェアの*後に*必ず登録してください。Starlette の逆順ルールにより「最後に登録 = 最外側」となり、CORS が Auth をラップします。これによりブラウザの preflight（`OPTIONS`）リクエストが認証前に処理されます。
 
-## 6. Run the development server
+## 6. 開発サーバーを起動する
 
 ```bash
 PYTHONPATH=src uv run uvicorn app:app --reload --port 8080
 ```
 
-Open `http://localhost:8080/docs` for Swagger UI.
+`http://localhost:8080/docs` で Swagger UI が開きます。
 
-## 7. Run tests
+## 7. テストを実行する
 
 ```bash
 PYTHONPATH=src uv run pytest
 ```
 
-Use `AppSettings(throttle_enabled=False)` in test fixtures to disable rate limiting:
+テストのフィクスチャでは `AppSettings(throttle_enabled=False)` を使ってレートリミットを無効化します:
 
 ```python
 from fastapi.testclient import TestClient

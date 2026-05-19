@@ -54,7 +54,7 @@ async def create_note(body: CreateNoteBody) -> JSONResponse:
 
 - SQLAlchemy Core（ORM なし）でパラメータ化クエリを実行
 - `SqlAlchemyQueryExecutor` でクエリを抽象化
-- テーブルスキーマは `src/example/schema.py` で一元管理
+- テーブルスキーマ: example アプリは `src/example/schema.py` で一元管理。新規プロジェクトでは各ドメインの `sqlalchemy_repository.py` に `ensure_schema()` を定義し `create_app()` から順番に呼ぶ
 
 ## ミドルウェアスタック
 

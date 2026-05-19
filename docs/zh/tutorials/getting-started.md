@@ -47,7 +47,7 @@ curl http://localhost:8080/notes
 uv run pytest
 ```
 
-135 个以上的测试应全部通过。
+167 个以上的测试应全部通过。
 
 ## 下一步
 

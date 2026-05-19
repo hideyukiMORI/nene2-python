@@ -232,7 +232,7 @@ def _make_repo() -> SqlAlchemyBookRepository:
 
 ---
 
-## 6. Atomic multi-write operations with `transactional()`
+## 5. Atomic multi-write operations with `transactional()`
 
 When a UseCase needs to write to multiple tables atomically, use `SqlAlchemyTransactionManager.transactional()` together with `_in_tx` repository methods.
 
@@ -344,4 +344,3 @@ class InMemoryTransactionManager(DatabaseTransactionManagerInterface):
 ```
 
 > **Rollback on exception**: `SqlAlchemyTransactionManager.transactional()` uses `engine.begin()` — any exception inside the callback triggers an automatic rollback. Domain exceptions (`AccountNotFoundException`, etc.) propagate normally after rollback.
-```

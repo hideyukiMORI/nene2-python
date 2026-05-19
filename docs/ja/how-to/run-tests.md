@@ -23,7 +23,10 @@ uv run pytest --cov=src --cov-report=html
 tests/
   nene2/              フレームワークコアの単体テスト
     use_case/         UseCaseProtocol 準拠テスト
-    ...
+    auth/             認証ミドルウェアとベリファイアー
+    database/         TransactionManager テスト
+    mcp/              McpHttpClient テスト
+    middleware/       各ミドルウェアの単体テスト
   example/
     note/             Note ドメインテスト
       test_list_notes.py          UseCase 単体テスト

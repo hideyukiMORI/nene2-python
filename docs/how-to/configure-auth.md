@@ -10,7 +10,7 @@ Add to your `.env` file:
 
 ```dotenv
 BEARER_TOKEN_ENABLED=true
-BEARER_TOKENS=token1,token2,token3
+BEARER_TOKENS=["token1","token2","token3"]
 ```
 
 ### Behaviour
@@ -31,7 +31,7 @@ curl -H "Authorization: Bearer token1" http://localhost:8080/notes
 
 ```dotenv
 API_KEY_ENABLED=true
-API_KEYS=key1,key2
+API_KEYS=["key1","key2"]
 ```
 
 ### Behaviour
@@ -64,8 +64,7 @@ client = TestClient(create_app(AppSettings(bearer_token_enabled=False)))
 Implement `TokenVerifierProtocol` and raise `TokenVerificationException` on failure.
 
 ```python
-from nene2.auth import TokenVerificationException
-from nene2.auth.interfaces import TokenVerifierProtocol
+from nene2.auth import TokenVerificationException, TokenVerifierProtocol
 import jwt
 
 class JwtTokenVerifier:
@@ -81,3 +80,19 @@ class JwtTokenVerifier:
 ```
 
 Pass your verifier directly to `BearerTokenMiddleware`.
+
+## Custom TokenIssuer (e.g. JWT)
+
+Implement `TokenIssuerProtocol` to issue tokens (e.g. for a login endpoint).
+
+```python
+from nene2.auth import TokenIssuerProtocol
+import jwt
+
+class JwtTokenIssuer:
+    def __init__(self, secret: str) -> None:
+        self._secret = secret
+
+    def issue(self, claims: dict[str, object]) -> str:
+        return jwt.encode(claims, self._secret, algorithm="HS256")
+```

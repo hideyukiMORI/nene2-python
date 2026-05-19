@@ -55,7 +55,7 @@ async def create_note(body: CreateNoteBody) -> JSONResponse:
 
 - SQLAlchemy Core (no ORM) with parameterised queries
 - Queries are executed via `SqlAlchemyQueryExecutor`
-- Table schema is managed centrally in `src/example/schema.py`
+- Table schema: the example app uses a central `src/example/schema.py`; for new projects, define `ensure_schema()` in each domain's `sqlalchemy_repository.py` and call each from `create_app()`
 
 ## Middleware stack
 
