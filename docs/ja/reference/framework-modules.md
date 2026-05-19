@@ -1,6 +1,6 @@
-# Framework modules reference
+# フレームワークモジュールリファレンス
 
-Public API of the `nene2` package.
+`src/nene2/` パッケージが提供するコアモジュールの一覧です。
 
 ---
 
@@ -8,7 +8,7 @@ Public API of the `nene2` package.
 
 ### `PaginationQueryParser`
 
-Parses `limit` and `offset` query parameters.
+クエリパラメータ `limit` と `offset` を解析します。
 
 ```python
 from nene2.http import PaginationQueryParser
@@ -20,7 +20,7 @@ pagination = PaginationQueryParser.parse(request)
 
 ### `PaginationResponse`
 
-Wraps a paginated result set.
+ページネーションレスポンスの構造。
 
 ```python
 from nene2.http import PaginationResponse
@@ -31,7 +31,7 @@ body = PaginationResponse(items=[...], limit=20, offset=0, total=42).to_dict()
 
 ### `problem_details_response()`
 
-Generates an RFC 9457 Problem Details response.
+RFC 9457 準拠のエラーレスポンスを生成します。
 
 ```python
 from nene2.http import problem_details_response
@@ -45,7 +45,7 @@ return problem_details_response("not-found", "Not Found", 404, "Note 42 not foun
 
 ### `UseCaseProtocol[I, O]`
 
-Structural contract for synchronous UseCases.
+同期 UseCase の構造的型契約。
 
 ```python
 from nene2.use_case import UseCaseProtocol
@@ -58,7 +58,7 @@ assert isinstance(MyUseCase(), UseCaseProtocol)
 
 ### `AsyncUseCaseProtocol[I, O]`
 
-Structural contract for async UseCases.
+非同期 UseCase の構造的型契約。
 
 ```python
 from nene2.use_case import AsyncUseCaseProtocol
@@ -69,7 +69,7 @@ class MyAsyncUseCase:
 assert isinstance(MyAsyncUseCase(), AsyncUseCaseProtocol)
 ```
 
-> **Note**: `isinstance` checks attribute presence only. The async/sync distinction is enforced statically by `mypy --strict`.
+> **注意**: `isinstance` はメソッドの存在のみを確認します。同期/非同期の区別は `mypy --strict` で静的に強制されます。
 
 ---
 
@@ -77,16 +77,16 @@ assert isinstance(MyAsyncUseCase(), AsyncUseCaseProtocol)
 
 ### `AppSettings`
 
-Pydantic Settings class — reads from environment variables and `.env`.
+環境変数から設定を読み込む Pydantic Settings クラス。
 
 ```python
 from nene2.config import AppSettings
 
-cfg = AppSettings()                                   # from environment
-cfg_test = AppSettings(throttle_enabled=False)        # override for tests
+cfg = AppSettings()                                   # 環境変数 / .env から読み込み
+cfg_test = AppSettings(throttle_enabled=False)        # テスト用オーバーライド
 ```
 
-See [Configuration reference](configuration.md) for all fields.
+詳細は [設定リファレンス](configuration.md) を参照してください。
 
 ---
 
@@ -94,18 +94,18 @@ See [Configuration reference](configuration.md) for all fields.
 
 ### `ErrorHandlerMiddleware`
 
-Catches all unhandled exceptions and converts them to Problem Details responses.
-Register domain exception handlers via `DomainExceptionHandlerProtocol`.
+全例外をキャッチし RFC 9457 Problem Details に変換します。
+ドメイン例外ハンドラーは `DomainExceptionHandlerProtocol` を実装して登録します。
 
-### Other middleware
+### その他のミドルウェア
 
-| Class | Module | Role |
+| クラス | モジュール | 役割 |
 |---|---|---|
-| `SecurityHeadersMiddleware` | `nene2.middleware.security_headers` | Add security response headers |
-| `RequestIdMiddleware` | `nene2.middleware.request_id` | Generate / propagate `X-Request-ID` |
-| `RequestLoggingMiddleware` | `nene2.middleware.request_logging` | Structured request / response logging |
-| `RequestSizeLimitMiddleware` | `nene2.middleware.request_size_limit` | Reject oversized request bodies |
-| `ThrottleMiddleware` | `nene2.middleware.throttle` | Fixed-window rate limiting per IP |
+| `SecurityHeadersMiddleware` | `nene2.middleware.security_headers` | セキュリティヘッダー付与 |
+| `RequestIdMiddleware` | `nene2.middleware.request_id` | X-Request-ID 付与 |
+| `RequestLoggingMiddleware` | `nene2.middleware.request_logging` | structlog リクエストロギング |
+| `RequestSizeLimitMiddleware` | `nene2.middleware.request_size_limit` | ペイロードサイズ制限 |
+| `ThrottleMiddleware` | `nene2.middleware.throttle` | 固定ウィンドウ レートリミット |
 
 ---
 
@@ -113,7 +113,7 @@ Register domain exception handlers via `DomainExceptionHandlerProtocol`.
 
 ### `LocalTokenVerifier`
 
-Verifies tokens against a static list using `secrets.compare_digest`.
+`secrets.compare_digest` で静的トークンリストを検証します。
 
 ```python
 from nene2.auth import LocalTokenVerifier
@@ -125,12 +125,12 @@ verifier.verify("wrong")    # False
 
 ### `TokenVerifierProtocol` / `TokenIssuerProtocol`
 
-Structural contracts for custom verifiers and issuers (e.g. JWT).
+カスタム検証器・発行器の実装に使うプロトコル（JWT など）。
 
 ### `TokenVerificationException`
 
-Raise this from a verifier to signal an invalid token.
-`BearerTokenMiddleware` maps it to `401 Unauthorized`.
+トークンが無効な場合にverifier から raise します。
+`BearerTokenMiddleware` が自動的に `401 Unauthorized` に変換します。
 
 ---
 
@@ -138,7 +138,7 @@ Raise this from a verifier to signal an invalid token.
 
 ### `SqlAlchemyQueryExecutor`
 
-Executes parameterised SQL via SQLAlchemy Core.
+SQLAlchemy Core のラッパー。パラメータ化クエリを実行します。
 
 ```python
 from nene2.database import SqlAlchemyQueryExecutor
@@ -150,7 +150,7 @@ executor.write("INSERT INTO notes (title, body) VALUES (:t, :b)", {"t": "t", "b"
 
 ### `SqlAlchemyTransactionManager`
 
-Manages transactions. Prefer `transactional()` over manual `begin/commit/rollback`.
+トランザクションを管理します。手動の `begin/commit/rollback` より `transactional()` を推奨します。
 
 ```python
 from nene2.database import SqlAlchemyTransactionManager
@@ -168,14 +168,14 @@ result = mgr.transactional(
 
 ### `LocalMcpServer`
 
-Wraps FastMCP — registers UseCase functions as MCP tools.
+FastMCP をラップして UseCase を MCP ツールとして登録します。
 
 ```python
 from nene2.mcp import LocalMcpServer
 
 server = LocalMcpServer("my-server", instructions="...")
 
-@server.tool("List all notes.")
+@server.tool("ノート一覧を取得する。")
 def list_notes(limit: int = 20, offset: int = 0) -> list[dict]: ...
 
 server.run(transport="stdio")
@@ -183,7 +183,7 @@ server.run(transport="stdio")
 
 ### `HttpxMcpClient`
 
-HTTP client for calling a nene2 API from MCP tool handlers.
+MCP ツールハンドラーから nene2 API を呼び出す HTTP クライアント。
 
 ```python
 from nene2.mcp import HttpxMcpClient
@@ -199,13 +199,13 @@ response.is_successful()   # True
 
 ### `setup_logging()`
 
-Initialises structlog. Switches between ConsoleRenderer (local) and JSON (production).
+structlog を初期化します。`app_env` に応じてレンダラーを切り替えます。
 
 ```python
 from nene2.log import setup_logging
 
-setup_logging(app_env="production")  # JSON renderer
-setup_logging(app_env="local")       # Console renderer
+setup_logging(app_env="production")  # JSON レンダラー
+setup_logging(app_env="local")       # Console レンダラー
 ```
 
 ---
@@ -214,7 +214,7 @@ setup_logging(app_env="local")       # Console renderer
 
 ### `ValidationException` / `ValidationError`
 
-Raise `ValidationException` at the HTTP boundary to return `422 Unprocessable Entity`.
+HTTP 入力検証失敗時に `422 Unprocessable Entity` を返す例外。
 
 ```python
 from nene2.validation.exceptions import ValidationError, ValidationException

@@ -1,55 +1,55 @@
-# はじめての nene2-python
+# Getting started with nene2-python
 
-このチュートリアルでは、nene2-python を使って Note の CRUD API を 5 分で起動します。
+In this tutorial you will run a Note CRUD API in under 5 minutes.
 
-## 前提条件
+## Prerequisites
 
-- Python 3.12 以上
-- [uv](https://docs.astral.sh/uv/) がインストール済み
+- Python 3.12 or later
+- [uv](https://docs.astral.sh/uv/) installed
 - Git
 
-## 1. リポジトリを clone する
+## 1. Clone the repository
 
 ```bash
 git clone https://github.com/hideyukiMORI/nene2-python.git
 cd nene2-python
 ```
 
-## 2. 依存関係をインストールする
+## 2. Install dependencies
 
 ```bash
 uv sync
 ```
 
-## 3. 開発サーバーを起動する
+## 3. Start the development server
 
 ```bash
 uv run uvicorn src.example.app:app --reload --port 8080
 ```
 
-起動後、ブラウザで `http://localhost:8080/docs` を開くと Swagger UI が表示されます。
+Open `http://localhost:8080/docs` in your browser — Swagger UI is ready.
 
-## 4. API を試す
+## 4. Try the API
 
 ```bash
-# Note を作成する
+# Create a note
 curl -X POST http://localhost:8080/notes \
   -H "Content-Type: application/json" \
-  -d '{"title": "はじめてのノート", "body": "nene2-python で作成しました"}'
+  -d '{"title": "My first note", "body": "Created with nene2-python"}'
 
-# Note 一覧を取得する
+# List notes
 curl http://localhost:8080/notes
 ```
 
-## 5. テストを実行する
+## 5. Run the tests
 
 ```bash
 uv run pytest
 ```
 
-135 件以上のテストがすべて通ることを確認してください。
+All 165+ tests should pass.
 
-## 次のステップ
+## Next steps
 
-- [新しいドメインを実装する](first-domain.md) — Tag ドメインの実装を通じてフレームワークの構造を理解する
-- [設定リファレンス](../reference/configuration.md) — 環境変数で DB や認証を設定する
+- [Implement a new domain](first-domain.md) — walk through the full layer stack using the Tag domain
+- [Configuration reference](../reference/configuration.md) — configure a real database or enable auth

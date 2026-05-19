@@ -1,30 +1,30 @@
-# 新しいドメインを追加する
+# Add a new domain
 
-既存の Note・Tag・Comment ドメインと同じパターンで新しいドメインを追加するチェックリストです。
+A checklist for adding a new domain following the same pattern as Note, Tag, and Comment.
 
-## チェックリスト
+## Checklist
 
-### 1. ドメインパッケージを作成する
+### 1. Create the domain package
 
 ```bash
 mkdir -p src/example/<domain>
 touch src/example/<domain>/__init__.py
 ```
 
-### 2. 各ファイルを作成する
+### 2. Create each file
 
-| ファイル | 内容 |
+| File | Content |
 |---|---|
-| `entity.py` | `@dataclass(frozen=True, slots=True)` でエンティティを定義 |
+| `entity.py` | Entity as `@dataclass(frozen=True, slots=True)` |
 | `repository.py` | `XxxRepositoryInterface(ABC)` + `InMemoryXxxRepository` |
 | `exceptions.py` | `XxxNotFoundException` + `XxxNotFoundExceptionHandler` |
-| `use_case.py` | 5 UseCase (List / Get / Create / Update / Delete) + Input/Output DTO |
+| `use_case.py` | 5 UseCases (List / Get / Create / Update / Delete) + Input/Output DTOs |
 | `handler.py` | `make_xxx_router()` — parse → use-case → response |
-| `sqlalchemy_repository.py` | SQL バックエンド実装 |
+| `sqlalchemy_repository.py` | SQL backend implementation |
 
-### 3. schema.py にテーブルを追加する
+### 3. Add the table to schema.py
 
-`src/example/schema.py` の `ensure_schema()` にテーブル定義を追加します。
+Add a `CREATE TABLE` call to `ensure_schema()` in `src/example/schema.py`.
 
 ```python
 executor.write(
@@ -36,36 +36,36 @@ executor.write(
 )
 ```
 
-### 4. app.py に組み込む
+### 4. Wire into app.py
 
-`src/example/app.py` の `_build_repositories()` と `create_app()` を更新します。
+Update `_build_repositories()` and `create_app()` in `src/example/app.py`.
 
 ```python
-# _build_repositories() の戻り値に追加
+# Add to _build_repositories() return tuple
 your_repo = SqlAlchemyYourRepository(executor)
 
-# create_app() でルーターを登録
+# Register the router in create_app()
 app.include_router(make_your_router(
     list_use_case=ListYourUseCase(your_repo),
     ...
 ))
 ```
 
-### 5. テストを書く
+### 5. Write tests
 
 ```
 tests/example/<domain>/
   __init__.py
-  test_<domain>_use_case.py     # UseCase 単体テスト（DB なし）
-  test_<domain>_repository.py   # Repository 契約テスト（InMemory + SQLAlchemy）
-  test_<domain>_http.py         # HTTP 統合テスト（TestClient）
+  test_<domain>_use_case.py     # UseCase unit tests (no DB)
+  test_<domain>_repository.py   # Repository contract tests (InMemory + SQLAlchemy)
+  test_<domain>_http.py         # HTTP integration tests (TestClient)
 ```
 
-### 6. MCP ツールに追加する（任意）
+### 6. Register MCP tools (optional)
 
-`src/example/mcp.py` の `create_mcp_server()` に UseCase を登録します。
+Add UseCase registrations to `create_mcp_server()` in `src/example/mcp.py`.
 
-### 7. 全チェックを通過させる
+### 7. Pass all checks
 
 ```bash
 uv run pytest && \
@@ -74,14 +74,16 @@ uv run ruff check src/ tests/ && \
 uv run ruff format --check src/ tests/
 ```
 
-## 命名規則
+## Naming conventions
 
-- エンティティクラス: `PascalCase` (`Note`, `Tag`, `Comment`)
-- UseCase 入力 DTO: `XxxInput` (`CreateNoteInput`)
-- 例外: `XxxNotFoundException`
-- ハンドラーファクトリ: `make_xxx_router()`
+| Target | Convention | Example |
+|---|---|---|
+| Entity class | PascalCase | `Note`, `Tag`, `Comment` |
+| UseCase input DTO | `XxxInput` | `CreateNoteInput` |
+| Exception | `XxxNotFoundException` | `NoteNotFoundException` |
+| Handler factory | `make_xxx_router()` | `make_note_router()` |
 
-## 参考実装
+## Reference implementations
 
-- `src/example/note/` — 基本的な CRUD ドメイン
-- `src/example/comment/` — 外部キー (note_id) を持つネストドメイン
+- `src/example/note/` — basic CRUD domain
+- `src/example/comment/` — nested domain with foreign key (`note_id`)
