@@ -54,9 +54,14 @@ Uses a fixed-window algorithm keyed on client IP. Exceeding the limit returns `4
 | Variable | Default | Description |
 |---|---|---|
 | `BEARER_TOKEN_ENABLED` | `false` | Enable Bearer Token auth |
-| `BEARER_TOKENS` | `[]` | Valid tokens (comma-separated) |
+| `BEARER_TOKENS` | `[]` | Valid tokens — JSON array format: `["tok-1","tok-2"]` |
 | `API_KEY_ENABLED` | `false` | Enable API Key auth |
-| `API_KEYS` | `[]` | Valid API keys (comma-separated) |
+| `API_KEYS` | `[]` | Valid API keys — JSON array format: `["key-1","key-2"]` |
+
+> **List fields require JSON array syntax in `.env`.**
+> Writing `BEARER_TOKENS=token-1` (plain string) causes a `JSONDecodeError` at startup.
+> Always use `BEARER_TOKENS=["token-1","token-2"]`.
+> The same applies to `API_KEYS` and `CORS_ORIGINS`.
 
 ## Database
 
@@ -97,10 +102,10 @@ THROTTLE_LIMIT=100
 THROTTLE_WINDOW=60
 
 CORS_ENABLED=true
-CORS_ORIGINS=https://example.com,https://app.example.com
+CORS_ORIGINS=["https://example.com","https://app.example.com"]
 
 BEARER_TOKEN_ENABLED=true
-BEARER_TOKENS=secret-token-1,secret-token-2
+BEARER_TOKENS=["secret-token-1","secret-token-2"]
 
 DB_ADAPTER=mysql
 DB_HOST=db.example.com
