@@ -3,14 +3,30 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
+from starlette.responses import Response
 
-from nene2.middleware import ErrorHandlerMiddleware
+from nene2.http.problem_details import problem_details_response
+from nene2.middleware import DomainExceptionHandlerProtocol, ErrorHandlerMiddleware
 from nene2.validation.exceptions import ValidationError, ValidationException
 
 
-def _make_app(*, debug: bool = False) -> FastAPI:
+class _DomainError(Exception):
+    pass
+
+
+class _DomainErrorHandler:
+    def handles(self, exc: Exception) -> bool:
+        return isinstance(exc, _DomainError)
+
+    def handle(self, exc: Exception) -> Response:
+        return problem_details_response("domain-error", "Domain Error", 409)
+
+
+def _make_app(
+    *, debug: bool = False, domain_handlers: list[DomainExceptionHandlerProtocol] | None = None
+) -> FastAPI:
     app = FastAPI()
-    app.add_middleware(ErrorHandlerMiddleware, debug=debug)
+    app.add_middleware(ErrorHandlerMiddleware, debug=debug, domain_handlers=domain_handlers)
     app.add_exception_handler(
         ValidationException,
         ErrorHandlerMiddleware.handle_validation_exception,  # type: ignore[arg-type]
@@ -19,6 +35,10 @@ def _make_app(*, debug: bool = False) -> FastAPI:
     @app.get("/boom")
     async def boom() -> JSONResponse:
         raise RuntimeError("secret internal detail")
+
+    @app.get("/domain-error")
+    async def domain_error() -> JSONResponse:
+        raise _DomainError()
 
     @app.get("/validation-error")
     async def validation_error() -> JSONResponse:
@@ -51,3 +71,18 @@ def test_validation_exception_returns_422() -> None:
     r = client.get("/validation-error")
     assert r.status_code == 422
     assert r.json()["errors"][0]["field"] == "field"
+
+
+def test_domain_exception_handler_returns_mapped_status() -> None:
+    client = TestClient(
+        _make_app(domain_handlers=[_DomainErrorHandler()]), raise_server_exceptions=False
+    )
+    r = client.get("/domain-error")
+    assert r.status_code == 409
+    assert r.json()["type"].endswith("domain-error")
+
+
+def test_unregistered_domain_exception_falls_through_to_500() -> None:
+    client = TestClient(_make_app(domain_handlers=[]), raise_server_exceptions=False)
+    r = client.get("/domain-error")
+    assert r.status_code == 500

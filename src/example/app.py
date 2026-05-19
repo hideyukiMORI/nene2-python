@@ -7,6 +7,7 @@ from nene2.config import AppSettings
 from nene2.middleware import ErrorHandlerMiddleware
 from nene2.validation.exceptions import ValidationException
 
+from .note.exceptions import NoteNotFoundExceptionHandler
 from .note.handler import make_note_router
 from .note.repository import InMemoryNoteRepository
 from .note.use_case import CreateNoteUseCase, GetNoteUseCase, ListNotesUseCase
@@ -22,7 +23,11 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         openapi_url="/openapi.json",
     )
 
-    app.add_middleware(ErrorHandlerMiddleware, debug=cfg.app_debug)
+    app.add_middleware(
+        ErrorHandlerMiddleware,
+        debug=cfg.app_debug,
+        domain_handlers=[NoteNotFoundExceptionHandler()],
+    )
     app.add_exception_handler(
         ValidationException,
         ErrorHandlerMiddleware.handle_validation_exception,

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from nene2.http import PaginationQueryParser, PaginationResponse, problem_details_response
+from nene2.http import PaginationQueryParser, PaginationResponse
 from nene2.validation.exceptions import ValidationError, ValidationException
 
 from .use_case import (
@@ -44,8 +44,6 @@ def make_note_router(
     @router.get("/{note_id}")
     async def get_note(note_id: int) -> JSONResponse:
         note = get_use_case.execute(note_id)
-        if note is None:
-            return problem_details_response("not-found", "Not Found", 404)
         return JSONResponse({"id": note.id, "title": note.title, "body": note.body})
 
     @router.post("", status_code=201)
