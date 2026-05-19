@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from nene2.config import AppSettings
+from nene2.http import HealthStatus
 from nene2.middleware import ErrorHandlerMiddleware
 from nene2.validation.exceptions import ValidationException
 
@@ -73,9 +74,11 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         )
     )
 
-    @app.get("/health")
+    @app.get("/health", tags=["system"], summary="Health check")
     async def health() -> JSONResponse:
-        return JSONResponse({"status": "ok"})
+        status = HealthStatus(status="ok")
+        code = 200 if status.is_healthy else 503
+        return JSONResponse({"status": status.status, "checks": status.checks}, status_code=code)
 
     return app
 
