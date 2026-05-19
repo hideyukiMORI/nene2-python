@@ -58,11 +58,11 @@ UseCase は HTTP・DB から独立しているため、MCP ツールとして直
 
 設計の個別決定は ADR に記録されています:
 
-- [ADR-0001: ツールチェーン](../adr/0001-toolchain.md)
-- [ADR-0002: クリーンアーキテクチャ](../adr/0002-clean-architecture.md)
-- [ADR-0003: セキュリティファースト](../adr/0003-security-first.md)
-- [ADR-0004: AI ファースト設計](../adr/0004-ai-first-design.md)
-- [ADR-0005: ロギング](../adr/0005-logging.md)
-- [ADR-0006: レートリミット](../adr/0006-rate-limiting.md)
-- [ADR-0009: MCP 設計](../adr/0009-mcp-design.md)
-- [ADR-0010: AsyncUseCase パターン](../adr/0010-async-use-case.md)
+- [ADR-0001: ツールチェーン](../../adr/0001-toolchain.md)
+- [ADR-0002: クリーンアーキテクチャ](../../adr/0002-clean-architecture.md)
+- [ADR-0003: セキュリティファースト](../../adr/0003-security-first.md)
+- [ADR-0004: AI ファースト設計](../../adr/0004-ai-first-design.md)
+- [ADR-0005: ロギング](../../adr/0005-logging.md)
+- [ADR-0006: レートリミット](../../adr/0006-rate-limiting.md)
+- [ADR-0009: MCP 設計](../../adr/0009-mcp-design.md)
+- [ADR-0010: AsyncUseCase パターン](../../adr/0010-async-use-case.md)

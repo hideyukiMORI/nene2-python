@@ -58,11 +58,11 @@ Because UseCases are independent of HTTP and database, they can be registered di
 
 Individual design decisions are recorded in Architecture Decision Records:
 
-- [ADR-0001: Toolchain](../adr/0001-toolchain)
-- [ADR-0002: Clean Architecture](../adr/0002-clean-architecture)
-- [ADR-0003: Security First](../adr/0003-security-first)
-- [ADR-0004: AI-First Design](../adr/0004-ai-first-design)
-- [ADR-0005: Logging](../adr/0005-logging)
-- [ADR-0006: Rate Limiting](../adr/0006-rate-limiting)
-- [ADR-0009: MCP Design](../adr/0009-mcp-design)
-- [ADR-0010: AsyncUseCase Pattern](../adr/0010-async-use-case)
+- [ADR-0001: Toolchain](../adr/0001-toolchain.md)
+- [ADR-0002: Clean Architecture](../adr/0002-clean-architecture.md)
+- [ADR-0003: Security First](../adr/0003-security-first.md)
+- [ADR-0004: AI-First Design](../adr/0004-ai-first-design.md)
+- [ADR-0005: Logging](../adr/0005-logging.md)
+- [ADR-0006: Rate Limiting](../adr/0006-rate-limiting.md)
+- [ADR-0009: MCP Design](../adr/0009-mcp-design.md)
+- [ADR-0010: AsyncUseCase Pattern](../adr/0010-async-use-case.md)

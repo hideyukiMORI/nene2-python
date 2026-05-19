@@ -51,4 +51,4 @@ Plus de 167 tests doivent tous réussir.
 
 ## Étapes suivantes
 
-- [Référence de configuration](../reference/configuration.md) — Configurer la base de données et l'authentification via les variables d'environnement
+- [Référence de configuration](../../reference/configuration.md) — Configurer la base de données et l'authentification via les variables d'environnement
