@@ -7,13 +7,13 @@ from .exceptions import TagNotFoundException
 from .repository import TagRepositoryInterface
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ListTagsInput:
     limit: int
     offset: int
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ListTagsOutput:
     items: list[Tag]
     limit: int
@@ -47,7 +47,7 @@ class GetTagUseCase:
         return tag
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class CreateTagInput:
     name: str
 
@@ -60,7 +60,7 @@ class CreateTagUseCase:
         return self._repository.save(input_.name)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class UpdateTagInput:
     tag_id: int
     name: str
@@ -77,7 +77,7 @@ class UpdateTagUseCase:
         return tag
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class DeleteTagInput:
     tag_id: int
 
