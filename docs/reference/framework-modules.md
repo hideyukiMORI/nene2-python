@@ -203,6 +203,31 @@ rows = executor.fetch_all("SELECT * FROM notes WHERE id = :id", {"id": 1})
 executor.write("INSERT INTO notes (title, body) VALUES (:t, :b)", {"t": "t", "b": "b"})
 ```
 
+#### `write()` return value
+
+`write()` returns an `int` whose meaning depends on the SQL operation:
+
+| Operation | Return value |
+|---|---|
+| `INSERT` with `AUTOINCREMENT` / `SERIAL` | `lastrowid` — the new row's primary key (always > 0) |
+| `INSERT` without auto-PK, or multi-row `INSERT` | `rowcount` — number of rows inserted |
+| `UPDATE` / `DELETE` | `rowcount` — rows affected (0 if nothing matched) |
+
+Use `lastrowid` to reconstruct the entity after a single-row INSERT:
+
+```python
+new_id = executor.write("INSERT INTO notes (title) VALUES (:title)", {"title": "Hello"})
+return Note(id=new_id, title="Hello")
+```
+
+Use `rowcount` to detect a missing row on UPDATE / DELETE:
+
+```python
+affected = executor.write("UPDATE notes SET title=:title WHERE id=:id", {"title": t, "id": pk})
+if affected == 0:
+    raise NoteNotFoundException(pk)
+```
+
 ### `SqlAlchemyTransactionManager`
 
 Manages transactions. Prefer `transactional()` over manual `begin/commit/rollback`.
