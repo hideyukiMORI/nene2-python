@@ -159,6 +159,13 @@ PHP 版追跡・Python 固有の強化:
 | `Example/Tag` (full CRUD) | `example.tag` (全 CRUD) | ✅ |
 | `Example/Comment` (full CRUD) | `example.comment` (全 CRUD) | ✅ |
 | `Example/Health` | `example.health` | ✅ |
+| `Auth/TokenIssuerInterface` | `nene2.auth.TokenIssuerProtocol` | ✅ |
+| `Auth/TokenVerificationException` | `nene2.auth.TokenVerificationException` | ✅ |
+| `Database/DatabaseTransactionManagerInterface` | `nene2.database.DatabaseTransactionManagerInterface` | ✅ |
+| `Database/PdoDatabaseTransactionManager` | `nene2.database.SqlAlchemyTransactionManager` | ✅ |
+| `Mcp/LocalMcpHttpClientInterface` | `nene2.mcp.McpHttpClientProtocol` | ✅ |
+| `Mcp/LocalMcpHttpResponse` | `nene2.mcp.McpHttpResponse` | ✅ |
+| `Mcp/NativeLocalMcpHttpClient` | `nene2.mcp.HttpxMcpClient` | ✅ |
 | `UseCaseInterface` | `nene2.use_case.UseCaseProtocol[I, O]` | ✅ |
 | — | `nene2.use_case.AsyncUseCaseProtocol[I, O]` | ✅ Python 固有 |
 
