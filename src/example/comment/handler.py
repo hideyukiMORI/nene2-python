@@ -16,6 +16,7 @@ from .use_case import (
     CreateCommentUseCase,
     DeleteCommentInput,
     DeleteCommentUseCase,
+    GetCommentInput,
     GetCommentUseCase,
     ListCommentsInput,
     ListCommentsUseCase,
@@ -62,7 +63,7 @@ def make_comment_router(
 
     @router.get("/{comment_id}")
     async def get_comment(note_id: int, comment_id: int) -> JSONResponse:
-        comment = get_use_case.execute(comment_id)
+        comment = get_use_case.execute(GetCommentInput(comment_id))
         return JSONResponse(_comment_dict(comment))
 
     @router.post("", status_code=201)

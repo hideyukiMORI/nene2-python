@@ -15,6 +15,7 @@ from .comment.use_case import (
     CreateCommentUseCase,
     DeleteCommentInput,
     DeleteCommentUseCase,
+    GetCommentInput,
     GetCommentUseCase,
     ListCommentsInput,
     ListCommentsUseCase,
@@ -26,6 +27,7 @@ from .note.use_case import (
     CreateNoteUseCase,
     DeleteNoteInput,
     DeleteNoteUseCase,
+    GetNoteInput,
     GetNoteUseCase,
     ListNotesInput,
     ListNotesUseCase,
@@ -37,6 +39,7 @@ from .tag.use_case import (
     CreateTagUseCase,
     DeleteTagInput,
     DeleteTagUseCase,
+    GetTagInput,
     GetTagUseCase,
     ListTagsInput,
     ListTagsUseCase,
@@ -80,7 +83,7 @@ def create_mcp_server(settings: AppSettings | None = None) -> LocalMcpServer:
 
     @server.tool("Get a single note by ID.")
     def get_note(note_id: int) -> dict:  # type: ignore[type-arg]
-        return asdict(note_get.execute(note_id))
+        return asdict(note_get.execute(GetNoteInput(note_id=note_id)))
 
     @server.tool("Create a new note.")
     def create_note(title: str, body: str) -> dict:  # type: ignore[type-arg]
@@ -102,7 +105,7 @@ def create_mcp_server(settings: AppSettings | None = None) -> LocalMcpServer:
 
     @server.tool("Get a single tag by ID.")
     def get_tag(tag_id: int) -> dict:  # type: ignore[type-arg]
-        return asdict(tag_get.execute(tag_id))
+        return asdict(tag_get.execute(GetTagInput(tag_id=tag_id)))
 
     @server.tool("Create a new tag.")
     def create_tag(name: str) -> dict:  # type: ignore[type-arg]
@@ -126,7 +129,7 @@ def create_mcp_server(settings: AppSettings | None = None) -> LocalMcpServer:
 
     @server.tool("Get a single comment by ID.")
     def get_comment(comment_id: int) -> dict:  # type: ignore[type-arg]
-        return asdict(comment_get.execute(comment_id))
+        return asdict(comment_get.execute(GetCommentInput(comment_id=comment_id)))
 
     @server.tool("Create a new comment on a note.")
     def create_comment(note_id: int, body: str) -> dict:  # type: ignore[type-arg]

@@ -9,6 +9,7 @@ from example.comment.use_case import (
     CreateCommentUseCase,
     DeleteCommentInput,
     DeleteCommentUseCase,
+    GetCommentInput,
     GetCommentUseCase,
     ListCommentsInput,
     ListCommentsUseCase,
@@ -41,14 +42,14 @@ def test_list_filters_by_note_id() -> None:
 def test_get_returns_comment() -> None:
     repo = _repo()
     comment = CreateCommentUseCase(repo).execute(CreateCommentInput(note_id=1, body="body"))
-    fetched = GetCommentUseCase(repo).execute(comment.id)
+    fetched = GetCommentUseCase(repo).execute(GetCommentInput(comment_id=comment.id))
     assert fetched == comment
 
 
 def test_get_raises_when_not_found() -> None:
     repo = _repo()
     with pytest.raises(CommentNotFoundException):
-        GetCommentUseCase(repo).execute(9999)
+        GetCommentUseCase(repo).execute(GetCommentInput(comment_id=9999))
 
 
 def test_update_changes_body() -> None:
@@ -71,7 +72,7 @@ def test_delete_removes_comment() -> None:
     comment = CreateCommentUseCase(repo).execute(CreateCommentInput(note_id=1, body="bye"))
     DeleteCommentUseCase(repo).execute(DeleteCommentInput(comment_id=comment.id))
     with pytest.raises(CommentNotFoundException):
-        GetCommentUseCase(repo).execute(comment.id)
+        GetCommentUseCase(repo).execute(GetCommentInput(comment_id=comment.id))
 
 
 def test_delete_raises_when_not_found() -> None:

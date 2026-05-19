@@ -50,14 +50,19 @@ class CreateNoteUseCase:
         return self._repository.save(input_.title, input_.body)
 
 
+@dataclass(frozen=True, slots=True)
+class GetNoteInput:
+    note_id: int
+
+
 class GetNoteUseCase:
     def __init__(self, repository: NoteRepositoryInterface) -> None:
         self._repository = repository
 
-    def execute(self, note_id: int) -> Note:
-        note = self._repository.find_by_id(note_id)
+    def execute(self, input_: GetNoteInput) -> Note:
+        note = self._repository.find_by_id(input_.note_id)
         if note is None:
-            raise NoteNotFoundException(note_id)
+            raise NoteNotFoundException(input_.note_id)
         return note
 
 
