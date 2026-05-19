@@ -12,6 +12,7 @@ class AppSettings(BaseSettings):
     app_env: str = "local"
     app_debug: bool = False
     app_name: str = "nene2-python"
+    security_headers_enabled: bool = True
 
     db_adapter: str = "sqlite"
     db_name: str = ":memory:"
