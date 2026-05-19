@@ -11,7 +11,9 @@ NENE2 の設計哲学を Python で実装したリファレンスフレームワ
 - **mypy strict** — PHP 版 PHPStan level 8 相当の型安全性
 - **ruff** — Lint + Format 一体型ツール
 - **RFC 9457 Problem Details** — 統一エラーレスポンス
-- **MCP 対応予定** — AI エージェントとのネイティブ統合
+- **Bearer Token / API Key 認証** — `LocalTokenVerifier` で設定ゼロ
+- **MCP 対応** — `LocalMcpServer` で UseCase を AI エージェントに公開
+- **SQLAlchemy Core** — ORM なし・生 SQL でシンプルな永続化
 
 ## 開発コマンド
 

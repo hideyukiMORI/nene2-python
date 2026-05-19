@@ -127,8 +127,12 @@ PHP 版追跡・Python 固有の強化:
 - [x] MySQL / PostgreSQL repository 実装 (#40)
 - [x] 非同期対応: `AsyncUseCaseProtocol` + `nene2.use_case` パッケージ (#42)
 - [x] Diátaxis 構造のドキュメント整備（tutorial / howto / explanation / reference）(#43)
+- [x] Field Trial 1: InMemory CRUD + git+ インストール検証 (#67)
+- [x] Field Trial 2: SQLite 永続化リポジトリ DX 検証 (#72)
+- [x] Field Trial 3: Bearer Token 認証 + MCP stdio DX 検証 (#80)
+- [ ] Field Trial 4: MCP + SQLite 共有 / ApiKey / CORS 検証
+- [ ] PyPI パッケージ公開（FT4 完了後）
 - [ ] WebSocket サポート検討
-- [ ] PyPI パッケージ公開
 
 ---
 

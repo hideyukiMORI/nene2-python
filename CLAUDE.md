@@ -281,20 +281,31 @@ docker compose up app
 src/
   nene2/              フレームワークコア
     http/             JSON レスポンス・ページネーション・Problem Details
-    middleware/       ミドルウェアパイプライン
+    middleware/       ミドルウェアパイプライン（Error / Security / RequestId / Logging / SizeLimit / Throttle）
     validation/       ValidationException / ValidationError
     config/           型付き設定オブジェクト（AppSettings）
-    mcp/              MCP サーバー（未実装）
+    auth/             TokenVerifierProtocol / BearerTokenMiddleware / ApiKeyAuthMiddleware
+    database/         SqlAlchemyQueryExecutor / SqlAlchemyTransactionManager
+    mcp/              LocalMcpServer / HttpxMcpClient
+    log/              structlog セットアップ
+    use_case/         UseCaseProtocol / AsyncUseCaseProtocol
   example/            リファレンス実装
-    note/             Note ドメイン (entity / repository / use_case / handler)
-    tag/              Tag ドメイン（未実装）
+    note/             Note ドメイン（entity / repository / use_case / handler / sqlalchemy_repository）
+    tag/              Tag ドメイン（entity / repository / use_case / handler / sqlalchemy_repository）
+    comment/          Comment ドメイン（Note に紐付く nested ドメイン）
     app.py            アプリケーションファクトリ
+    mcp.py            MCP サーバー（Note / Tag / Comment 全 15 ツール）
 
 tests/                pytest テスト（src/ を鏡像）
 docs/
   adr/                設計決定記録（変更理由を残す）
-  howto/              How-to ガイド
-  field-trials/       AI 実装検証記録
+  how-to/             How-to ガイド
+  howto/              MCP セットアップガイド
+  field-trials/       フィールドトライアル記録（FT1〜FT3）
+  tutorials/          チュートリアル
+  explanation/        アーキテクチャ解説
+  reference/          設定・モジュールリファレンス
+  ja/                 日本語ドキュメント（上記すべての翻訳）
 .github/workflows/    CI（GitHub Actions）
 ```
 
