@@ -77,70 +77,70 @@ def create_mcp_server(settings: AppSettings | None = None) -> LocalMcpServer:
     )
 
     @server.tool("List notes with optional pagination.")
-    def list_notes(limit: int = 20, offset: int = 0) -> list[dict]:  # type: ignore[type-arg]
+    def list_notes(limit: int = 20, offset: int = 0) -> list[dict]:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         result = note_list.execute(ListNotesInput(limit=limit, offset=offset))
         return [asdict(n) for n in result.items]
 
     @server.tool("Get a single note by ID.")
-    def get_note(note_id: int) -> dict:  # type: ignore[type-arg]
+    def get_note(note_id: int) -> dict:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         return asdict(note_get.execute(GetNoteInput(note_id=note_id)))
 
     @server.tool("Create a new note.")
-    def create_note(title: str, body: str) -> dict:  # type: ignore[type-arg]
+    def create_note(title: str, body: str) -> dict:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         return asdict(note_create.execute(CreateNoteInput(title=title, body=body)))
 
     @server.tool("Update an existing note.")
-    def update_note(note_id: int, title: str, body: str) -> dict:  # type: ignore[type-arg]
+    def update_note(note_id: int, title: str, body: str) -> dict:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         return asdict(note_update.execute(UpdateNoteInput(note_id=note_id, title=title, body=body)))
 
     @server.tool("Delete a note by ID.")
-    def delete_note(note_id: int) -> dict:  # type: ignore[type-arg]
+    def delete_note(note_id: int) -> dict:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         note_delete.execute(DeleteNoteInput(note_id=note_id))
         return {"deleted": True, "note_id": note_id}
 
     @server.tool("List tags with optional pagination.")
-    def list_tags(limit: int = 20, offset: int = 0) -> list[dict]:  # type: ignore[type-arg]
+    def list_tags(limit: int = 20, offset: int = 0) -> list[dict]:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         result = tag_list.execute(ListTagsInput(limit=limit, offset=offset))
         return [asdict(t) for t in result.items]
 
     @server.tool("Get a single tag by ID.")
-    def get_tag(tag_id: int) -> dict:  # type: ignore[type-arg]
+    def get_tag(tag_id: int) -> dict:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         return asdict(tag_get.execute(GetTagInput(tag_id=tag_id)))
 
     @server.tool("Create a new tag.")
-    def create_tag(name: str) -> dict:  # type: ignore[type-arg]
+    def create_tag(name: str) -> dict:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         return asdict(tag_create.execute(CreateTagInput(name=name)))
 
     @server.tool("Update an existing tag.")
-    def update_tag(tag_id: int, name: str) -> dict:  # type: ignore[type-arg]
+    def update_tag(tag_id: int, name: str) -> dict:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         return asdict(tag_update.execute(UpdateTagInput(tag_id=tag_id, name=name)))
 
     @server.tool("Delete a tag by ID.")
-    def delete_tag(tag_id: int) -> dict:  # type: ignore[type-arg]
+    def delete_tag(tag_id: int) -> dict:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         tag_delete.execute(DeleteTagInput(tag_id=tag_id))
         return {"deleted": True, "tag_id": tag_id}
 
     @server.tool("List comments for a note.")
-    def list_comments(note_id: int, limit: int = 20, offset: int = 0) -> list[dict]:  # type: ignore[type-arg]
+    def list_comments(note_id: int, limit: int = 20, offset: int = 0) -> list[dict]:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         result = comment_list.execute(
             ListCommentsInput(note_id=note_id, limit=limit, offset=offset)
         )
         return [asdict(c) for c in result.items]
 
     @server.tool("Get a single comment by ID.")
-    def get_comment(comment_id: int) -> dict:  # type: ignore[type-arg]
+    def get_comment(comment_id: int) -> dict:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         return asdict(comment_get.execute(GetCommentInput(comment_id=comment_id)))
 
     @server.tool("Create a new comment on a note.")
-    def create_comment(note_id: int, body: str) -> dict:  # type: ignore[type-arg]
+    def create_comment(note_id: int, body: str) -> dict:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         return asdict(comment_create.execute(CreateCommentInput(note_id=note_id, body=body)))
 
     @server.tool("Update an existing comment.")
-    def update_comment(comment_id: int, body: str) -> dict:  # type: ignore[type-arg]
+    def update_comment(comment_id: int, body: str) -> dict:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         return asdict(comment_update.execute(UpdateCommentInput(comment_id=comment_id, body=body)))
 
     @server.tool("Delete a comment by ID.")
-    def delete_comment(comment_id: int) -> dict:  # type: ignore[type-arg]
+    def delete_comment(comment_id: int) -> dict:  # type: ignore[type-arg]  # reason: mcp tool handler type stubs do not support generic dict
         comment_delete.execute(DeleteCommentInput(comment_id=comment_id))
         return {"deleted": True, "comment_id": comment_id}
 
