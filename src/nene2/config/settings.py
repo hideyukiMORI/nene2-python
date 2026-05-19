@@ -1,6 +1,6 @@
 """Typed application settings loaded from environment variables."""
 
-from pydantic import field_validator
+from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,10 +15,10 @@ class AppSettings(BaseSettings):
 
     db_adapter: str = "sqlite"
     db_name: str = ":memory:"
-    db_host: str = ""
-    db_port: int = 0
+    db_host: str = "localhost"
+    db_port: int = 3306
     db_user: str = ""
-    db_password: str = ""
+    db_password: SecretStr = SecretStr("")
 
     @field_validator("db_adapter")
     @classmethod
@@ -27,3 +27,14 @@ class AppSettings(BaseSettings):
         if v not in allowed:
             raise ValueError(f"db_adapter must be one of {allowed}")
         return v
+
+    @property
+    def db_url(self) -> str:
+        """Build a SQLAlchemy connection URL from adapter + credentials."""
+        if self.db_adapter == "sqlite":
+            return f"sqlite:///{self.db_name}"
+        password = self.db_password.get_secret_value()
+        port = self.db_port
+        if self.db_adapter == "mysql":
+            return f"mysql+pymysql://{self.db_user}:{password}@{self.db_host}:{port}/{self.db_name}"
+        return f"postgresql+psycopg2://{self.db_user}:{password}@{self.db_host}:{port}/{self.db_name}"
