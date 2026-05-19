@@ -82,9 +82,9 @@ class _BoundQueryExecutor(DatabaseQueryExecutorInterface):
     def write(self, sql: str, params: dict[str, Any] | None = None) -> int:
         try:
             result = self._conn.execute(text(sql), params or {})
-            return result.lastrowid or result.rowcount
         except OperationalError as exc:
             raise DatabaseConnectionException(str(exc)) from exc
+        return result.lastrowid or result.rowcount
 
 
 class SqlAlchemyTransactionManager(DatabaseTransactionManagerInterface):

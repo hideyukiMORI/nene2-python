@@ -12,6 +12,7 @@ from .use_case import (
     CreateTagUseCase,
     DeleteTagInput,
     DeleteTagUseCase,
+    GetTagInput,
     GetTagUseCase,
     ListTagsInput,
     ListTagsUseCase,
@@ -52,7 +53,7 @@ def make_tag_router(
 
     @router.get("/{tag_id}")
     async def get_tag(tag_id: int) -> JSONResponse:
-        tag = get_use_case.execute(tag_id)
+        tag = get_use_case.execute(GetTagInput(tag_id))
         return JSONResponse({"id": tag.id, "name": tag.name})
 
     @router.post("", status_code=201)

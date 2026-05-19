@@ -56,9 +56,7 @@ def test_get_comment_not_found() -> None:
 def test_update_comment() -> None:
     client, note_id = _client_with_note()
     created = client.post(f"/notes/{note_id}/comments", json={"body": "original"}).json()
-    response = client.put(
-        f"/notes/{note_id}/comments/{created['id']}", json={"body": "updated"}
-    )
+    response = client.put(f"/notes/{note_id}/comments/{created['id']}", json={"body": "updated"})
     assert response.status_code == 200
     assert response.json()["body"] == "updated"
 

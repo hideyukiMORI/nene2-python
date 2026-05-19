@@ -36,14 +36,19 @@ class ListTagsUseCase:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class GetTagInput:
+    tag_id: int
+
+
 class GetTagUseCase:
     def __init__(self, repository: TagRepositoryInterface) -> None:
         self._repository = repository
 
-    def execute(self, tag_id: int) -> Tag:
-        tag = self._repository.find_by_id(tag_id)
+    def execute(self, input_: GetTagInput) -> Tag:
+        tag = self._repository.find_by_id(input_.tag_id)
         if tag is None:
-            raise TagNotFoundException(tag_id)
+            raise TagNotFoundException(input_.tag_id)
         return tag
 
 
