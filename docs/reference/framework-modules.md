@@ -97,6 +97,35 @@ See [Configuration reference](configuration.md) for all fields.
 Catches all unhandled exceptions and converts them to Problem Details responses.
 Register domain exception handlers via `DomainExceptionHandlerProtocol`.
 
+```python
+from starlette.responses import Response
+from nene2.http import problem_details_response
+from nene2.middleware import ErrorHandlerMiddleware
+from nene2.middleware.domain_exception import DomainExceptionHandlerProtocol
+
+class NoteNotFoundExceptionHandler:
+    def handles(self, exc: Exception) -> bool:
+        return isinstance(exc, NoteNotFoundException)
+
+    def handle(self, exc: Exception) -> Response:
+        assert isinstance(exc, NoteNotFoundException)
+        return problem_details_response("not-found", "Not Found", 404, str(exc))
+
+# Registration — pass as domain_handlers list:
+app.add_middleware(
+    ErrorHandlerMiddleware,
+    debug=settings.app_debug,
+    domain_handlers=[NoteNotFoundExceptionHandler()],
+)
+```
+
+`DomainExceptionHandlerProtocol` requires two methods:
+
+| Method | Signature | Purpose |
+|---|---|---|
+| `handles` | `(exc: Exception) -> bool` | Return `True` if this handler owns the exception |
+| `handle` | `(exc: Exception) -> Response` | Convert exception to an HTTP response |
+
 ### Other middleware
 
 | Class | Module | Role |
