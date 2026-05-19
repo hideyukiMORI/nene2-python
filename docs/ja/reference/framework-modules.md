@@ -120,6 +120,8 @@ cfg_test = AppSettings(throttle_enabled=False)        # テスト用オーバー
 
 `ThrottleMiddleware` には `enabled` フラグがありません。`if settings.throttle_enabled:` でラップして制御します。
 
+> **注意 — `X-Forwarded-For` 偽装**: レートリミットのキーは `X-Forwarded-For` ヘッダーの最初のエントリから生成されますが、クライアントがこのヘッダーを偽装することで制限を回避できます。本番環境では、信頼できるリバースプロキシ（nginx、Caddy、AWS ALB 等）の背後にアプリを配置し、リバースプロキシが `X-Forwarded-For` を上書きするよう設定してください。詳細は [ADR-0006](../../adr/0006-rate-limiting.md) を参照してください。
+
 #### 完全な登録順（任意ミドルウェア含む）
 
 ```python

@@ -151,6 +151,8 @@ Starlette applies middleware in **reverse registration order** — the last regi
 
 `ThrottleMiddleware` has no `enabled` flag — wrap with `if settings.throttle_enabled:` to disable it.
 
+> **Note — `X-Forwarded-For` spoofing**: The rate limit key is derived from the first entry of the `X-Forwarded-For` header, which clients can forge. In production, always place the application behind a trusted reverse proxy (nginx, Caddy, AWS ALB, etc.) that rewrites `X-Forwarded-For` before the request reaches the app. See [ADR-0006](../../adr/0006-rate-limiting.md) for details.
+
 #### Full registration order with optional middleware
 
 ```python

@@ -20,3 +20,9 @@ We need to protect endpoints from abuse and runaway clients. PHP NENE2's `Thrott
 - Suitable for single-process deployments (uvicorn workers share no state between processes)
 - For multi-process / multi-node deployments, replace the in-memory store with Redis (implement `ThrottleStoreInterface` — future work)
 - Fixed-window is vulnerable to burst at window boundary; sliding-log or token-bucket can be added later without changing the interface
+
+## Known Limitations
+
+**`X-Forwarded-For` spoofing**: The client key is derived from the first entry in the `X-Forwarded-For` header, which can be set to an arbitrary value by the client. A malicious actor can send different forged IPs on every request to bypass the rate limit.
+
+**Mitigation**: In production, place the application behind a trusted reverse proxy (nginx, Caddy, AWS ALB, etc.) that strips and rewrites `X-Forwarded-For` before the request reaches the application. Do not expose the app directly to the internet without a reverse proxy when rate limiting is required.

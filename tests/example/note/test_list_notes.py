@@ -1,17 +1,11 @@
 """HTTP-level tests for the Note endpoints."""
 
+import pytest
 from fastapi.testclient import TestClient
 
-from nene2.config import AppSettings
-from src.example.app import create_app
 
-
-def _client() -> TestClient:
-    return TestClient(create_app(AppSettings()))
-
-
-def test_list_notes_empty() -> None:
-    r = _client().get("/notes")
+def test_list_notes_empty(client: TestClient) -> None:
+    r = client.get("/notes")
     assert r.status_code == 200
     body = r.json()
     assert body["items"] == []
@@ -20,8 +14,7 @@ def test_list_notes_empty() -> None:
     assert body["total"] == 0
 
 
-def test_create_and_get_note() -> None:
-    client = _client()
+def test_create_and_get_note(client: TestClient) -> None:
     r = client.post("/notes", json={"title": "Hello", "body": "World"})
     assert r.status_code == 201
     note_id = r.json()["id"]
@@ -31,19 +24,18 @@ def test_create_and_get_note() -> None:
     assert r2.json()["title"] == "Hello"
 
 
-def test_create_note_empty_title_returns_422() -> None:
-    r = _client().post("/notes", json={"title": "", "body": "b"})
+def test_create_note_empty_title_returns_422(client: TestClient) -> None:
+    r = client.post("/notes", json={"title": "", "body": "b"})
     assert r.status_code == 422
     assert r.json()["errors"][0]["field"] == "title"
 
 
-def test_get_nonexistent_note_returns_404() -> None:
-    r = _client().get("/notes/9999")
+def test_get_nonexistent_note_returns_404(client: TestClient) -> None:
+    r = client.get("/notes/9999")
     assert r.status_code == 404
 
 
-def test_update_note_returns_200() -> None:
-    client = _client()
+def test_update_note_returns_200(client: TestClient) -> None:
     r = client.post("/notes", json={"title": "Old", "body": "Old body"})
     note_id = r.json()["id"]
 
@@ -53,21 +45,19 @@ def test_update_note_returns_200() -> None:
     assert r2.json()["body"] == "New body"
 
 
-def test_update_nonexistent_note_returns_404() -> None:
-    r = _client().put("/notes/9999", json={"title": "T", "body": "B"})
+def test_update_nonexistent_note_returns_404(client: TestClient) -> None:
+    r = client.put("/notes/9999", json={"title": "T", "body": "B"})
     assert r.status_code == 404
 
 
-def test_update_note_empty_title_returns_422() -> None:
-    client = _client()
+def test_update_note_empty_title_returns_422(client: TestClient) -> None:
     r = client.post("/notes", json={"title": "T", "body": "B"})
     note_id = r.json()["id"]
     r2 = client.put(f"/notes/{note_id}", json={"title": "", "body": "B"})
     assert r2.status_code == 422
 
 
-def test_delete_note_returns_204() -> None:
-    client = _client()
+def test_delete_note_returns_204(client: TestClient) -> None:
     r = client.post("/notes", json={"title": "T", "body": "B"})
     note_id = r.json()["id"]
 
@@ -78,12 +68,13 @@ def test_delete_note_returns_204() -> None:
     assert r3.status_code == 404
 
 
-def test_delete_nonexistent_note_returns_404() -> None:
-    r = _client().delete("/notes/9999")
+def test_delete_nonexistent_note_returns_404(client: TestClient) -> None:
+    r = client.delete("/notes/9999")
     assert r.status_code == 404
 
 
-def test_health() -> None:
-    r = _client().get("/health")
+@pytest.mark.usefixtures("client")
+def test_health(client: TestClient) -> None:
+    r = client.get("/health")
     assert r.status_code == 200
     assert r.json()["status"] == "ok"
