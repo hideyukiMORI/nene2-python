@@ -1,8 +1,7 @@
 """Export the FastAPI OpenAPI schema to docs/openapi.yaml.
 
 Usage:
-  uv run export-openapi
-  python scripts/export_openapi.py
+  uv run python src/scripts/export_openapi.py
 """
 
 import json
