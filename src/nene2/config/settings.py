@@ -24,6 +24,9 @@ class AppSettings(BaseSettings):
     cors_allow_methods: list[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     cors_allow_headers: list[str] = ["*"]
 
+    bearer_token_enabled: bool = False
+    bearer_tokens: list[str] = []
+
     db_adapter: str = "sqlite"
     db_name: str = ":memory:"
     db_host: str = "localhost"
