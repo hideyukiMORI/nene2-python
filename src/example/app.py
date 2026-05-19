@@ -28,7 +28,7 @@ from nene2.validation.exceptions import ValidationException
 from .note.exceptions import NoteNotFoundExceptionHandler
 from .note.handler import make_note_router
 from .note.repository import InMemoryNoteRepository, NoteRepositoryInterface
-from .note.sqlite_repository import SqliteNoteRepository
+from .note.sqlalchemy_repository import SqlAlchemyNoteRepository
 from .note.use_case import (
     CreateNoteUseCase,
     DeleteNoteUseCase,
@@ -40,7 +40,7 @@ from .schema import ensure_schema
 from .tag.exceptions import TagNotFoundExceptionHandler
 from .tag.handler import make_tag_router
 from .tag.repository import InMemoryTagRepository, TagRepositoryInterface
-from .tag.sqlite_repository import SqliteTagRepository
+from .tag.sqlalchemy_repository import SqlAlchemyTagRepository
 from .tag.use_case import (
     CreateTagUseCase,
     DeleteTagUseCase,
@@ -63,7 +63,11 @@ def _build_repositories(
         )
         ensure_schema(engine)
         executor = SqlAlchemyQueryExecutor(engine)
-        return SqliteNoteRepository(executor), SqliteTagRepository(executor), executor
+        return SqlAlchemyNoteRepository(executor), SqlAlchemyTagRepository(executor), executor
+    if cfg.db_adapter in ("mysql", "pgsql"):
+        engine = create_engine(cfg.db_url)
+        executor = SqlAlchemyQueryExecutor(engine)
+        return SqlAlchemyNoteRepository(executor), SqlAlchemyTagRepository(executor), executor
     return InMemoryNoteRepository(), InMemoryTagRepository(), None
 
 

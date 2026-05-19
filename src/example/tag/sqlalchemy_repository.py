@@ -1,4 +1,8 @@
-"""SQLite-backed Tag repository using SQLAlchemy Core."""
+"""SQL-backed Tag repository using SQLAlchemy Core.
+
+Compatible with SQLite, MySQL, and PostgreSQL — uses standard SQL
+with named parameters (:param) via SQLAlchemy's text() API.
+"""
 
 from nene2.database import DatabaseQueryExecutorInterface
 
@@ -6,8 +10,8 @@ from .entity import Tag
 from .repository import TagRepositoryInterface
 
 
-class SqliteTagRepository(TagRepositoryInterface):
-    """Persistent Tag repository backed by a SQL database via SQLAlchemy Core."""
+class SqlAlchemyTagRepository(TagRepositoryInterface):
+    """Persistent Tag repository backed by any SQLAlchemy-supported database."""
 
     def __init__(self, executor: DatabaseQueryExecutorInterface) -> None:
         self._executor = executor

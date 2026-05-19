@@ -1,4 +1,4 @@
-"""Repository contract tests — run against both InMemory and SQLite implementations."""
+"""Repository contract tests — run against both InMemory and SqlAlchemy implementations."""
 
 import pytest
 from sqlalchemy import create_engine
@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from nene2.database import SqlAlchemyQueryExecutor
 from src.example.note.entity import Note
 from src.example.note.repository import InMemoryNoteRepository, NoteRepositoryInterface
-from src.example.note.sqlite_repository import SqliteNoteRepository
+from src.example.note.sqlalchemy_repository import SqlAlchemyNoteRepository
 
 
 def _create_schema(executor: SqlAlchemyQueryExecutor) -> None:
@@ -21,18 +21,18 @@ def _create_schema(executor: SqlAlchemyQueryExecutor) -> None:
     )
 
 
-def _sqlite_repo() -> SqliteNoteRepository:
+def _sqlalchemy_repo() -> SqlAlchemyNoteRepository:
     engine = create_engine("sqlite:///:memory:")
     executor = SqlAlchemyQueryExecutor(engine)
     _create_schema(executor)
-    return SqliteNoteRepository(executor)
+    return SqlAlchemyNoteRepository(executor)
 
 
-@pytest.fixture(params=["inmemory", "sqlite"])
+@pytest.fixture(params=["inmemory", "sqlalchemy"])
 def repo(request: pytest.FixtureRequest) -> NoteRepositoryInterface:
     if request.param == "inmemory":
         return InMemoryNoteRepository()
-    return _sqlite_repo()
+    return _sqlalchemy_repo()
 
 
 def test_save_and_find_by_id(repo: NoteRepositoryInterface) -> None:

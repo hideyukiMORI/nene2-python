@@ -1,4 +1,4 @@
-"""Repository contract tests — run against both InMemory and SQLite implementations."""
+"""Repository contract tests — run against both InMemory and SqlAlchemy implementations."""
 
 import pytest
 from sqlalchemy import create_engine
@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from nene2.database import SqlAlchemyQueryExecutor
 from src.example.tag.entity import Tag
 from src.example.tag.repository import InMemoryTagRepository, TagRepositoryInterface
-from src.example.tag.sqlite_repository import SqliteTagRepository
+from src.example.tag.sqlalchemy_repository import SqlAlchemyTagRepository
 
 
 def _create_schema(executor: SqlAlchemyQueryExecutor) -> None:
@@ -19,18 +19,18 @@ def _create_schema(executor: SqlAlchemyQueryExecutor) -> None:
     )
 
 
-def _sqlite_repo() -> SqliteTagRepository:
+def _sqlalchemy_repo() -> SqlAlchemyTagRepository:
     engine = create_engine("sqlite:///:memory:")
     executor = SqlAlchemyQueryExecutor(engine)
     _create_schema(executor)
-    return SqliteTagRepository(executor)
+    return SqlAlchemyTagRepository(executor)
 
 
-@pytest.fixture(params=["inmemory", "sqlite"])
+@pytest.fixture(params=["inmemory", "sqlalchemy"])
 def repo(request: pytest.FixtureRequest) -> TagRepositoryInterface:
     if request.param == "inmemory":
         return InMemoryTagRepository()
-    return _sqlite_repo()
+    return _sqlalchemy_repo()
 
 
 def test_save_and_find_by_id(repo: TagRepositoryInterface) -> None:
