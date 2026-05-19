@@ -1,6 +1,7 @@
 """Application factory — wires dependencies and registers routes."""
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine
@@ -23,6 +24,7 @@ from nene2.middleware import (
     SecurityHeadersMiddleware,
     ThrottleMiddleware,
 )
+from nene2.middleware.error_handler import request_validation_error_handler
 from nene2.validation.exceptions import ValidationException
 
 from .comment.exceptions import CommentNotFoundExceptionHandler
@@ -149,6 +151,10 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
     app.add_exception_handler(
         ValidationException,
         ErrorHandlerMiddleware.handle_validation_exception,
+    )
+    app.add_exception_handler(
+        RequestValidationError,
+        request_validation_error_handler,
     )
 
     note_repo, tag_repo, comment_repo, db_executor = _build_repositories(cfg)

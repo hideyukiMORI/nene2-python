@@ -53,10 +53,12 @@ Create `src/app.py`:
 
 ```python
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 
 from nene2.config import AppSettings
 from nene2.log import setup_logging
 from nene2.middleware import ErrorHandlerMiddleware
+from nene2.middleware.error_handler import request_validation_error_handler
 from nene2.middleware.request_id import RequestIdMiddleware
 from nene2.middleware.request_logging import RequestLoggingMiddleware
 from nene2.middleware.request_size_limit import RequestSizeLimitMiddleware
@@ -103,6 +105,9 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             limit=settings.throttle_limit,
             window=settings.throttle_window,
         )
+
+    # Convert Pydantic BaseModel validation errors to RFC 9457 Problem Details
+    app.add_exception_handler(RequestValidationError, request_validation_error_handler)  # type: ignore[arg-type]
 
     return app
 

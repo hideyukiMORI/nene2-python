@@ -9,12 +9,13 @@ from collections.abc import Awaitable, Callable, MutableMapping
 from typing import Any
 
 from fastapi import Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
 from nene2.http.problem_details import problem_details_response
-from nene2.validation.exceptions import ValidationException
+from nene2.validation.exceptions import ValidationError, ValidationException
 
 from .domain_exception import DomainExceptionHandlerProtocol
 
@@ -79,3 +80,33 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
             "The request contains invalid values.",
             extra={"errors": [e.to_dict() for e in exc.errors]},
         )
+
+
+async def request_validation_error_handler(_request: Request, exc: Exception) -> JSONResponse:
+    """Convert FastAPI RequestValidationError to nene2 Problem Details (422).
+
+    Register with FastAPI to replace the default Pydantic validation error format::
+
+        from fastapi.exceptions import RequestValidationError
+        from nene2.middleware.error_handler import request_validation_error_handler
+
+        app.add_exception_handler(RequestValidationError, request_validation_error_handler)
+    """
+    if not isinstance(exc, RequestValidationError):
+        raise TypeError(f"Expected RequestValidationError, got {type(exc)}")
+
+    errors: list[ValidationError] = []
+    for raw in exc.errors():
+        loc = raw.get("loc", ())
+        field = ".".join(str(part) for part in loc if part != "body") or "request"
+        message = str(raw.get("msg", "Invalid value."))
+        code = str(raw.get("type", "invalid"))
+        errors.append(ValidationError(field=field or "request", message=message, code=code))
+
+    return problem_details_response(
+        "validation-failed",
+        "Validation Failed",
+        422,
+        "The request contains invalid values.",
+        extra={"errors": [e.to_dict() for e in errors]},
+    )
