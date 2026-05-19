@@ -84,9 +84,7 @@ def make_comment_router(
             errors.append(ValidationError("body", "Body must not be empty.", "required"))
         if errors:
             raise ValidationException(errors)
-        comment = update_use_case.execute(
-            UpdateCommentInput(comment_id=comment_id, body=body.body)
-        )
+        comment = update_use_case.execute(UpdateCommentInput(comment_id=comment_id, body=body.body))
         return JSONResponse(_comment_dict(comment))
 
     @router.delete("/{comment_id}", status_code=204)

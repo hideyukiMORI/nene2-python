@@ -13,9 +13,7 @@ class DatabaseQueryExecutorInterface(ABC):
     """Execute parameterised SQL queries against a database."""
 
     @abstractmethod
-    def fetch_all(
-        self, sql: str, params: dict[str, Any] | None = None
-    ) -> list[dict[str, Any]]: ...
+    def fetch_all(self, sql: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]: ...
 
     @abstractmethod
     def fetch_one(
@@ -39,9 +37,7 @@ class DatabaseTransactionManagerInterface(ABC):
     """
 
     @abstractmethod
-    def transactional[T](
-        self, callback: Callable[[DatabaseQueryExecutorInterface], T]
-    ) -> T:
+    def transactional[T](self, callback: Callable[[DatabaseQueryExecutorInterface], T]) -> T:
         """Run callback inside a transaction; commit on success, rollback on exception."""
         ...
 

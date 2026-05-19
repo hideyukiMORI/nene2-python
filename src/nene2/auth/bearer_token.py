@@ -34,7 +34,7 @@ class BearerTokenMiddleware(BaseHTTPMiddleware):
             )
             response.headers["WWW-Authenticate"] = _WWW_AUTH
             return response
-        token = auth[len("Bearer "):]
+        token = auth[len("Bearer ") :]
         try:
             verified = self._verifier.verify(token)
         except TokenVerificationException:

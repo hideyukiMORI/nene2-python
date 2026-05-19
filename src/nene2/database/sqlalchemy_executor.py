@@ -19,9 +19,7 @@ class SqlAlchemyQueryExecutor(DatabaseQueryExecutorInterface):
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
 
-    def fetch_all(
-        self, sql: str, params: dict[str, Any] | None = None
-    ) -> list[dict[str, Any]]:
+    def fetch_all(self, sql: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         try:
             with self._engine.connect() as conn:
                 result = conn.execute(text(sql), params or {})
@@ -29,9 +27,7 @@ class SqlAlchemyQueryExecutor(DatabaseQueryExecutorInterface):
         except OperationalError as exc:
             raise DatabaseConnectionException(str(exc)) from exc
 
-    def fetch_one(
-        self, sql: str, params: dict[str, Any] | None = None
-    ) -> dict[str, Any] | None:
+    def fetch_one(self, sql: str, params: dict[str, Any] | None = None) -> dict[str, Any] | None:
         try:
             with self._engine.connect() as conn:
                 result = conn.execute(text(sql), params or {})
@@ -55,15 +51,11 @@ class _BoundQueryExecutor(DatabaseQueryExecutorInterface):
     def __init__(self, conn: Connection) -> None:
         self._conn = conn
 
-    def fetch_all(
-        self, sql: str, params: dict[str, Any] | None = None
-    ) -> list[dict[str, Any]]:
+    def fetch_all(self, sql: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         result = self._conn.execute(text(sql), params or {})
         return [dict(row._mapping) for row in result]
 
-    def fetch_one(
-        self, sql: str, params: dict[str, Any] | None = None
-    ) -> dict[str, Any] | None:
+    def fetch_one(self, sql: str, params: dict[str, Any] | None = None) -> dict[str, Any] | None:
         result = self._conn.execute(text(sql), params or {})
         row = result.fetchone()
         return dict(row._mapping) if row else None
@@ -85,9 +77,7 @@ class SqlAlchemyTransactionManager(DatabaseTransactionManagerInterface):
         self._conn: Connection | None = None
         self._tx: Any = None
 
-    def transactional[T](
-        self, callback: Callable[[DatabaseQueryExecutorInterface], T]
-    ) -> T:
+    def transactional[T](self, callback: Callable[[DatabaseQueryExecutorInterface], T]) -> T:
         try:
             with self._engine.begin() as conn:
                 return callback(_BoundQueryExecutor(conn))

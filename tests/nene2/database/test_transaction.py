@@ -51,9 +51,7 @@ def test_transactional_rollback_on_exception() -> None:
 def test_transactional_returns_callback_value() -> None:
     mgr = _manager()
     mgr.transactional(lambda ex: ex.write("INSERT INTO items (name) VALUES ('x')"))
-    count = mgr.transactional(
-        lambda ex: ex.fetch_one("SELECT COUNT(*) AS cnt FROM items")
-    )
+    count = mgr.transactional(lambda ex: ex.fetch_one("SELECT COUNT(*) AS cnt FROM items"))
     assert count is not None
     assert count["cnt"] == 1
 

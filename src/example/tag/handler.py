@@ -36,6 +36,7 @@ def make_tag_router(
     delete_use_case: DeleteTagUseCase,
 ) -> APIRouter:
     router = APIRouter(prefix="/tags", tags=["tags"])
+
     @router.get("")
     async def list_tags(request: Request) -> JSONResponse:
         pagination = PaginationQueryParser.parse(request)
