@@ -17,13 +17,32 @@ _API_KEY_HEADER = "X-Api-Key"
 
 
 class ApiKeyAuthMiddleware(BaseHTTPMiddleware):
-    """Require a valid X-Api-Key header on every request."""
+    """Require a valid X-Api-Key header on every request.
 
-    def __init__(self, app: object, *, verifier: TokenVerifierProtocol) -> None:
+    Use ``exclude_paths`` to skip authentication for specific paths such as
+    health-check endpoints or API documentation::
+
+        app.add_middleware(
+            ApiKeyAuthMiddleware,
+            verifier=LocalTokenVerifier(api_keys),
+            exclude_paths=["/docs", "/openapi.json", "/redoc", "/health"],
+        )
+    """
+
+    def __init__(
+        self,
+        app: object,
+        *,
+        verifier: TokenVerifierProtocol,
+        exclude_paths: list[str] | None = None,
+    ) -> None:
         super().__init__(app)  # type: ignore[arg-type]
         self._verifier = verifier
+        self._exclude_paths = set(exclude_paths or [])
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        if request.url.path in self._exclude_paths:
+            return await call_next(request)
         api_key = request.headers.get(_API_KEY_HEADER, "")
         try:
             verified = bool(api_key) and self._verifier.verify(api_key)

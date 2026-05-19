@@ -81,6 +81,55 @@ class JwtTokenVerifier:
 
 Pass your verifier directly to `BearerTokenMiddleware`.
 
+## Loading tokens from environment variables
+
+Use `LocalTokenVerifier.from_env()` to avoid writing the split-and-strip boilerplate every time:
+
+```dotenv
+# .env
+BEARER_TOKENS=token-a,token-b,token-c
+```
+
+```python
+from nene2.auth import BearerTokenMiddleware, LocalTokenVerifier
+
+app.add_middleware(
+    BearerTokenMiddleware,
+    verifier=LocalTokenVerifier.from_env("BEARER_TOKENS"),
+)
+```
+
+An unset or empty variable produces an empty allowlist — all requests are denied.
+
+## Excluding paths from authentication
+
+Use `exclude_paths` to bypass auth for health checks and API docs:
+
+```python
+app.add_middleware(
+    BearerTokenMiddleware,
+    verifier=LocalTokenVerifier.from_env("BEARER_TOKENS"),
+    exclude_paths=["/docs", "/openapi.json", "/redoc", "/health"],
+)
+```
+
+`ApiKeyAuthMiddleware` supports the same parameter.
+
+## MCP server — fail fast on missing token
+
+When an MCP server calls a Bearer-protected API via `HttpxMcpClient`, validate the token
+at startup rather than discovering a missing token at call time:
+
+```python
+import os
+from nene2.mcp.http_client import HttpxMcpClient
+
+token = os.getenv("MCP_BEARER_TOKEN")
+if not token:
+    raise RuntimeError("MCP_BEARER_TOKEN is not set — cannot call the authenticated API.")
+client = HttpxMcpClient(token)
+```
+
 ## Custom TokenIssuer (e.g. JWT)
 
 Implement `TokenIssuerProtocol` to issue tokens (e.g. for a login endpoint).
