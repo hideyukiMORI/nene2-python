@@ -54,4 +54,6 @@ class AppSettings(BaseSettings):
         port = self.db_port
         if self.db_adapter == "mysql":
             return f"mysql+pymysql://{self.db_user}:{password}@{self.db_host}:{port}/{self.db_name}"
-        return f"postgresql+psycopg2://{self.db_user}:{password}@{self.db_host}:{port}/{self.db_name}"
+        return (
+            f"postgresql+psycopg2://{self.db_user}:{password}@{self.db_host}:{port}/{self.db_name}"
+        )

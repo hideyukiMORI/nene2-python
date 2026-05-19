@@ -47,9 +47,7 @@ class SqlAlchemyCommentRepository(CommentRepositoryInterface):
         return Comment(id=comment_id, note_id=row["note_id"], body=body)
 
     def delete(self, comment_id: int) -> bool:
-        affected = self._executor.write(
-            "DELETE FROM comments WHERE id = :id", {"id": comment_id}
-        )
+        affected = self._executor.write("DELETE FROM comments WHERE id = :id", {"id": comment_id})
         return affected > 0
 
     def count_by_note(self, note_id: int) -> int:

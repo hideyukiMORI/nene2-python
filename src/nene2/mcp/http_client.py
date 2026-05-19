@@ -32,13 +32,9 @@ class McpHttpClientProtocol(Protocol):
 
     def get(self, base_url: str, path: str) -> McpHttpResponse: ...
 
-    def post(
-        self, base_url: str, path: str, body: dict[str, object]
-    ) -> McpHttpResponse: ...
+    def post(self, base_url: str, path: str, body: dict[str, object]) -> McpHttpResponse: ...
 
-    def put(
-        self, base_url: str, path: str, body: dict[str, object]
-    ) -> McpHttpResponse: ...
+    def put(self, base_url: str, path: str, body: dict[str, object]) -> McpHttpResponse: ...
 
     def delete(self, base_url: str, path: str) -> McpHttpResponse: ...
 
@@ -64,14 +60,10 @@ class HttpxMcpClient:
     def get(self, base_url: str, path: str) -> McpHttpResponse:
         return self._request("GET", base_url, path, None)
 
-    def post(
-        self, base_url: str, path: str, body: dict[str, object]
-    ) -> McpHttpResponse:
+    def post(self, base_url: str, path: str, body: dict[str, object]) -> McpHttpResponse:
         return self._request("POST", base_url, path, body)
 
-    def put(
-        self, base_url: str, path: str, body: dict[str, object]
-    ) -> McpHttpResponse:
+    def put(self, base_url: str, path: str, body: dict[str, object]) -> McpHttpResponse:
         return self._request("PUT", base_url, path, body)
 
     def delete(self, base_url: str, path: str) -> McpHttpResponse:
