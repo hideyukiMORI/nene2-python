@@ -39,6 +39,25 @@ from nene2.http import problem_details_response
 return problem_details_response("not-found", "Not Found", 404, "Note 42 not found.")
 ```
 
+### `PaginationQuery`
+
+Dataclass returned by `PaginationQueryParser.parse()`. Contains `limit: int` and `offset: int`.
+
+### `HealthCheckProtocol` / `HealthStatus`
+
+Contract and result type for application health checks.
+
+```python
+from nene2.http import HealthCheckProtocol, HealthStatus
+
+class MyHealthCheck:
+    def check(self) -> HealthStatus:
+        return HealthStatus(status="ok")
+```
+
+`HealthStatus` fields: `status: str` (`"ok"` or `"error"`), `checks: dict[str, str]`.
+`is_healthy` property returns `True` when `status == "ok"`.
+
 ---
 
 ## nene2.use_case
@@ -328,6 +347,24 @@ class TransferUseCase:
 
 **Testing with InMemory:** Implement `DatabaseTransactionManagerInterface` with a no-op executor that calls the callback directly. The `_in_tx` methods on the InMemory repository ignore the executor and operate on their in-memory store.
 
+### `DatabaseHealthCheck`
+
+Implements `HealthCheckProtocol` — verifies the database connection and returns a `HealthStatus`.
+
+```python
+from nene2.database import DatabaseHealthCheck
+from nene2.http import HealthStatus
+
+health = DatabaseHealthCheck(engine)
+status: HealthStatus = health.check()
+# status.status → "ok" or "error"
+# status.checks → {"db": "ok"} or {"db": "error: <message>"}
+```
+
+### `DatabaseConnectionException`
+
+Raised by `DatabaseHealthCheck` or repository operations when the database is unreachable.
+
 ---
 
 ## nene2.mcp
@@ -357,7 +394,17 @@ from nene2.mcp import HttpxMcpClient
 client = HttpxMcpClient("bearer-token")
 response = client.get("http://localhost:8080", "/notes")
 response.is_successful()   # True
+response.body              # dict | list — parsed JSON
+response.status_code       # int
 ```
+
+### `McpHttpResponse`
+
+Return type of `HttpxMcpClient` methods. Fields: `status_code: int`, `body: dict | list`. Method: `is_successful() -> bool` (`True` when `200 ≤ status_code < 300`).
+
+### `McpHttpClientProtocol`
+
+Structural contract for custom MCP HTTP clients. Implement `get()`, `post()`, `put()`, `delete()` returning `McpHttpResponse`.
 
 ---
 
