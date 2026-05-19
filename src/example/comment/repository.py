@@ -31,7 +31,9 @@ class InMemoryCommentRepository(CommentRepositoryInterface):
         self._next_id = 1
 
     def find_all_by_note(self, note_id: int, limit: int, offset: int) -> list[Comment]:
-        items = [c for c in self._store.values() if c.note_id == note_id]
+        items = sorted(
+            (c for c in self._store.values() if c.note_id == note_id), key=lambda c: c.id
+        )
         return items[offset : offset + limit]
 
     def find_by_id(self, comment_id: int) -> Comment | None:

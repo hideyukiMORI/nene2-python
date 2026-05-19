@@ -42,6 +42,14 @@ class AppSettings(BaseSettings):
     db_user: str = ""
     db_password: SecretStr = SecretStr("")
 
+    @field_validator("app_env")
+    @classmethod
+    def validate_app_env(cls, v: str) -> str:
+        allowed = {"local", "test", "production"}
+        if v not in allowed:
+            raise ValueError(f"app_env must be one of {allowed}")
+        return v
+
     @field_validator("db_adapter")
     @classmethod
     def validate_adapter(cls, v: str) -> str:
