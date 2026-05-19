@@ -51,4 +51,4 @@ uv run pytest
 
 ## 下一步
 
-- [配置参考](../reference/configuration.md) — 通过环境变量配置数据库和身份验证
+- [配置参考](../../reference/configuration.md) — 通过环境变量配置数据库和身份验证

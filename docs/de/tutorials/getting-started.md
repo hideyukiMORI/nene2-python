@@ -51,4 +51,4 @@ Mehr als 167 Tests sollten erfolgreich sein.
 
 ## Nächste Schritte
 
-- [Konfigurationsreferenz](../reference/configuration.md) — Datenbank und Authentifizierung über Umgebungsvariablen konfigurieren
+- [Konfigurationsreferenz](../../reference/configuration.md) — Datenbank und Authentifizierung über Umgebungsvariablen konfigurieren

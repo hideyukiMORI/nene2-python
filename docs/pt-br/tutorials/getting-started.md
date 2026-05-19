@@ -51,4 +51,4 @@ Mais de 167 testes devem passar com sucesso.
 
 ## Próximos passos
 
-- [Referência de configuração](../reference/configuration.md) — Configurar banco de dados e autenticação via variáveis de ambiente
+- [Referência de configuração](../../reference/configuration.md) — Configurar banco de dados e autenticação via variáveis de ambiente
