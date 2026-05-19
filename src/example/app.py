@@ -17,6 +17,7 @@ from nene2.middleware import (
     ErrorHandlerMiddleware,
     RequestIdMiddleware,
     RequestLoggingMiddleware,
+    RequestSizeLimitMiddleware,
     SecurityHeadersMiddleware,
 )
 from nene2.validation.exceptions import ValidationException
@@ -74,6 +75,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         openapi_url="/openapi.json",
     )
 
+    app.add_middleware(RequestSizeLimitMiddleware, max_bytes=cfg.max_body_size)
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(RequestIdMiddleware)
     if cfg.security_headers_enabled:

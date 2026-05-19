@@ -13,6 +13,7 @@ class AppSettings(BaseSettings):
     app_debug: bool = False
     app_name: str = "nene2-python"
     security_headers_enabled: bool = True
+    max_body_size: int = 1_048_576  # 1 MiB
 
     db_adapter: str = "sqlite"
     db_name: str = ":memory:"
