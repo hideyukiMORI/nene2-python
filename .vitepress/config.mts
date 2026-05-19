@@ -46,11 +46,12 @@ function sidebarEn() {
     '/how-to/': [{
       text: 'How-to guides',
       items: [
-        { text: 'Start a new project', link: '/how-to/new-project' },
-        { text: 'Add a new domain',    link: '/how-to/add-new-domain' },
-        { text: 'Configure auth',      link: '/how-to/configure-auth' },
-        { text: 'Set up MCP',          link: '/howto/mcp-setup' },
-        { text: 'Run tests',           link: '/how-to/run-tests' },
+        { text: 'Start a new project',           link: '/how-to/new-project' },
+        { text: 'Add a new domain',              link: '/how-to/add-new-domain' },
+        { text: 'Implement a SQLAlchemy repository', link: '/how-to/sqlalchemy-repository' },
+        { text: 'Configure auth',                link: '/how-to/configure-auth' },
+        { text: 'Set up MCP',                    link: '/howto/mcp-setup' },
+        { text: 'Run tests',                     link: '/how-to/run-tests' },
       ],
     }],
     '/explanation/': [{
@@ -109,10 +110,11 @@ function sidebarJa() {
     '/ja/how-to/': [{
       text: 'ハウツーガイド',
       items: [
-        { text: '新しいドメインを追加する', link: '/ja/how-to/add-new-domain' },
-        { text: '認証を設定する',           link: '/ja/how-to/configure-auth' },
-        { text: 'MCP セットアップ',         link: '/ja/howto/mcp-setup' },
-        { text: 'テストを実行する',         link: '/ja/how-to/run-tests' },
+        { text: '新しいドメインを追加する',            link: '/ja/how-to/add-new-domain' },
+        { text: 'SQLAlchemy リポジトリを実装する',    link: '/ja/how-to/sqlalchemy-repository' },
+        { text: '認証を設定する',                     link: '/ja/how-to/configure-auth' },
+        { text: 'MCP セットアップ',                   link: '/ja/howto/mcp-setup' },
+        { text: 'テストを実行する',                   link: '/ja/how-to/run-tests' },
       ],
     }],
     '/ja/explanation/': [{
