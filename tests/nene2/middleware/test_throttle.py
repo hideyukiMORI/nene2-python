@@ -1,0 +1,45 @@
+"""Tests for ThrottleMiddleware."""
+
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from fastapi.testclient import TestClient
+
+from nene2.middleware import ThrottleMiddleware
+
+
+def _make_app(limit: int = 3, window: int = 60) -> FastAPI:
+    app = FastAPI()
+    app.add_middleware(ThrottleMiddleware, limit=limit, window=window)
+
+    @app.get("/ping")
+    async def ping() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    return app
+
+
+def test_requests_within_limit_pass() -> None:
+    client = TestClient(_make_app(limit=5))
+    for _ in range(5):
+        assert client.get("/ping").status_code == 200
+
+
+def test_requests_exceeding_limit_return_429() -> None:
+    client = TestClient(_make_app(limit=2))
+    client.get("/ping")
+    client.get("/ping")
+    response = client.get("/ping")
+    assert response.status_code == 429
+    body = response.json()
+    assert body["type"].endswith("too-many-requests")
+    assert "Retry-After" in response.headers
+
+
+def test_forwarded_for_header_used_as_key() -> None:
+    client = TestClient(_make_app(limit=1))
+    client.get("/ping", headers={"X-Forwarded-For": "10.0.0.1"})
+    response = client.get("/ping", headers={"X-Forwarded-For": "10.0.0.1"})
+    assert response.status_code == 429
+
+    response2 = client.get("/ping", headers={"X-Forwarded-For": "10.0.0.2"})
+    assert response2.status_code == 200

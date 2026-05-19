@@ -19,6 +19,7 @@ from nene2.middleware import (
     RequestLoggingMiddleware,
     RequestSizeLimitMiddleware,
     SecurityHeadersMiddleware,
+    ThrottleMiddleware,
 )
 from nene2.validation.exceptions import ValidationException
 
@@ -75,6 +76,12 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         openapi_url="/openapi.json",
     )
 
+    if cfg.throttle_enabled:
+        app.add_middleware(
+            ThrottleMiddleware,
+            limit=cfg.throttle_limit,
+            window=cfg.throttle_window,
+        )
     app.add_middleware(RequestSizeLimitMiddleware, max_bytes=cfg.max_body_size)
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(RequestIdMiddleware)

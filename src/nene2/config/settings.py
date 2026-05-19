@@ -14,6 +14,9 @@ class AppSettings(BaseSettings):
     app_name: str = "nene2-python"
     security_headers_enabled: bool = True
     max_body_size: int = 1_048_576  # 1 MiB
+    throttle_enabled: bool = True
+    throttle_limit: int = 60
+    throttle_window: int = 60  # seconds
 
     db_adapter: str = "sqlite"
     db_name: str = ":memory:"
