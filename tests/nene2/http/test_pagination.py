@@ -43,6 +43,34 @@ def test_limit_out_of_range_raises() -> None:
     assert exc_info.value.errors[0].field == "limit"
 
 
+def test_non_integer_limit_raises_validation_exception() -> None:
+    mock_request = MagicMock(spec=Request)
+    mock_request.query_params = {"limit": "abc"}
+    with pytest.raises(ValidationException) as exc_info:
+        PaginationQueryParser.parse(mock_request)
+    assert exc_info.value.errors[0].field == "limit"
+    assert exc_info.value.errors[0].code == "invalid"
+
+
+def test_non_integer_offset_raises_validation_exception() -> None:
+    mock_request = MagicMock(spec=Request)
+    mock_request.query_params = {"offset": "xyz"}
+    with pytest.raises(ValidationException) as exc_info:
+        PaginationQueryParser.parse(mock_request)
+    assert exc_info.value.errors[0].field == "offset"
+    assert exc_info.value.errors[0].code == "invalid"
+
+
+def test_both_invalid_collects_all_errors() -> None:
+    mock_request = MagicMock(spec=Request)
+    mock_request.query_params = {"limit": "abc", "offset": "xyz"}
+    with pytest.raises(ValidationException) as exc_info:
+        PaginationQueryParser.parse(mock_request)
+    fields = [e.field for e in exc_info.value.errors]
+    assert "limit" in fields
+    assert "offset" in fields
+
+
 def test_pagination_response_without_total() -> None:
     r = PaginationResponse(items=[{"id": 1}], limit=20, offset=0)
     d = r.to_dict()
