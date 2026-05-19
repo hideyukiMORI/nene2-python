@@ -9,7 +9,10 @@ dist/
 *.db
 .env
 .env.local
-# uv.lock は再現性のためコミットする（削除）
 .coverage
 data/
 docs/openapi.yaml
+# VitePress
+node_modules/
+.vitepress/cache/
+.vitepress/dist/
