@@ -1,44 +1,43 @@
-# nene2-python ドキュメント
-
-NENE2 Python リファレンスフレームワークのドキュメントは [Diátaxis](https://diataxis.fr/) 構造で整理されています。
-
 ---
+layout: home
 
-## Tutorials — 学習ガイド
+hero:
+  name: "NENE2"
+  text: "Python API Framework"
+  tagline: FastAPI · Clean Architecture · MCP · mypy --strict · AI-ready from day one.
+  actions:
+    - theme: brand
+      text: Get Started →
+      link: /tutorials/getting-started
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/hideyukiMORI/nene2-python
+    - theme: alt
+      text: PHP Version
+      link: https://hideyukimori.github.io/NENE2/
 
-手を動かして学ぶ、段階的なチュートリアルです。
+features:
+  - icon: 🐍
+    title: Python 3.12+ native
+    details: Uses Python 3.12 generic syntax, frozen dataclasses, and Pydantic v2. No legacy shims. mypy --strict enforced on every commit.
 
-- [はじめての nene2-python](tutorials/getting-started.md) — 5 分で API サーバーを起動する
-- [新しいドメインを実装する](tutorials/first-domain.md) — Tag ドメインをゼロから作る
+  - icon: ⚡
+    title: FastAPI + async ready
+    details: ASGI-native with async handlers and AsyncUseCaseProtocol for non-blocking I/O. asyncio.gather for concurrent repository calls.
 
-## How-to — 実践ガイド
+  - icon: 🤖
+    title: MCP built-in
+    details: UseCases are exposed as MCP tools via LocalMcpServer — no extra wiring. Claude and any MCP client can call your API directly.
 
-特定のタスクを達成するための具体的な手順書です。
+  - icon: 🏛️
+    title: Clean Architecture
+    details: HTTP Handler → UseCase → RepositoryInterface → SQLAlchemy. Each layer is testable in isolation with InMemory repositories.
 
-- [新しいドメインを追加する](how-to/add-new-domain.md)
-- [認証を設定する](how-to/configure-auth.md)
-- [MCP サーバーをセットアップする](howto/mcp-setup.md)
-- [テストを実行する](how-to/run-tests.md)
+  - icon: 🛡️
+    title: Security first
+    details: RFC 9457 Problem Details, Bearer + API Key auth, rate limiting, security headers, request size limits — all wired out of the box.
 
-## Explanation — 解説
-
-設計の背景・思想・トレードオフを説明します。
-
-- [アーキテクチャ概要](explanation/architecture.md)
-- [設計思想と PHP NENE2 との対応](explanation/design-philosophy.md)
-- [ADR 一覧](adr/) — 個別の設計決定記録
-
-## Reference — リファレンス
-
-技術仕様の正確な記述です。
-
-- [設定リファレンス（環境変数）](reference/configuration.md)
-- [フレームワークモジュール](reference/framework-modules.md)
-- [REST API リファレンス](reference/api.md)
-
+  - icon: 📄
+    title: OpenAPI auto-generated
+    details: Swagger UI and ReDoc at /docs — zero config. Export a static openapi.yaml with one command. FastAPI does the work.
 ---
-
-## プロジェクト管理
-
-- [ロードマップ](roadmap.md)
-- [フィールドトライアル記録](field-trials/)
