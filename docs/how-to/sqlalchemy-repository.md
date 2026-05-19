@@ -42,9 +42,10 @@ def ensure_schema(executor: DatabaseQueryExecutorInterface) -> None:
 ### Row-to-entity helper
 
 `fetch_one` / `fetch_all` return `dict[str, Any]`.
-Use a private static method to centralise the cast and keep each query method lean.
+Use a private static method to centralise the mapping and keep each query method lean.
 
 ```python
+from typing import Any
 from .entity import Book
 from .repository import BookRepositoryInterface
 
@@ -53,20 +54,21 @@ class SqlAlchemyBookRepository(BookRepositoryInterface):
         self._executor = executor
 
     @staticmethod
-    def _to_book(row: dict[str, object]) -> Book:
+    def _to_book(row: dict[str, Any]) -> Book:
         return Book(
-            id=int(row["id"]),              # type: ignore[arg-type]
-            title=str(row["title"]),
-            author=str(row["author"]),
-            isbn=str(row["isbn"]),
-            published_year=int(row["published_year"]),  # type: ignore[arg-type]
+            id=row["id"],
+            title=row["title"],
+            author=row["author"],
+            isbn=row["isbn"],
+            published_year=row["published_year"],
         )
 ```
 
-> `# type: ignore[arg-type]` is acceptable here: SQLAlchemy returns column values as
-> `int | str | float | None | …` depending on the driver, so the cast is correct
-> but the static type is `object`. Centralising casts in `_to_entity()` keeps
-> `type: ignore` in one place and out of every query method.
+> Use `dict[str, Any]` — not `dict[str, object]`.
+> `fetch_one()` / `fetch_all()` return `dict[str, Any]`, so `row["id"]` is `Any`
+> which is assignable to `int` under `mypy --strict` without any casts.
+> Using `dict[str, object]` instead requires `# type: ignore[call-overload]`
+> and triggers follow-up `unused-ignore` errors.
 
 ### Full implementation
 
@@ -85,7 +87,7 @@ class SqlAlchemyBookRepository(BookRepositoryInterface):
 
     def count_all(self) -> int:
         row = self._executor.fetch_one("SELECT COUNT(*) AS cnt FROM books")
-        return int(row["cnt"]) if row else 0  # type: ignore[arg-type]
+        return int(row["cnt"]) if row else 0
 
     def find_by_id(self, book_id: int) -> Book | None:
         row = self._executor.fetch_one(
@@ -117,13 +119,13 @@ class SqlAlchemyBookRepository(BookRepositoryInterface):
         self._executor.write("DELETE FROM books WHERE id = :id", {"id": book_id})
 
     @staticmethod
-    def _to_book(row: dict[str, object]) -> Book:
+    def _to_book(row: dict[str, Any]) -> Book:
         return Book(
-            id=int(row["id"]),              # type: ignore[arg-type]
-            title=str(row["title"]),
-            author=str(row["author"]),
-            isbn=str(row["isbn"]),
-            published_year=int(row["published_year"]),  # type: ignore[arg-type]
+            id=row["id"],
+            title=row["title"],
+            author=row["author"],
+            isbn=row["isbn"],
+            published_year=row["published_year"],
         )
 ```
 
@@ -155,6 +157,20 @@ def _build_repository(cfg: AppSettings) -> BookRepositoryInterface:
         return SqlAlchemyBookRepository(executor)
     return InMemoryBookRepository()      # fallback for tests / local dev
 ```
+
+> Wrap the if/else branch in a helper function like `_build_repository()` that
+> returns the interface type. This is cleaner than declaring `repo: BookRepositoryInterface`
+> before an if/else block in `create_app()` — both approaches satisfy `mypy --strict`,
+> but the helper keeps `create_app()` readable.
+>
+> If you prefer inline branching, declare the type first:
+> ```python
+> repo: BookRepositoryInterface
+> if cfg.db_adapter == "sqlite":
+>     repo = SqlAlchemyBookRepository(executor)
+> else:
+>     repo = InMemoryBookRepository()
+> ```
 
 > `StaticPool` is required for SQLite in-memory databases (`DB_NAME=:memory:`) to prevent
 > SQLAlchemy from opening multiple connections — each of which would see an empty database.
@@ -192,7 +208,147 @@ if affected == 0:
 
 ---
 
-## 4. Use `InMemoryXxxRepository` in tests
+## 4. Entities with `datetime` fields
+
+When your entity has a `created_at: datetime` field backed by a database-generated
+`DEFAULT CURRENT_TIMESTAMP`, use `parse_db_datetime()` from `nene2.database`.
+
+### Why it is needed
+
+SQLite stores `CURRENT_TIMESTAMP` as a **plain string** (`"2026-05-20 12:34:56"`),
+not as a Python `datetime` object. `datetime.fromisoformat()` parses the string but
+returns a **naive** datetime (no timezone), so the JSON response leaks an ambiguous
+timestamp. `parse_db_datetime()` handles all three cases transparently:
+
+| Driver | Raw value | After `parse_db_datetime()` |
+|---|---|---|
+| SQLite | `"2026-05-20 12:34:56"` (str) | `datetime(…, tzinfo=UTC)` |
+| MySQL/PostgreSQL | naive `datetime` object | `datetime(…, tzinfo=UTC)` |
+| MySQL/PostgreSQL | aware `datetime` object | unchanged |
+
+### Schema
+
+```python
+"created_at DATETIME DEFAULT CURRENT_TIMESTAMP"
+```
+
+### SELECT-after-INSERT pattern
+
+After `write()` you only get back the `lastrowid`, not the DB-generated `created_at`.
+Do a second `fetch_one()` to retrieve the full row:
+
+```python
+from datetime import datetime
+from typing import Any
+
+from nene2.database import DatabaseQueryExecutorInterface, parse_db_datetime
+
+from .entity import Post
+
+def _to_post(row: dict[str, Any]) -> Post:
+    return Post(
+        id=row["id"],
+        title=row["title"],
+        body=row["body"],
+        created_at=parse_db_datetime(row["created_at"]),
+    )
+
+class SqlAlchemyPostRepository(PostRepositoryInterface):
+    def save(self, title: str, body: str) -> Post:
+        new_id = self._executor.write(
+            "INSERT INTO posts (title, body) VALUES (:title, :body)",
+            {"title": title, "body": body},
+        )
+        row = self._executor.fetch_one(
+            "SELECT id, title, body, created_at FROM posts WHERE id = :id",
+            {"id": new_id},
+        )
+        if row is None:
+            raise RuntimeError(f"Row {new_id} not found after INSERT into posts")
+        return _to_post(row)
+```
+
+> The `if row is None: raise RuntimeError(...)` guard is needed because `fetch_one()`
+> returns `dict | None`. The row cannot actually be `None` right after INSERT — the guard
+> exists to satisfy the type checker. Prefer `RuntimeError` over `assert`: `assert`
+> is stripped by `python -O` and flagged by ruff's S101 rule in non-test code.
+
+### InMemory repository with datetime
+
+The `InMemoryXxxRepository` should generate the timestamp in Python:
+
+```python
+from datetime import datetime, timezone
+
+def save(self, title: str, body: str) -> Post:
+    now = datetime.now(timezone.utc)
+    post = Post(id=self._next_id, title=title, body=body, created_at=now)
+    self._store[self._next_id] = post
+    self._next_id += 1
+    return post
+```
+
+### JSON serialisation
+
+`datetime.isoformat()` on a UTC-aware datetime produces `"2026-05-20T12:34:56+00:00"`.
+Return it as a string in the response dict:
+
+```python
+def _post_dict(post: Post) -> dict[str, object]:
+    return {
+        "id": post.id,
+        "title": post.title,
+        "body": post.body,
+        "created_at": post.created_at.isoformat(),   # "2026-05-20T12:34:56+00:00"
+    }
+```
+
+---
+
+## 5. Nested resources — ownership validation in DELETE
+
+When a resource is nested under a parent (e.g. `DELETE /posts/{post_id}/comments/{comment_id}`),
+always validate that the child belongs to the parent in the UseCase, not just in the database.
+
+### Wrong — ignores `post_id`
+
+```python
+# handler
+@router.delete("/posts/{post_id}/comments/{comment_id}", status_code=204)
+async def delete_comment(post_id: int, comment_id: int) -> None:
+    delete_use_case.execute(DeleteCommentInput(comment_id))  # post_id unused!
+```
+
+This allows `DELETE /posts/1/comments/5` to delete comment 5 even when it belongs to post 2.
+
+### Correct — validate ownership in the UseCase
+
+```python
+# use_case.py
+@dataclass(frozen=True, slots=True)
+class DeleteCommentInput:
+    post_id: int
+    comment_id: int
+
+class DeleteCommentUseCase:
+    def execute(self, input_: DeleteCommentInput) -> None:
+        comment = self._repository.find_by_id(input_.comment_id)
+        if comment is None or comment.post_id != input_.post_id:
+            raise CommentNotFoundException(input_.comment_id)
+        self._repository.delete(input_.comment_id)
+
+# handler
+@router.delete("/posts/{post_id}/comments/{comment_id}", status_code=204)
+async def delete_comment(post_id: int, comment_id: int) -> None:
+    delete_use_case.execute(DeleteCommentInput(post_id, comment_id))
+```
+
+> The same pattern applies to GET and PUT on nested resources:
+> always pass `post_id` into the UseCase and verify `comment.post_id == input_.post_id`.
+
+---
+
+## 6. Use `InMemoryXxxRepository` in tests
 
 Never mock the database. Use the in-memory implementation for unit tests:
 
@@ -232,7 +388,7 @@ def _make_repo() -> SqlAlchemyBookRepository:
 
 ---
 
-## 5. Atomic multi-write operations with `transactional()`
+## 7. Atomic multi-write operations with `transactional()`
 
 When a UseCase needs to write to multiple tables atomically, use `SqlAlchemyTransactionManager.transactional()` together with `_in_tx` repository methods.
 
