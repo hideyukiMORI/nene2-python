@@ -27,6 +27,9 @@ class AppSettings(BaseSettings):
     bearer_token_enabled: bool = False
     bearer_tokens: list[str] = []
 
+    api_key_enabled: bool = False
+    api_keys: list[str] = []
+
     db_adapter: str = "sqlite"
     db_name: str = ":memory:"
     db_host: str = "localhost"
