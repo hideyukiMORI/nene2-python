@@ -65,17 +65,26 @@ class _BoundQueryExecutor(DatabaseQueryExecutorInterface):
         self._conn = conn
 
     def fetch_all(self, sql: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
-        result = self._conn.execute(text(sql), params or {})
-        return [dict(row._mapping) for row in result]
+        try:
+            result = self._conn.execute(text(sql), params or {})
+            return [dict(row._mapping) for row in result]
+        except OperationalError as exc:
+            raise DatabaseConnectionException(str(exc)) from exc
 
     def fetch_one(self, sql: str, params: dict[str, Any] | None = None) -> dict[str, Any] | None:
-        result = self._conn.execute(text(sql), params or {})
-        row = result.fetchone()
-        return dict(row._mapping) if row else None
+        try:
+            result = self._conn.execute(text(sql), params or {})
+            row = result.fetchone()
+            return dict(row._mapping) if row else None
+        except OperationalError as exc:
+            raise DatabaseConnectionException(str(exc)) from exc
 
     def write(self, sql: str, params: dict[str, Any] | None = None) -> int:
-        result = self._conn.execute(text(sql), params or {})
-        return result.lastrowid or result.rowcount
+        try:
+            result = self._conn.execute(text(sql), params or {})
+            return result.lastrowid or result.rowcount
+        except OperationalError as exc:
+            raise DatabaseConnectionException(str(exc)) from exc
 
 
 class SqlAlchemyTransactionManager(DatabaseTransactionManagerInterface):
