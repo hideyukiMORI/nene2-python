@@ -2,7 +2,7 @@
 
 nene2-python example アプリが提供するエンドポイントの一覧です。
 
-> OpenAPI スキーマ（機械可読）は `uv run export-openapi` で `docs/openapi.yaml` に生成できます。
+> OpenAPI スキーマ（機械可読）は `uv run python src/scripts/export_openapi.py` で `docs/openapi.yaml` に生成できます。
 > 開発サーバー起動後は `http://localhost:8080/docs` で Swagger UI を参照できます。
 
 ---
