@@ -3,10 +3,11 @@
 Equivalent to PHP Nene2\\Http\\PaginationQueryParser, PaginationQuery, PaginationResponse.
 """
 
+import dataclasses
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import Request
+from fastapi import Query, Request
 
 from nene2.validation.exceptions import ValidationError, ValidationException
 
@@ -20,7 +21,33 @@ class PaginationQuery:
 
 
 class PaginationQueryParser:
-    """Parses and validates pagination query parameters from a FastAPI Request."""
+    """Parses and validates pagination query parameters.
+
+    Two usage patterns:
+
+    **FastAPI Depends (recommended)**::
+
+        from typing import Annotated
+        from fastapi import Depends
+
+
+        def list_items(pagination: Annotated[PaginationQueryParser, Depends()]) -> JSONResponse:
+            result = use_case.execute(pagination.limit, pagination.offset)
+
+    **Manual parse from Request (legacy)**::
+
+        def list_items(request: Request) -> JSONResponse:
+            pagination = PaginationQueryParser.parse(request)
+            result = use_case.execute(pagination.limit, pagination.offset)
+    """
+
+    def __init__(
+        self,
+        limit: Annotated[int, Query(ge=1, le=100, description="Items per page (1–100)")] = 20,
+        offset: Annotated[int, Query(ge=0, description="Items to skip")] = 0,
+    ) -> None:
+        self.limit = limit
+        self.offset = offset
 
     @staticmethod
     def parse(
@@ -83,8 +110,18 @@ class PaginationResponse:
     total: int | None = field(default=None)
 
     def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serializable dict.
+
+        Items that are dataclass instances are converted via ``dataclasses.asdict()``
+        so that ``JSONResponse(result.to_dict())`` works without extra steps.
+        """
         data: dict[str, Any] = {
-            "items": self.items,
+            "items": [
+                dataclasses.asdict(item)
+                if dataclasses.is_dataclass(item) and not isinstance(item, type)
+                else item
+                for item in self.items
+            ],
             "limit": self.limit,
             "offset": self.offset,
         }

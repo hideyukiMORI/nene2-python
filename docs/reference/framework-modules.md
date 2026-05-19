@@ -10,6 +10,20 @@ Public API of the `nene2` package.
 
 Parses `limit` and `offset` query parameters.
 
+**FastAPI Depends (recommended)**:
+
+```python
+from typing import Annotated
+from fastapi import Depends
+from nene2.http import PaginationQueryParser
+
+@router.get("/items")
+def list_items(pagination: Annotated[PaginationQueryParser, Depends()]) -> JSONResponse:
+    result = use_case.execute(pagination.limit, pagination.offset)
+```
+
+**Legacy (Request-based)**:
+
 ```python
 from nene2.http import PaginationQueryParser
 

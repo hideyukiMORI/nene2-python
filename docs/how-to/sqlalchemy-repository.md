@@ -500,3 +500,81 @@ class InMemoryTransactionManager(DatabaseTransactionManagerInterface):
 ```
 
 > **Rollback on exception**: `SqlAlchemyTransactionManager.transactional()` uses `engine.begin()` — any exception inside the callback triggers an automatic rollback. Domain exceptions (`AccountNotFoundException`, etc.) propagate normally after rollback.
+
+---
+
+## 6. Using MySQL 8
+
+### Required packages
+
+MySQL 8 uses `caching_sha2_password` authentication by default.
+Install **both** `pymysql` and `cryptography` — without `cryptography` the connection fails with
+`Authentication plugin 'caching_sha2_password' is not supported`.
+
+```bash
+uv add pymysql cryptography
+```
+
+### Connection URL
+
+```python
+url = f"mysql+pymysql://{user}:{password}@{host}:{port}/{name}"
+engine = create_engine(url, pool_pre_ping=True)
+```
+
+`pool_pre_ping=True` is recommended for MySQL — it tests the connection before use to handle
+stale connections after the server's `wait_timeout`.
+
+### Health check
+
+`DatabaseHealthCheck` takes a **`SqlAlchemyQueryExecutor`**, not the engine directly:
+
+```python
+from nene2.database import DatabaseHealthCheck, SqlAlchemyQueryExecutor
+
+executor = SqlAlchemyQueryExecutor(engine)
+health = DatabaseHealthCheck(executor)   # ← executor, not engine
+
+app.add_api_route("/health", health.check, methods=["GET"])
+```
+
+### `CURRENT_TIMESTAMP` type difference
+
+SQLite returns `CURRENT_TIMESTAMP` as a `str`; MySQL returns a naive `datetime` object.
+Use `parse_db_datetime()` in `_to_entity()` to handle both transparently:
+
+```python
+from nene2.database import parse_db_datetime
+
+def _to_entity(row: dict[str, Any]) -> Product:
+    return Product(
+        id=int(row["id"]),
+        created_at=parse_db_datetime(row["created_at"]),  # works for both SQLite and MySQL
+    )
+```
+
+### Docker Compose example
+
+```yaml
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+    ports:
+      - "3310:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uappuser", "-papppass"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      mysql:
+        condition: service_healthy
+```
