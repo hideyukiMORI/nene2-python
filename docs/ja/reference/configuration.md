@@ -69,13 +69,22 @@
 | `DB_USER` | `""` | DB ユーザー名（SQLite では無視） |
 | `DB_PASSWORD` | `""` | DB パスワード — `SecretStr` 型（ログに出力されない） |
 
-### 接続 URL の例
+### 生成される `db_url`
 
-| アダプター | 生成される URL |
-|---|---|
-| `sqlite` | `sqlite:///path/to/db.sqlite3` |
-| `mysql` | `mysql+pymysql://user:pass@host:3306/dbname` |
-| `pgsql` | `postgresql+psycopg2://user:pass@host:5432/dbname` |
+`AppSettings.db_url` は各変数から自動生成されるプロパティです。
+アダプターと代表的な `DB_NAME` の組み合わせごとに生成される URL を示します。
+
+| `DB_ADAPTER` | `DB_NAME` | 生成される `db_url` |
+|---|---|---|
+| `sqlite` | `:memory:` | `sqlite:///:memory:` |
+| `sqlite` | `./data/app.db` | `sqlite:///./data/app.db` |
+| `sqlite` | `/var/lib/app.db` | `sqlite:////var/lib/app.db` |
+| `mysql` | `mydb` | `mysql+pymysql://user:pass@localhost:3306/mydb` |
+| `pgsql` | `mydb` | `postgresql+psycopg2://user:pass@localhost:5432/mydb` |
+
+> SQLite インメモリ DB（`DB_NAME=:memory:`）を使う場合は `create_engine()` に
+> `poolclass=StaticPool` を渡してください。詳細は
+> [SQLAlchemy リポジトリのハウツー](../how-to/sqlalchemy-repository.md) を参照してください。
 
 ## .env ファイル例
 
