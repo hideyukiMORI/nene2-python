@@ -39,6 +39,25 @@ from nene2.http import problem_details_response
 return problem_details_response("not-found", "Not Found", 404, "Note 42 not found.")
 ```
 
+### `PaginationQuery`
+
+`PaginationQueryParser.parse()` が返すデータクラス。`limit: int` と `offset: int` を持ちます。
+
+### `HealthCheckProtocol` / `HealthStatus`
+
+ヘルスチェックの契約と結果型。
+
+```python
+from nene2.http import HealthCheckProtocol, HealthStatus
+
+class MyHealthCheck:
+    def check(self) -> HealthStatus:
+        return HealthStatus(status="ok")
+```
+
+`HealthStatus` フィールド: `status: str`（`"ok"` または `"error"`）、`checks: dict[str, str]`。
+`is_healthy` プロパティは `status == "ok"` のとき `True`。
+
 ---
 
 ## nene2.use_case
@@ -283,6 +302,24 @@ class TransferUseCase:
 
 詳細なパターンと InMemory テスト実装は [sqlalchemy-repository.md](../how-to/sqlalchemy-repository.md) を参照してください。
 
+### `DatabaseHealthCheck`
+
+`HealthCheckProtocol` を実装し、DB 接続を確認して `HealthStatus` を返します。
+
+```python
+from nene2.database import DatabaseHealthCheck
+from nene2.http import HealthStatus
+
+health = DatabaseHealthCheck(engine)
+status: HealthStatus = health.check()
+# status.status → "ok" または "error"
+# status.checks → {"db": "ok"} または {"db": "error: <message>"}
+```
+
+### `DatabaseConnectionException`
+
+DB 接続不能時に `DatabaseHealthCheck` やリポジトリ操作から raise されます。
+
 ---
 
 ## nene2.mcp
@@ -312,7 +349,18 @@ from nene2.mcp import HttpxMcpClient
 client = HttpxMcpClient("bearer-token")
 response = client.get("http://localhost:8080", "/notes")
 response.is_successful()   # True
+response.body              # dict | list — パース済み JSON
+response.status_code       # int
 ```
+
+### `McpHttpResponse`
+
+`HttpxMcpClient` メソッドの戻り値型。フィールド: `status_code: int`、`body: dict | list`。
+メソッド: `is_successful() -> bool`（`200 ≤ status_code < 300` のとき `True`）。
+
+### `McpHttpClientProtocol`
+
+カスタム MCP HTTP クライアントの構造的契約。`get()`・`post()`・`put()`・`delete()` を実装して `McpHttpResponse` を返します。
 
 ---
 
