@@ -16,6 +16,8 @@ from starlette.responses import Response
 from nene2.http.problem_details import problem_details_response
 from nene2.validation.exceptions import ValidationException
 
+from .domain_exception import DomainExceptionHandlerProtocol
+
 _ASGIApp = Callable[
     [
         MutableMapping[str, Any],
@@ -31,9 +33,16 @@ logger = logging.getLogger(__name__)
 class ErrorHandlerMiddleware(BaseHTTPMiddleware):
     """Catch-all error handler that maps exceptions to Problem Details responses."""
 
-    def __init__(self, app: _ASGIApp, *, debug: bool = False) -> None:
+    def __init__(
+        self,
+        app: _ASGIApp,
+        *,
+        debug: bool = False,
+        domain_handlers: list[DomainExceptionHandlerProtocol] | None = None,
+    ) -> None:
         super().__init__(app)
         self.debug = debug
+        self._domain_handlers: list[DomainExceptionHandlerProtocol] = domain_handlers or []
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         try:
@@ -47,6 +56,9 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
                 extra={"errors": [e.to_dict() for e in exc.errors]},
             )
         except Exception as exc:
+            for handler in self._domain_handlers:
+                if handler.handles(exc):
+                    return handler.handle(exc)
             logger.exception("Unhandled exception")
             detail = str(exc) if self.debug else "The server encountered an unexpected condition."
             return problem_details_response(

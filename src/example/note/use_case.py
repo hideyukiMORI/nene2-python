@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from .entity import Note
+from .exceptions import NoteNotFoundException
 from .repository import NoteRepositoryInterface
 
 
@@ -53,5 +54,8 @@ class GetNoteUseCase:
     def __init__(self, repository: NoteRepositoryInterface) -> None:
         self._repository = repository
 
-    def execute(self, note_id: int) -> Note | None:
-        return self._repository.find_by_id(note_id)
+    def execute(self, note_id: int) -> Note:
+        note = self._repository.find_by_id(note_id)
+        if note is None:
+            raise NoteNotFoundException(note_id)
+        return note
