@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
 from nene2.auth import ApiKeyAuthMiddleware, LocalTokenVerifier
+from nene2.auth.exceptions import TokenVerificationException
 
 
 def _make_app(keys: list[str]) -> FastAPI:
@@ -43,3 +44,25 @@ def test_multiple_allowed_keys() -> None:
     assert client.get("/secret", headers={"X-Api-Key": "key-a"}).status_code == 200
     assert client.get("/secret", headers={"X-Api-Key": "key-b"}).status_code == 200
     assert client.get("/secret", headers={"X-Api-Key": "key-c"}).status_code == 401
+
+
+def test_verifier_raises_token_verification_exception_returns_401() -> None:
+    """TokenVerificationException from verifier must return 401, not 500."""
+
+    class ExplodingVerifier:
+        def verify(self, token: str) -> bool:
+            raise TokenVerificationException("simulated failure")
+
+    app = FastAPI()
+    app.add_middleware(
+        ApiKeyAuthMiddleware,
+        verifier=ExplodingVerifier(),  # type: ignore[arg-type]
+    )
+
+    @app.get("/secret")
+    async def secret() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app, raise_server_exceptions=False)
+    response = client.get("/secret", headers={"X-Api-Key": "any-key"})
+    assert response.status_code == 401
