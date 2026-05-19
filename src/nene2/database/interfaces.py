@@ -5,6 +5,7 @@ and DatabaseTransactionManagerInterface.
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from typing import Any
 
 
@@ -31,7 +32,18 @@ class DatabaseQueryExecutorInterface(ABC):
 
 
 class DatabaseTransactionManagerInterface(ABC):
-    """Manage database transactions."""
+    """Manage database transactions.
+
+    High-level API: use transactional() — it commits on success and rolls back on exception.
+    Low-level API: begin() / commit() / rollback() for manual control.
+    """
+
+    @abstractmethod
+    def transactional[T](
+        self, callback: Callable[[DatabaseQueryExecutorInterface], T]
+    ) -> T:
+        """Run callback inside a transaction; commit on success, rollback on exception."""
+        ...
 
     @abstractmethod
     def begin(self) -> None: ...
