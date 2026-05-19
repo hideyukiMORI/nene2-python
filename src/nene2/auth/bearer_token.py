@@ -10,6 +10,7 @@ from starlette.responses import Response
 
 from nene2.http.problem_details import problem_details_response
 
+from .exceptions import TokenVerificationException
 from .interfaces import TokenVerifierProtocol
 
 _WWW_AUTH = 'Bearer realm="api"'
@@ -34,7 +35,11 @@ class BearerTokenMiddleware(BaseHTTPMiddleware):
             response.headers["WWW-Authenticate"] = _WWW_AUTH
             return response
         token = auth[len("Bearer "):]
-        if not self._verifier.verify(token):
+        try:
+            verified = self._verifier.verify(token)
+        except TokenVerificationException:
+            verified = False
+        if not verified:
             response = problem_details_response(
                 "unauthorized",
                 "Unauthorized",
