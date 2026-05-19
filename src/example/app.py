@@ -2,15 +2,23 @@
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from sqlalchemy import create_engine
+from sqlalchemy.pool import StaticPool
 
 from nene2.config import AppSettings
+from nene2.database import (
+    DatabaseHealthCheck,
+    DatabaseQueryExecutorInterface,
+    SqlAlchemyQueryExecutor,
+)
 from nene2.http import HealthStatus
 from nene2.middleware import ErrorHandlerMiddleware
 from nene2.validation.exceptions import ValidationException
 
 from .note.exceptions import NoteNotFoundExceptionHandler
 from .note.handler import make_note_router
-from .note.repository import InMemoryNoteRepository
+from .note.repository import InMemoryNoteRepository, NoteRepositoryInterface
+from .note.sqlite_repository import SqliteNoteRepository
 from .note.use_case import (
     CreateNoteUseCase,
     DeleteNoteUseCase,
@@ -18,9 +26,11 @@ from .note.use_case import (
     ListNotesUseCase,
     UpdateNoteUseCase,
 )
+from .schema import ensure_schema
 from .tag.exceptions import TagNotFoundExceptionHandler
 from .tag.handler import make_tag_router
-from .tag.repository import InMemoryTagRepository
+from .tag.repository import InMemoryTagRepository, TagRepositoryInterface
+from .tag.sqlite_repository import SqliteTagRepository
 from .tag.use_case import (
     CreateTagUseCase,
     DeleteTagUseCase,
@@ -28,6 +38,23 @@ from .tag.use_case import (
     ListTagsUseCase,
     UpdateTagUseCase,
 )
+
+
+def _build_repositories(
+    cfg: AppSettings,
+) -> tuple[NoteRepositoryInterface, TagRepositoryInterface, DatabaseQueryExecutorInterface | None]:
+    """Build repositories based on DB_ADAPTER setting."""
+    if cfg.db_adapter == "sqlite":
+        is_memory = cfg.db_name == ":memory:"
+        engine = create_engine(
+            cfg.db_url,
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool if is_memory else None,
+        )
+        ensure_schema(engine)
+        executor = SqlAlchemyQueryExecutor(engine)
+        return SqliteNoteRepository(executor), SqliteTagRepository(executor), executor
+    return InMemoryNoteRepository(), InMemoryTagRepository(), None
 
 
 def create_app(settings: AppSettings | None = None) -> FastAPI:
@@ -50,8 +77,8 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         ErrorHandlerMiddleware.handle_validation_exception,
     )
 
-    # Wire note domain
-    note_repo = InMemoryNoteRepository()
+    note_repo, tag_repo, db_executor = _build_repositories(cfg)
+
     app.include_router(
         make_note_router(
             ListNotesUseCase(note_repo),
@@ -62,8 +89,6 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         )
     )
 
-    # Wire tag domain
-    tag_repo = InMemoryTagRepository()
     app.include_router(
         make_tag_router(
             ListTagsUseCase(tag_repo),
@@ -74,9 +99,11 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         )
     )
 
+    db_health = DatabaseHealthCheck(db_executor) if db_executor else None
+
     @app.get("/health", tags=["system"], summary="Health check")
     async def health() -> JSONResponse:
-        status = HealthStatus(status="ok")
+        status = db_health.check() if db_health else HealthStatus(status="ok")
         code = 200 if status.is_healthy else 503
         return JSONResponse({"status": status.status, "checks": status.checks}, status_code=code)
 
