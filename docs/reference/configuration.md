@@ -69,13 +69,22 @@ Uses a fixed-window algorithm keyed on client IP. Exceeding the limit returns `4
 | `DB_USER` | `""` | Database user (ignored for SQLite) |
 | `DB_PASSWORD` | `""` | Database password — stored as `SecretStr`, never logged |
 
-### Generated connection URLs
+### Generated `db_url`
 
-| Adapter | URL format |
-|---|---|
-| `sqlite` | `sqlite:///path/to/db.sqlite3` |
-| `mysql` | `mysql+pymysql://user:pass@host:3306/dbname` |
-| `pgsql` | `postgresql+psycopg2://user:pass@host:5432/dbname` |
+`AppSettings.db_url` is a computed property built from the variables above.
+The table below shows what URL is generated for each adapter + common `DB_NAME` values:
+
+| `DB_ADAPTER` | `DB_NAME` | Generated `db_url` |
+|---|---|---|
+| `sqlite` | `:memory:` | `sqlite:///:memory:` |
+| `sqlite` | `./data/app.db` | `sqlite:///./data/app.db` |
+| `sqlite` | `/var/lib/app.db` | `sqlite:////var/lib/app.db` |
+| `mysql` | `mydb` | `mysql+pymysql://user:pass@localhost:3306/mydb` |
+| `pgsql` | `mydb` | `postgresql+psycopg2://user:pass@localhost:5432/mydb` |
+
+> For SQLite in-memory databases (`DB_NAME=:memory:`), pass `poolclass=StaticPool` to
+> `create_engine()` so all connections share the same in-process database.
+> See the [SQLAlchemy repository how-to](../how-to/sqlalchemy-repository.md) for details.
 
 ## Example `.env`
 
