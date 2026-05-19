@@ -34,10 +34,19 @@ class PaginationQueryParser:
         Raises ValidationException (→ 422) when values are out of range.
         """
         params = request.query_params
-        limit = int(params.get("limit", default_limit))
-        offset = int(params.get("offset", 0))
 
         errors: list[ValidationError] = []
+        try:
+            limit = int(params.get("limit", default_limit))
+        except ValueError:
+            errors.append(ValidationError("limit", "limit must be an integer.", "invalid"))
+            limit = default_limit
+        try:
+            offset = int(params.get("offset", 0))
+        except ValueError:
+            errors.append(ValidationError("offset", "offset must be an integer.", "invalid"))
+            offset = 0
+
         if limit < 1 or limit > max_limit:
             errors.append(
                 ValidationError(
