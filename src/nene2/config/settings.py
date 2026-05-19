@@ -18,6 +18,12 @@ class AppSettings(BaseSettings):
     throttle_limit: int = 60
     throttle_window: int = 60  # seconds
 
+    cors_enabled: bool = False
+    cors_origins: list[str] = []
+    cors_allow_credentials: bool = False
+    cors_allow_methods: list[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    cors_allow_headers: list[str] = ["*"]
+
     db_adapter: str = "sqlite"
     db_name: str = ":memory:"
     db_host: str = "localhost"

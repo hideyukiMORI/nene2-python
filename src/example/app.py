@@ -1,6 +1,7 @@
 """Application factory — wires dependencies and registers routes."""
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
@@ -76,6 +77,14 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         openapi_url="/openapi.json",
     )
 
+    if cfg.cors_enabled:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=cfg.cors_origins,
+            allow_credentials=cfg.cors_allow_credentials,
+            allow_methods=cfg.cors_allow_methods,
+            allow_headers=cfg.cors_allow_headers,
+        )
     if cfg.throttle_enabled:
         app.add_middleware(
             ThrottleMiddleware,
