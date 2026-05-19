@@ -97,6 +97,7 @@ class SqlAlchemyTransactionManager(DatabaseTransactionManagerInterface):
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
         self._conn: Connection | None = None
+        # reason: RootTransaction is an internal SQLAlchemy type not exported in the public API
         self._tx: Any = None
 
     def transactional[T](self, callback: Callable[[DatabaseQueryExecutorInterface], T]) -> T:

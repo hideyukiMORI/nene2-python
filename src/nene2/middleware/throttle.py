@@ -2,6 +2,13 @@
 
 Tracks request counts per client IP in an in-memory dict.
 Exceeding the limit returns 429 with a Retry-After header.
+
+.. warning::
+    ``X-Forwarded-For`` is trusted as-is when present.  In environments
+    **without** a trusted reverse proxy this header can be spoofed by clients,
+    allowing them to bypass the rate limit.  Deploy behind a proxy that strips
+    or overwrites the header (e.g. nginx ``proxy_set_header X-Forwarded-For
+    $remote_addr``) before enabling this middleware in production.
 """
 
 import threading
