@@ -42,7 +42,7 @@
 | 変数 | デフォルト | 説明 |
 |---|---|---|
 | `CORS_ENABLED` | `false` | CORS ミドルウェアを有効化 |
-| `CORS_ORIGINS` | `[]` | 許可オリジンのリスト（カンマ区切り） |
+| `CORS_ORIGINS` | `[]` | 許可オリジンのリスト — JSON配列形式: `["https://a.com","https://b.com"]` |
 | `CORS_ALLOW_CREDENTIALS` | `false` | クレデンシャルを許可するか |
 | `CORS_ALLOW_METHODS` | `GET,POST,PUT,DELETE,OPTIONS` | 許可メソッド |
 | `CORS_ALLOW_HEADERS` | `*` | 許可ヘッダー |
@@ -54,9 +54,14 @@
 | 変数 | デフォルト | 説明 |
 |---|---|---|
 | `BEARER_TOKEN_ENABLED` | `false` | Bearer Token 認証を有効化 |
-| `BEARER_TOKENS` | `[]` | 有効なトークンのリスト（カンマ区切り） |
+| `BEARER_TOKENS` | `[]` | 有効なトークンのリスト — JSON配列形式: `["tok-1","tok-2"]` |
 | `API_KEY_ENABLED` | `false` | API Key 認証を有効化 |
-| `API_KEYS` | `[]` | 有効な API キーのリスト（カンマ区切り） |
+| `API_KEYS` | `[]` | 有効な API キーのリスト — JSON配列形式: `["key-1","key-2"]` |
+
+> **リスト型フィールドは `.env` で JSON 配列形式で書く必要があります。**
+> `BEARER_TOKENS=token-1`（プレーン文字列）と書くと起動時に `JSONDecodeError` になります。
+> `BEARER_TOKENS=["token-1","token-2"]` のように書いてください。
+> `API_KEYS` / `CORS_ORIGINS` も同様です。
 
 ## データベース設定
 
