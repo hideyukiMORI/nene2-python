@@ -11,3 +11,4 @@ dist/
 .env.local
 # uv.lock は再現性のためコミットする（削除）
 .coverage
+data/
