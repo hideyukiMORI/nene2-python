@@ -19,8 +19,6 @@ from .use_case import (
     UpdateNoteUseCase,
 )
 
-router = APIRouter(prefix="/notes", tags=["notes"])
-
 
 class CreateNoteBody(BaseModel):
     title: str
@@ -39,6 +37,7 @@ def make_note_router(
     update_use_case: UpdateNoteUseCase,
     delete_use_case: DeleteNoteUseCase,
 ) -> APIRouter:
+    router = APIRouter(prefix="/notes", tags=["notes"])
     @router.get("")
     async def list_notes(request: Request) -> JSONResponse:
         pagination = PaginationQueryParser.parse(request)
