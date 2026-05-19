@@ -107,6 +107,52 @@ cfg_test = AppSettings(throttle_enabled=False)        # テスト用オーバー
 | `RequestSizeLimitMiddleware` | `nene2.middleware.request_size_limit` | ペイロードサイズ制限 |
 | `ThrottleMiddleware` | `nene2.middleware.throttle` | 固定ウィンドウ レートリミット |
 
+#### `add_middleware` 引数
+
+| ミドルウェア | キーワード引数 | デフォルト |
+|---|---|---|
+| `ErrorHandlerMiddleware` | `debug: bool`, `domain_handlers: list[DomainExceptionHandlerProtocol] \| None` | `False`, `None` |
+| `SecurityHeadersMiddleware` | *(なし)* | — |
+| `RequestIdMiddleware` | *(なし)* | — |
+| `RequestLoggingMiddleware` | *(なし)* | — |
+| `RequestSizeLimitMiddleware` | `max_bytes: int` | `1_048_576` (1 MiB) |
+| `ThrottleMiddleware` | `limit: int`, `window: int` | `60`, `60` |
+
+`ThrottleMiddleware` には `enabled` フラグがありません。`if settings.throttle_enabled:` でラップして制御します。
+
+#### 完全な登録順（任意ミドルウェア含む）
+
+```python
+# 登録順: 最内側から最外側へ。Starlette は逆順に実行します（最後に登録したものが最外側）。
+app.add_middleware(ErrorHandlerMiddleware, debug=settings.app_debug, domain_handlers=[...])
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestIdMiddleware)
+app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(RequestSizeLimitMiddleware, max_bytes=settings.max_body_size)
+if settings.throttle_enabled:
+    app.add_middleware(ThrottleMiddleware, limit=settings.throttle_limit, window=settings.throttle_window)
+# Auth ミドルウェア — CORS より前に登録して CORS レイヤーの内側に配置する
+if settings.bearer_token_enabled:
+    app.add_middleware(BearerTokenMiddleware, verifier=LocalTokenVerifier(settings.bearer_tokens))
+if settings.api_key_enabled:
+    app.add_middleware(ApiKeyAuthMiddleware, verifier=LocalTokenVerifier(settings.api_keys))
+# CORS は最外側に配置 — 必ず最後に登録する。
+# OPTIONS preflight リクエストは Auth チェックの前に CORSMiddleware に到達しなければならない。
+# CORSMiddleware を Auth より前に登録すると、Auth が最外側になり preflight が 401 になる。
+if settings.cors_enabled:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=settings.cors_allow_credentials,
+        allow_methods=settings.cors_allow_methods,
+        allow_headers=settings.cors_allow_headers,
+    )
+```
+
+> **CORS + Auth ルール**: `CORSMiddleware` は Auth ミドルウェアの*後に*登録してください。
+> Starlette の逆順ルールにより「最後に登録 = 最外側」となり、CORS が Auth をラップします。
+> これによりブラウザの preflight（`OPTIONS`）リクエストが認証前に処理されます。
+
 ---
 
 ## nene2.auth
