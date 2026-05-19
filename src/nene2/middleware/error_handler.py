@@ -47,7 +47,7 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
                 extra={"errors": [e.to_dict() for e in exc.errors]},
             )
         except Exception as exc:
-            logger.exception("Unhandled exception: %s", exc)
+            logger.exception("Unhandled exception")
             detail = str(exc) if self.debug else "The server encountered an unexpected condition."
             return problem_details_response(
                 "internal-server-error",
@@ -58,7 +58,8 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
 
     @staticmethod
     async def handle_validation_exception(_request: Request, exc: Exception) -> JSONResponse:
-        assert isinstance(exc, ValidationException)
+        if not isinstance(exc, ValidationException):
+            raise TypeError(f"Expected ValidationException, got {type(exc)}")
         return problem_details_response(
             "validation-failed",
             "Validation Failed",

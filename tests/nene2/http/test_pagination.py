@@ -1,5 +1,7 @@
 """Tests for PaginationQueryParser and PaginationResponse."""
 
+from unittest.mock import MagicMock
+
 import pytest
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -34,11 +36,7 @@ def test_custom_pagination() -> None:
 
 
 def test_limit_out_of_range_raises() -> None:
-    from unittest.mock import MagicMock
-
-    from fastapi import Request as FastAPIRequest
-
-    mock_request = MagicMock(spec=FastAPIRequest)
+    mock_request = MagicMock(spec=Request)
     mock_request.query_params = {"limit": "0"}
     with pytest.raises(ValidationException) as exc_info:
         PaginationQueryParser.parse(mock_request)

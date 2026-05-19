@@ -9,4 +9,5 @@ dist/
 *.db
 .env
 .env.local
-uv.lock
+# uv.lock は再現性のためコミットする（削除）
+.coverage

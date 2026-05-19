@@ -15,41 +15,115 @@ dependencies = [
 dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
     "httpx>=0.27",
     "mypy>=1.13",
-    "ruff>=0.8",
+    "ruff>=0.9",
+    "pip-audit>=2.7",
 ]
 
 [tool.uv]
 dev-dependencies = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
     "httpx>=0.27",
     "mypy>=1.13",
-    "ruff>=0.8",
+    "ruff>=0.9",
+    "pip-audit>=2.7",
 ]
 
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+addopts = "--cov=src --cov-report=term-missing --cov-fail-under=80"
 
+# ---------------------------------------------------------------------------
+# coverage
+# ---------------------------------------------------------------------------
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@(abc\\.)?abstractmethod",
+    "def __repr__",
+]
+
+# ---------------------------------------------------------------------------
+# mypy — strict + unreachable detection
+# ---------------------------------------------------------------------------
 [tool.mypy]
 python_version = "3.12"
 strict = true
+warn_unreachable = true
 files = ["src"]
 
+# ---------------------------------------------------------------------------
+# ruff — lint + format
+# ---------------------------------------------------------------------------
 [tool.ruff]
 target-version = "py312"
 line-length = 100
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "ANN", "N", "B", "SIM"]
-# N818: "Exception" suffix is intentional to match PHP NENE2 naming
-ignore = ["N818"]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade — enforce modern Python syntax
+    "ANN",  # flake8-annotations — all functions must be typed
+    "N",    # pep8-naming
+    "B",    # flake8-bugbear — likely bugs and design problems
+    "SIM",  # flake8-simplify
+    "S",    # flake8-bandit — security anti-patterns
+    "T20",  # flake8-print — no print() in production code
+    "PTH",  # flake8-use-pathlib — pathlib over os.path
+    "RET",  # flake8-return — consistent return patterns
+    "TRY",  # tryceratops — try-except patterns
+    "PERF", # perflint — performance anti-patterns
+    "PL",   # pylint
+    "LOG",  # flake8-logging
+    "G",    # flake8-logging-format
+]
+ignore = [
+    # PHP NENE2 naming convention: Exception/Error suffix (not "Error"-only)
+    "N818",
+    # Allow long raise messages for clarity
+    "TRY003",
+    # Allow assert in non-test code when semantically appropriate
+    # (tests override this via per-file-ignores)
+    # Magic value comparisons are sometimes clearer than named constants
+    "PLR2004",
+    # Too many arguments/branches — enforce via code review, not hard limit
+    "PLR0913",
+    "PLR0912",
+    # TRY301: Abstract raise to an inner function — too verbose for most cases
+    "TRY301",
+]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["ANN"]
+# Tests: relax annotations, allow assert, allow magic values
+"tests/**" = ["ANN", "S101", "PLR2004", "PLR0913"]
 
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+# ---------------------------------------------------------------------------
+# build
+# ---------------------------------------------------------------------------
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
