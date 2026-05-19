@@ -136,6 +136,32 @@ app.add_middleware(
 | `RequestSizeLimitMiddleware` | `nene2.middleware.request_size_limit` | Reject oversized request bodies |
 | `ThrottleMiddleware` | `nene2.middleware.throttle` | Fixed-window rate limiting per IP |
 
+#### `add_middleware` arguments
+
+Starlette applies middleware in **reverse registration order** — the last registered becomes the outermost layer. Register `ErrorHandlerMiddleware` first so it catches all exceptions from every other middleware.
+
+| Middleware | Keyword arguments | Default |
+|---|---|---|
+| `ErrorHandlerMiddleware` | `debug: bool`, `domain_handlers: list[DomainExceptionHandlerProtocol] \| None` | `False`, `None` |
+| `SecurityHeadersMiddleware` | *(none)* | — |
+| `RequestIdMiddleware` | *(none)* | — |
+| `RequestLoggingMiddleware` | *(none)* | — |
+| `RequestSizeLimitMiddleware` | `max_bytes: int` | `1_048_576` (1 MiB) |
+| `ThrottleMiddleware` | `limit: int`, `window: int` | `60`, `60` |
+
+`ThrottleMiddleware` has no `enabled` flag — wrap with `if settings.throttle_enabled:` to disable it:
+
+```python
+# Correct registration order (innermost → outermost)
+app.add_middleware(ErrorHandlerMiddleware, debug=settings.app_debug, domain_handlers=[...])
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestIdMiddleware)
+app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(RequestSizeLimitMiddleware, max_bytes=settings.max_body_size)
+if settings.throttle_enabled:
+    app.add_middleware(ThrottleMiddleware, limit=settings.throttle_limit, window=settings.throttle_window)
+```
+
 ---
 
 ## nene2.auth
