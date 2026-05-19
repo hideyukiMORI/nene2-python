@@ -148,6 +148,29 @@ rows = executor.fetch_all("SELECT * FROM notes WHERE id = :id", {"id": 1})
 executor.write("INSERT INTO notes (title, body) VALUES (:t, :b)", {"t": "t", "b": "b"})
 ```
 
+#### `write()` の返り値
+
+| 操作 | 返り値 |
+|---|---|
+| `AUTOINCREMENT` / `SERIAL` 付き `INSERT` | `lastrowid` — 新規行の主キー（常に > 0） |
+| auto-PK なし、またはマルチ行 `INSERT` | `rowcount` — 挿入行数 |
+| `UPDATE` / `DELETE` | `rowcount` — 影響行数（0 は該当なし） |
+
+INSERT 後にエンティティを再構築する場合：
+
+```python
+new_id = executor.write("INSERT INTO notes (title) VALUES (:title)", {"title": "Hello"})
+return Note(id=new_id, title="Hello")
+```
+
+UPDATE / DELETE で存在しないリソースを検出する場合：
+
+```python
+affected = executor.write("UPDATE notes SET title=:title WHERE id=:id", {"title": t, "id": pk})
+if affected == 0:
+    raise NoteNotFoundException(pk)
+```
+
 ### `SqlAlchemyTransactionManager`
 
 トランザクションを管理します。手動の `begin/commit/rollback` より `transactional()` を推奨します。

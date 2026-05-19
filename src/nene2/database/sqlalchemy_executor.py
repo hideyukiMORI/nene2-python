@@ -37,6 +37,19 @@ class SqlAlchemyQueryExecutor(DatabaseQueryExecutorInterface):
             raise DatabaseConnectionException(str(exc)) from exc
 
     def write(self, sql: str, params: dict[str, Any] | None = None) -> int:
+        """Execute INSERT / UPDATE / DELETE and return a meaningful int.
+
+        Return value semantics:
+        - INSERT with AUTOINCREMENT/SERIAL column → ``lastrowid`` (the new row's PK, always > 0)
+        - INSERT without auto-PK, or multi-row INSERT → falls back to ``rowcount``
+        - UPDATE / DELETE → ``rowcount`` (number of rows affected; 0 means nothing matched)
+
+        Use the return value to detect missing rows::
+
+            affected = executor.write("UPDATE ... WHERE id = :id", {"id": pk})
+            if affected == 0:
+                raise NotFoundException(pk)
+        """
         try:
             with self._engine.begin() as conn:
                 result = conn.execute(text(sql), params or {})
