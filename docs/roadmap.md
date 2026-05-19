@@ -134,7 +134,8 @@ PHP 版追跡・Python 固有の強化:
 - [x] Field Trial 5: transactional() DX 検証（ウォレット送金 API）(#93)
 - [x] `py.typed` 追加で PEP 561 対応 (#94)
 - [x] `transactional()` + `_in_tx` パターンをドキュメント化 (#95)
-- [ ] PyPI パッケージ公開（FT5 完了後）
+- [x] Field Trial 6: AsyncUseCaseProtocol DX 検証（天気ダッシュボード API）(#101)
+- [ ] Field Trial 7: 親子リソース / MySQL・PostgreSQL / PyPI 公開フロー（検討中）
 - [ ] WebSocket サポート検討
 
 ---
