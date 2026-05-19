@@ -2,7 +2,7 @@
 
 Endpoints provided by the nene2-python example application.
 
-> Machine-readable schema: run `uv run export-openapi` to generate `docs/openapi.yaml`.  
+> Machine-readable schema: run `uv run python src/scripts/export_openapi.py` to generate `docs/openapi.yaml`.  
 > Interactive docs: start the dev server and open `http://localhost:8080/docs`.
 
 ---
