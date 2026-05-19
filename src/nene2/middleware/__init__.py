@@ -6,6 +6,7 @@ from .request_id import RequestIdMiddleware, request_id_var
 from .request_logging import RequestLoggingMiddleware
 from .request_size_limit import RequestSizeLimitMiddleware
 from .security_headers import SecurityHeadersMiddleware
+from .throttle import ThrottleMiddleware
 
 __all__ = [
     "DomainExceptionHandlerProtocol",
@@ -14,5 +15,6 @@ __all__ = [
     "RequestLoggingMiddleware",
     "RequestSizeLimitMiddleware",
     "SecurityHeadersMiddleware",
+    "ThrottleMiddleware",
     "request_id_var",
 ]
