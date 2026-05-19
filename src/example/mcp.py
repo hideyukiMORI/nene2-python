@@ -15,6 +15,7 @@ from .comment.use_case import (
     CreateCommentUseCase,
     DeleteCommentInput,
     DeleteCommentUseCase,
+    GetCommentInput,
     GetCommentUseCase,
     ListCommentsInput,
     ListCommentsUseCase,
@@ -64,7 +65,7 @@ def create_mcp_server(settings: AppSettings | None = None) -> LocalMcpServer:
 
     comment_list = ListCommentsUseCase(comment_repo)
     comment_get = GetCommentUseCase(comment_repo)
-    comment_create = CreateCommentUseCase(comment_repo)
+    comment_create = CreateCommentUseCase(comment_repo, note_repo)
     comment_update = UpdateCommentUseCase(comment_repo)
     comment_delete = DeleteCommentUseCase(comment_repo)
 
@@ -126,7 +127,7 @@ def create_mcp_server(settings: AppSettings | None = None) -> LocalMcpServer:
 
     @server.tool("Get a single comment by ID.")
     def get_comment(comment_id: int) -> dict:  # type: ignore[type-arg]
-        return asdict(comment_get.execute(comment_id))
+        return asdict(comment_get.execute(GetCommentInput(comment_id=comment_id)))
 
     @server.tool("Create a new comment on a note.")
     def create_comment(note_id: int, body: str) -> dict:  # type: ignore[type-arg]
