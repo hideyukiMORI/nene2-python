@@ -26,3 +26,11 @@ def ensure_schema(engine: Engine) -> None:
             "created_at DATETIME DEFAULT CURRENT_TIMESTAMP"
             ")"
         ))
+        conn.execute(text(
+            "CREATE TABLE IF NOT EXISTS comments ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            "note_id INTEGER NOT NULL,"
+            "body TEXT NOT NULL,"
+            "created_at DATETIME DEFAULT CURRENT_TIMESTAMP"
+            ")"
+        ))
