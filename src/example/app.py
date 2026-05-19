@@ -110,35 +110,8 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         openapi_url="/openapi.json",
     )
 
-    if cfg.api_key_enabled:
-        app.add_middleware(
-            ApiKeyAuthMiddleware,
-            verifier=LocalTokenVerifier(cfg.api_keys),
-        )
-    if cfg.bearer_token_enabled:
-        app.add_middleware(
-            BearerTokenMiddleware,
-            verifier=LocalTokenVerifier(cfg.bearer_tokens),
-        )
-    if cfg.cors_enabled:
-        app.add_middleware(
-            CORSMiddleware,
-            allow_origins=cfg.cors_origins,
-            allow_credentials=cfg.cors_allow_credentials,
-            allow_methods=cfg.cors_allow_methods,
-            allow_headers=cfg.cors_allow_headers,
-        )
-    if cfg.throttle_enabled:
-        app.add_middleware(
-            ThrottleMiddleware,
-            limit=cfg.throttle_limit,
-            window=cfg.throttle_window,
-        )
-    app.add_middleware(RequestSizeLimitMiddleware, max_bytes=cfg.max_body_size)
-    app.add_middleware(RequestLoggingMiddleware)
-    app.add_middleware(RequestIdMiddleware)
-    if cfg.security_headers_enabled:
-        app.add_middleware(SecurityHeadersMiddleware)
+    # Registration order: innermost first, outermost last.
+    # Starlette executes in reverse — the last registered wraps all others.
     app.add_middleware(
         ErrorHandlerMiddleware,
         debug=cfg.app_debug,
@@ -148,6 +121,38 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             CommentNotFoundExceptionHandler(),
         ],
     )
+    if cfg.security_headers_enabled:
+        app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RequestIdMiddleware)
+    app.add_middleware(RequestLoggingMiddleware)
+    app.add_middleware(RequestSizeLimitMiddleware, max_bytes=cfg.max_body_size)
+    if cfg.throttle_enabled:
+        app.add_middleware(
+            ThrottleMiddleware,
+            limit=cfg.throttle_limit,
+            window=cfg.throttle_window,
+        )
+    # Auth sits inside the CORS layer so preflight OPTIONS bypasses auth checks.
+    if cfg.bearer_token_enabled:
+        app.add_middleware(
+            BearerTokenMiddleware,
+            verifier=LocalTokenVerifier(cfg.bearer_tokens),
+        )
+    if cfg.api_key_enabled:
+        app.add_middleware(
+            ApiKeyAuthMiddleware,
+            verifier=LocalTokenVerifier(cfg.api_keys),
+        )
+    # CORS must be outermost — register last so preflight OPTIONS is handled
+    # before throttle, auth, or any other middleware runs.
+    if cfg.cors_enabled:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=cfg.cors_origins,
+            allow_credentials=cfg.cors_allow_credentials,
+            allow_methods=cfg.cors_allow_methods,
+            allow_headers=cfg.cors_allow_headers,
+        )
     app.add_exception_handler(
         ValidationException,
         ErrorHandlerMiddleware.handle_validation_exception,

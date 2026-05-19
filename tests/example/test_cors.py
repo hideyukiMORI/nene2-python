@@ -40,3 +40,24 @@ def test_cors_preflight_returns_204() -> None:
     )
     assert response.status_code in (200, 204)
     assert "Access-Control-Allow-Origin" in response.headers
+
+
+def test_cors_preflight_not_blocked_by_throttle() -> None:
+    cfg = AppSettings(
+        cors_enabled=True,
+        cors_origins=["http://localhost:3000"],
+        throttle_enabled=True,
+        throttle_limit=1,
+        throttle_window=60,
+    )
+    client = TestClient(create_app(cfg))
+    headers = {
+        "Origin": "http://localhost:3000",
+        "Access-Control-Request-Method": "GET",
+    }
+    # First request consumes the one allowed slot.
+    client.get("/health", headers={"Origin": "http://localhost:3000"})
+    # Preflight OPTIONS must still succeed even though the rate limit is exhausted.
+    response = client.options("/health", headers=headers)
+    assert response.status_code in (200, 204)
+    assert "Access-Control-Allow-Origin" in response.headers
