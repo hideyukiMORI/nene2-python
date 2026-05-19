@@ -3,8 +3,9 @@
 import json
 
 import httpx
+import pytest
 
-from nene2.mcp import HttpxMcpClient, McpHttpClientProtocol, McpHttpResponse
+from nene2.mcp import HttpxMcpClient, McpHttpClientProtocol, McpHttpError, McpHttpResponse
 
 
 def _mock_transport(status: int, body: dict[str, object]) -> httpx.MockTransport:
@@ -29,6 +30,29 @@ def test_mcp_http_response_is_not_successful() -> None:
 def test_mcp_http_response_request_id() -> None:
     assert McpHttpResponse(200, {"x-request-id": "abc"}, "").request_id() == "abc"
     assert McpHttpResponse(200, {}, "").request_id() is None
+
+
+def test_raise_for_error_does_nothing_on_success() -> None:
+    McpHttpResponse(200, {}, "ok").raise_for_error()
+    McpHttpResponse(204, {}, "").raise_for_error()
+
+
+def test_raise_for_error_raises_on_4xx() -> None:
+    with pytest.raises(McpHttpError) as exc_info:
+        McpHttpResponse(404, {}, '{"detail":"not found"}').raise_for_error()
+    assert exc_info.value.status_code == 404
+    assert "not found" in exc_info.value.body
+
+
+def test_raise_for_error_raises_on_5xx() -> None:
+    with pytest.raises(McpHttpError):
+        McpHttpResponse(500, {}, "server error").raise_for_error()
+
+
+def test_mcp_http_error_message_includes_status_and_body() -> None:
+    error = McpHttpError(404, "not found")
+    assert "404" in str(error)
+    assert "not found" in str(error)
 
 
 def test_httpx_mcp_client_satisfies_protocol() -> None:

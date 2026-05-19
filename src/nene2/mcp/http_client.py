@@ -11,6 +11,15 @@ import httpx
 from httpx import BaseTransport
 
 
+class McpHttpError(Exception):
+    """Raised by McpHttpResponse.raise_for_error() on 4xx / 5xx responses."""
+
+    def __init__(self, status_code: int, body: str) -> None:
+        super().__init__(f"HTTP {status_code}: {body}")
+        self.status_code = status_code
+        self.body = body
+
+
 @dataclass(frozen=True, slots=True)
 class McpHttpResponse:
     """HTTP response value object returned by McpHttpClientProtocol."""
@@ -21,6 +30,19 @@ class McpHttpResponse:
 
     def is_successful(self) -> bool:
         return 200 <= self.status_code < 300
+
+    def raise_for_error(self) -> None:
+        """Raise McpHttpError if the response status code indicates an error (4xx / 5xx).
+
+        Use this in MCP tool handlers to propagate HTTP errors as tool errors::
+
+            def get_recipe(recipe_id: int) -> str:
+                response = client.get(API_BASE, f"/recipes/{recipe_id}")
+                response.raise_for_error()
+                return response.body
+        """
+        if not self.is_successful():
+            raise McpHttpError(self.status_code, self.body)
 
     def request_id(self) -> str | None:
         return self.headers.get("x-request-id")
