@@ -46,10 +46,11 @@ function sidebarEn() {
     '/how-to/': [{
       text: 'How-to guides',
       items: [
-        { text: 'Add a new domain', link: '/how-to/add-new-domain' },
-        { text: 'Configure auth',   link: '/how-to/configure-auth' },
-        { text: 'Set up MCP',       link: '/howto/mcp-setup' },
-        { text: 'Run tests',        link: '/how-to/run-tests' },
+        { text: 'Start a new project', link: '/how-to/new-project' },
+        { text: 'Add a new domain',    link: '/how-to/add-new-domain' },
+        { text: 'Configure auth',      link: '/how-to/configure-auth' },
+        { text: 'Set up MCP',          link: '/howto/mcp-setup' },
+        { text: 'Run tests',           link: '/how-to/run-tests' },
       ],
     }],
     '/explanation/': [{
