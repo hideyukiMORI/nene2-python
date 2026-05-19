@@ -12,3 +12,4 @@ dist/
 # uv.lock は再現性のためコミットする（削除）
 .coverage
 data/
+docs/openapi.yaml

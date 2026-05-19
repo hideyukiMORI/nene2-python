@@ -13,7 +13,11 @@ dependencies = [
     "alembic>=1.18.4",
     "structlog>=24.0",
     "mcp>=1.0",
+    "pyyaml>=6.0",
 ]
+
+[project.scripts]
+export-openapi = "scripts.export_openapi:main"
 
 [project.optional-dependencies]
 dev = [
