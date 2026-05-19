@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_NAME: nene2-python
+      DB_ADAPTER: sqlite
+      DB_NAME: /app/data/app.db
+    volumes:
+      - ./src:/app/src
+      - app-data:/app/data
+    command: ["uv", "run", "uvicorn", "src.example.app:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
+
+volumes:
+  app-data:
