@@ -266,6 +266,68 @@ result = mgr.transactional(
 )
 ```
 
+#### Combining `transactional()` with the Repository pattern
+
+When a UseCase needs to perform multiple writes atomically, define `_in_tx` variants on the repository interface that accept an explicit `executor`. The UseCase passes the transaction-bound executor from the callback to each `_in_tx` method.
+
+**Repository interface:**
+
+```python
+from nene2.database import DatabaseQueryExecutorInterface
+from abc import ABC, abstractmethod
+
+class AccountRepositoryInterface(ABC):
+    # Standard methods — use self._executor (auto-commit)
+    @abstractmethod
+    def find_by_id(self, account_id: int) -> Account | None: ...
+
+    # _in_tx variants — call only inside a transactional() callback
+    @abstractmethod
+    def find_by_id_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int
+    ) -> Account | None: ...
+
+    @abstractmethod
+    def update_balance_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int, delta: int
+    ) -> None: ...
+```
+
+**UseCase (atomic transfer example):**
+
+```python
+from nene2.database import DatabaseQueryExecutorInterface, DatabaseTransactionManagerInterface
+
+class TransferUseCase:
+    def __init__(
+        self,
+        transaction_manager: DatabaseTransactionManagerInterface,
+        account_repo: AccountRepositoryInterface,
+        transfer_repo: TransferRepositoryInterface,
+    ) -> None:
+        self._tx = transaction_manager
+        self._accounts = account_repo
+        self._transfers = transfer_repo
+
+    def execute(self, input_: TransferInput) -> Transfer:
+        def _run(executor: DatabaseQueryExecutorInterface) -> Transfer:
+            source = self._accounts.find_by_id_in_tx(executor, input_.from_account_id)
+            if source is None:
+                raise AccountNotFoundException(input_.from_account_id)
+            if source.balance_cents < input_.amount_cents:
+                raise InsufficientBalanceException(...)
+
+            self._accounts.update_balance_in_tx(executor, input_.from_account_id, -input_.amount_cents)
+            self._accounts.update_balance_in_tx(executor, input_.to_account_id, input_.amount_cents)
+            return self._transfers.create_in_tx(executor, input_.from_account_id, input_.to_account_id, input_.amount_cents)
+
+        return self._tx.transactional(_run)
+```
+
+`transactional()` uses `engine.begin()` internally — any exception inside the callback triggers an automatic rollback.
+
+**Testing with InMemory:** Implement `DatabaseTransactionManagerInterface` with a no-op executor that calls the callback directly. The `_in_tx` methods on the InMemory repository ignore the executor and operate on their in-memory store.
+
 ---
 
 ## nene2.mcp

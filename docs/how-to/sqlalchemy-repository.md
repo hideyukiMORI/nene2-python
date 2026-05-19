@@ -229,3 +229,119 @@ def _make_repo() -> SqlAlchemyBookRepository:
     ensure_schema(executor)
     return SqlAlchemyBookRepository(executor)
 ```
+
+---
+
+## 6. Atomic multi-write operations with `transactional()`
+
+When a UseCase needs to write to multiple tables atomically, use `SqlAlchemyTransactionManager.transactional()` together with `_in_tx` repository methods.
+
+### Define `_in_tx` methods on the interface
+
+Add dedicated methods that accept an explicit `executor` parameter. These are called only inside a `transactional()` callback — never outside one.
+
+```python
+from nene2.database import DatabaseQueryExecutorInterface
+from abc import ABC, abstractmethod
+
+class AccountRepositoryInterface(ABC):
+    @abstractmethod
+    def find_by_id(self, account_id: int) -> Account | None: ...
+
+    # _in_tx variants — executor is provided by the transactional() callback
+    @abstractmethod
+    def find_by_id_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int
+    ) -> Account | None: ...
+
+    @abstractmethod
+    def update_balance_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int, delta_cents: int
+    ) -> None: ...
+```
+
+### Implement `_in_tx` methods in the SQLAlchemy repository
+
+The `_in_tx` methods use the passed-in `executor` instead of `self._executor`, so they share the same connection and participate in the same transaction.
+
+```python
+class SqlAlchemyAccountRepository(AccountRepositoryInterface):
+    def __init__(self, executor: SqlAlchemyQueryExecutor) -> None:
+        self._executor = executor
+
+    def find_by_id(self, account_id: int) -> Account | None:
+        row = self._executor.fetch_one(
+            "SELECT id, name, balance_cents FROM accounts WHERE id = :id",
+            {"id": account_id},
+        )
+        return self._to_entity(row) if row else None
+
+    def find_by_id_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int
+    ) -> Account | None:
+        row = executor.fetch_one(
+            "SELECT id, name, balance_cents FROM accounts WHERE id = :id",
+            {"id": account_id},
+        )
+        return self._to_entity(row) if row else None
+
+    def update_balance_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int, delta_cents: int
+    ) -> None:
+        executor.write(
+            "UPDATE accounts SET balance_cents = balance_cents + :delta WHERE id = :id",
+            {"delta": delta_cents, "id": account_id},
+        )
+```
+
+### Wire the UseCase with `SqlAlchemyTransactionManager`
+
+```python
+from nene2.database import SqlAlchemyTransactionManager
+
+engine = create_engine(cfg.db_url, connect_args={"check_same_thread": False})
+transaction_manager = SqlAlchemyTransactionManager(engine)
+
+transfer_use_case = TransferUseCase(transaction_manager, account_repo, transfer_repo)
+```
+
+### Implement InMemory `_in_tx` for unit tests
+
+The InMemory implementation ignores the executor — operations go directly to the in-memory store. `InMemoryTransactionManager` calls the callback immediately with a no-op executor.
+
+```python
+from nene2.database import DatabaseQueryExecutorInterface, DatabaseTransactionManagerInterface
+from collections.abc import Callable
+
+class InMemoryAccountRepository(AccountRepositoryInterface):
+    def find_by_id_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int
+    ) -> Account | None:
+        return self._accounts.get(account_id)
+
+    def update_balance_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int, delta_cents: int
+    ) -> None:
+        account = self._accounts[account_id]
+        self._accounts[account_id] = Account(
+            id=account.id, name=account.name, balance_cents=account.balance_cents + delta_cents
+        )
+
+class _NoOpExecutor(DatabaseQueryExecutorInterface):
+    def fetch_all(self, sql: str, params: dict[str, object] | None = None) -> list[dict[str, object]]:
+        return []
+    def fetch_one(self, sql: str, params: dict[str, object] | None = None) -> dict[str, object] | None:
+        return None
+    def write(self, sql: str, params: dict[str, object] | None = None) -> int:
+        return 0
+
+class InMemoryTransactionManager(DatabaseTransactionManagerInterface):
+    def transactional[T](self, callback: Callable[[DatabaseQueryExecutorInterface], T]) -> T:
+        return callback(_NoOpExecutor())
+    def begin(self) -> None: pass
+    def commit(self) -> None: pass
+    def rollback(self) -> None: pass
+```
+
+> **Rollback on exception**: `SqlAlchemyTransactionManager.transactional()` uses `engine.begin()` — any exception inside the callback triggers an automatic rollback. Domain exceptions (`AccountNotFoundException`, etc.) propagate normally after rollback.
+```
