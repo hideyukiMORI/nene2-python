@@ -10,7 +10,23 @@ from nene2.validation.exceptions import ValidationException
 from .note.exceptions import NoteNotFoundExceptionHandler
 from .note.handler import make_note_router
 from .note.repository import InMemoryNoteRepository
-from .note.use_case import CreateNoteUseCase, GetNoteUseCase, ListNotesUseCase
+from .note.use_case import (
+    CreateNoteUseCase,
+    DeleteNoteUseCase,
+    GetNoteUseCase,
+    ListNotesUseCase,
+    UpdateNoteUseCase,
+)
+from .tag.exceptions import TagNotFoundExceptionHandler
+from .tag.handler import make_tag_router
+from .tag.repository import InMemoryTagRepository
+from .tag.use_case import (
+    CreateTagUseCase,
+    DeleteTagUseCase,
+    GetTagUseCase,
+    ListTagsUseCase,
+    UpdateTagUseCase,
+)
 
 
 def create_app(settings: AppSettings | None = None) -> FastAPI:
@@ -26,7 +42,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
     app.add_middleware(
         ErrorHandlerMiddleware,
         debug=cfg.app_debug,
-        domain_handlers=[NoteNotFoundExceptionHandler()],
+        domain_handlers=[NoteNotFoundExceptionHandler(), TagNotFoundExceptionHandler()],
     )
     app.add_exception_handler(
         ValidationException,
@@ -40,6 +56,20 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             ListNotesUseCase(note_repo),
             GetNoteUseCase(note_repo),
             CreateNoteUseCase(note_repo),
+            UpdateNoteUseCase(note_repo),
+            DeleteNoteUseCase(note_repo),
+        )
+    )
+
+    # Wire tag domain
+    tag_repo = InMemoryTagRepository()
+    app.include_router(
+        make_tag_router(
+            ListTagsUseCase(tag_repo),
+            GetTagUseCase(tag_repo),
+            CreateTagUseCase(tag_repo),
+            UpdateTagUseCase(tag_repo),
+            DeleteTagUseCase(tag_repo),
         )
     )
 
