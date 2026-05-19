@@ -46,6 +46,27 @@ def test_multiple_allowed_keys() -> None:
     assert client.get("/secret", headers={"X-Api-Key": "key-c"}).status_code == 401
 
 
+def test_exclude_paths_bypasses_auth() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        ApiKeyAuthMiddleware,
+        verifier=LocalTokenVerifier(["key"]),
+        exclude_paths=["/health"],
+    )
+
+    @app.get("/health")
+    async def health() -> JSONResponse:
+        return JSONResponse({"status": "ok"})
+
+    @app.get("/secret")
+    async def secret() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    assert client.get("/health").status_code == 200
+    assert client.get("/secret").status_code == 401
+
+
 def test_verifier_raises_token_verification_exception_returns_401() -> None:
     """TokenVerificationException from verifier must return 401, not 500."""
 

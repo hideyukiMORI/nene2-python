@@ -58,3 +58,58 @@ def test_local_verifier_constant_time() -> None:
     assert verifier.verify("secret-token") is True
     assert verifier.verify("wrong") is False
     assert verifier.verify("") is False
+
+
+def test_local_verifier_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("TEST_TOKENS", "tok-a,tok-b, tok-c ")
+    verifier = LocalTokenVerifier.from_env("TEST_TOKENS")
+    assert verifier.verify("tok-a") is True
+    assert verifier.verify("tok-c") is True
+    assert verifier.verify("tok-d") is False
+
+
+def test_local_verifier_from_env_unset(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("TEST_TOKENS", raising=False)
+    verifier = LocalTokenVerifier.from_env("TEST_TOKENS")
+    assert verifier.verify("anything") is False
+
+
+def test_local_verifier_from_env_custom_separator(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("TEST_TOKENS", "tok-a|tok-b")
+    verifier = LocalTokenVerifier.from_env("TEST_TOKENS", separator="|")
+    assert verifier.verify("tok-a") is True
+    assert verifier.verify("tok-b") is True
+
+
+def test_exclude_paths_bypasses_auth() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        BearerTokenMiddleware,
+        verifier=LocalTokenVerifier(["tok"]),
+        exclude_paths=["/health", "/docs"],
+    )
+
+    @app.get("/health")
+    async def health() -> JSONResponse:
+        return JSONResponse({"status": "ok"})
+
+    @app.get("/secret")
+    async def secret() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    assert client.get("/health").status_code == 200
+    assert client.get("/secret").status_code == 401
+    assert client.get("/secret", headers={"Authorization": "Bearer tok"}).status_code == 200
+
+
+def test_exclude_paths_default_is_empty() -> None:
+    app = FastAPI()
+    app.add_middleware(BearerTokenMiddleware, verifier=LocalTokenVerifier(["tok"]))
+
+    @app.get("/health")
+    async def health() -> JSONResponse:
+        return JSONResponse({"status": "ok"})
+
+    client = TestClient(app)
+    assert client.get("/health").status_code == 401
