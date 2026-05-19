@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from nene2.http import PaginationQueryParser, PaginationResponse
 from nene2.validation.exceptions import ValidationError, ValidationException
@@ -22,13 +22,13 @@ from .use_case import (
 
 
 class CreateNoteBody(BaseModel):
-    title: str
-    body: str
+    title: str = Field(max_length=500, description="Note title.")
+    body: str = Field(max_length=10_000, description="Note body.")
 
 
 class UpdateNoteBody(BaseModel):
-    title: str
-    body: str
+    title: str = Field(max_length=500, description="Note title.")
+    body: str = Field(max_length=10_000, description="Note body.")
 
 
 def make_note_router(

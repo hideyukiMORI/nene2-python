@@ -65,7 +65,7 @@ def create_mcp_server(settings: AppSettings | None = None) -> LocalMcpServer:
     tag_update = UpdateTagUseCase(tag_repo)
     tag_delete = DeleteTagUseCase(tag_repo)
 
-    comment_list = ListCommentsUseCase(comment_repo)
+    comment_list = ListCommentsUseCase(comment_repo, note_repo)
     comment_get = GetCommentUseCase(comment_repo)
     comment_create = CreateCommentUseCase(comment_repo, note_repo)
     comment_update = UpdateCommentUseCase(comment_repo)

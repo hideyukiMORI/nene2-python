@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from nene2.http import PaginationQueryParser, PaginationResponse
 from nene2.validation.exceptions import ValidationError, ValidationException
@@ -22,11 +22,11 @@ from .use_case import (
 
 
 class CreateTagBody(BaseModel):
-    name: str
+    name: str = Field(max_length=200, description="Tag name.")
 
 
 class UpdateTagBody(BaseModel):
-    name: str
+    name: str = Field(max_length=200, description="Tag name.")
 
 
 def make_tag_router(

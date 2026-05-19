@@ -90,3 +90,8 @@ def test_get_comment_from_wrong_note_returns_404() -> None:
     ).json()
     response = client.get(f"/notes/{note2['id']}/comments/{comment['id']}")
     assert response.status_code == 404
+
+
+def test_list_comments_for_nonexistent_note_returns_404() -> None:
+    response = _client().get("/notes/9999/comments")
+    assert response.status_code == 404

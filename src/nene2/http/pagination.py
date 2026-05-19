@@ -11,7 +11,7 @@ from fastapi import Request
 from nene2.validation.exceptions import ValidationError, ValidationException
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class PaginationQuery:
     """Parsed and validated ?limit= / ?offset= parameters."""
 
@@ -69,7 +69,7 @@ class PaginationQueryParser:
         return PaginationQuery(limit=limit, offset=offset)
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class PaginationResponse:
     """Standard list-endpoint response envelope.
 

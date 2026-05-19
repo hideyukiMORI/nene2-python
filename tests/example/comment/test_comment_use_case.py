@@ -30,11 +30,17 @@ def _create_use_case(
     return CreateCommentUseCase(comment_repo, note_repo)
 
 
+def _list_use_case(
+    comment_repo: InMemoryCommentRepository, note_repo: InMemoryNoteRepository
+) -> ListCommentsUseCase:
+    return ListCommentsUseCase(comment_repo, note_repo)
+
+
 def test_create_and_list() -> None:
     comment_repo, note_repo = _repos()
     note_repo.save("title", "body")
     _create_use_case(comment_repo, note_repo).execute(CreateCommentInput(note_id=1, body="hello"))
-    result = ListCommentsUseCase(comment_repo).execute(
+    result = _list_use_case(comment_repo, note_repo).execute(
         ListCommentsInput(note_id=1, limit=10, offset=0)
     )
     assert result.total == 1
@@ -48,11 +54,19 @@ def test_list_filters_by_note_id() -> None:
     uc = _create_use_case(comment_repo, note_repo)
     uc.execute(CreateCommentInput(note_id=1, body="note1 comment"))
     uc.execute(CreateCommentInput(note_id=2, body="note2 comment"))
-    result = ListCommentsUseCase(comment_repo).execute(
+    result = _list_use_case(comment_repo, note_repo).execute(
         ListCommentsInput(note_id=1, limit=10, offset=0)
     )
     assert result.total == 1
     assert result.items[0].body == "note1 comment"
+
+
+def test_list_raises_when_note_not_found() -> None:
+    comment_repo, note_repo = _repos()
+    with pytest.raises(NoteNotFoundException):
+        _list_use_case(comment_repo, note_repo).execute(
+            ListCommentsInput(note_id=9999, limit=10, offset=0)
+        )
 
 
 def test_create_raises_when_note_not_found() -> None:
