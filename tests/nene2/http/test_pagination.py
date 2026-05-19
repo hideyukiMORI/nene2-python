@@ -1,9 +1,11 @@
 """Tests for PaginationQueryParser and PaginationResponse."""
 
+from dataclasses import dataclass
+from typing import Annotated
 from unittest.mock import MagicMock
 
 import pytest
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
@@ -17,6 +19,12 @@ def _make_app() -> FastAPI:
     @app.get("/items")
     async def items(request: Request) -> JSONResponse:
         pagination = PaginationQueryParser.parse(request)
+        return JSONResponse({"limit": pagination.limit, "offset": pagination.offset})
+
+    @app.get("/items-depends")
+    async def items_depends(
+        pagination: Annotated[PaginationQueryParser, Depends()],
+    ) -> JSONResponse:
         return JSONResponse({"limit": pagination.limit, "offset": pagination.offset})
 
     return app
@@ -86,3 +94,34 @@ def test_pagination_response_with_total() -> None:
 def test_pagination_response_total_zero_is_included() -> None:
     r = PaginationResponse(items=[], limit=10, offset=0, total=0)
     assert r.to_dict()["total"] == 0
+
+
+def test_pagination_query_parser_as_depends_default() -> None:
+    r = client.get("/items-depends")
+    assert r.json() == {"limit": 20, "offset": 0}
+
+
+def test_pagination_query_parser_as_depends_custom() -> None:
+    r = client.get("/items-depends?limit=5&offset=10")
+    assert r.json() == {"limit": 5, "offset": 10}
+
+
+def test_pagination_query_parser_as_depends_out_of_range_returns_422() -> None:
+    r = client.get("/items-depends?limit=0")
+    assert r.status_code == 422
+
+
+def test_pagination_response_to_dict_serializes_dataclass_items() -> None:
+    @dataclass(frozen=True, slots=True)
+    class Item:
+        id: int
+        name: str
+
+    r = PaginationResponse(items=[Item(1, "foo"), Item(2, "bar")], limit=20, offset=0, total=2)
+    data = r.to_dict()
+    assert data["items"] == [{"id": 1, "name": "foo"}, {"id": 2, "name": "bar"}]
+
+
+def test_pagination_response_to_dict_passes_through_dict_items() -> None:
+    r = PaginationResponse(items=[{"id": 1}, {"id": 2}], limit=20, offset=0, total=2)
+    assert r.to_dict()["items"] == [{"id": 1}, {"id": 2}]
