@@ -132,8 +132,8 @@ PHP 版追跡・Python 固有の強化:
 - [x] Field Trial 3: Bearer Token 認証 + MCP stdio DX 検証 (#80)
 - [x] Field Trial 4: MCP + SQLite 共有 / ApiKey / CORS 検証 (#89)
 - [x] Field Trial 5: transactional() DX 検証（ウォレット送金 API）(#93)
-- [ ] `py.typed` 追加で PEP 561 対応 (#94)
-- [ ] `transactional()` + `_in_tx` パターンをドキュメント化 (#95)
+- [x] `py.typed` 追加で PEP 561 対応 (#94)
+- [x] `transactional()` + `_in_tx` パターンをドキュメント化 (#95)
 - [ ] PyPI パッケージ公開（FT5 完了後）
 - [ ] WebSocket サポート検討
 
