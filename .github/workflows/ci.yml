@@ -9,23 +9,36 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: astral-sh/setup-uv@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.12"
+          version: "latest"
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --all-extras
 
-      - name: Run tests
-        run: uv run pytest --tb=short
+      - name: pytest (with coverage)
+        run: uv run pytest
 
-      - name: Type check (mypy)
+      - name: mypy
         run: uv run mypy src/
 
-      - name: Lint + format check (ruff)
-        run: |
-          uv run ruff check src/ tests/
-          uv run ruff format --check src/ tests/
+      - name: ruff check
+        run: uv run ruff check src/ tests/
+
+      - name: ruff format
+        run: uv run ruff format --check src/ tests/
+
+      - name: pip-audit
+        run: uv run pip-audit
