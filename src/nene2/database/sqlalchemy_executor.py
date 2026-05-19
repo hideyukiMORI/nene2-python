@@ -3,9 +3,10 @@
 Supports SQLite, MySQL, and PostgreSQL via SQLAlchemy's engine URL.
 """
 
+from collections.abc import Callable
 from typing import Any
 
-from sqlalchemy import Engine, text
+from sqlalchemy import Connection, Engine, text
 from sqlalchemy.exc import OperationalError
 
 from .exceptions import DatabaseConnectionException
@@ -48,23 +49,67 @@ class SqlAlchemyQueryExecutor(DatabaseQueryExecutorInterface):
             raise DatabaseConnectionException(str(exc)) from exc
 
 
+class _BoundQueryExecutor(DatabaseQueryExecutorInterface):
+    """Query executor bound to an existing connection (within a transaction)."""
+
+    def __init__(self, conn: Connection) -> None:
+        self._conn = conn
+
+    def fetch_all(
+        self, sql: str, params: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
+        result = self._conn.execute(text(sql), params or {})
+        return [dict(row._mapping) for row in result]
+
+    def fetch_one(
+        self, sql: str, params: dict[str, Any] | None = None
+    ) -> dict[str, Any] | None:
+        result = self._conn.execute(text(sql), params or {})
+        row = result.fetchone()
+        return dict(row._mapping) if row else None
+
+    def write(self, sql: str, params: dict[str, Any] | None = None) -> int:
+        result = self._conn.execute(text(sql), params or {})
+        return result.lastrowid or result.rowcount
+
+
 class SqlAlchemyTransactionManager(DatabaseTransactionManagerInterface):
-    """Manage an explicit transaction on a single SQLAlchemy connection."""
+    """Manage database transactions using SQLAlchemy.
+
+    Use transactional() for the recommended callback-based API.
+    Use begin() / commit() / rollback() for explicit transaction control.
+    """
 
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
-        self._conn = engine.connect()
+        self._conn: Connection | None = None
         self._tx: Any = None
 
+    def transactional[T](
+        self, callback: Callable[[DatabaseQueryExecutorInterface], T]
+    ) -> T:
+        try:
+            with self._engine.begin() as conn:
+                return callback(_BoundQueryExecutor(conn))
+        except OperationalError as exc:
+            raise DatabaseConnectionException(str(exc)) from exc
+
     def begin(self) -> None:
+        self._conn = self._engine.connect()
         self._tx = self._conn.begin()
 
     def commit(self) -> None:
         if self._tx is not None:
             self._tx.commit()
             self._tx = None
+        if self._conn is not None:
+            self._conn.close()
+            self._conn = None
 
     def rollback(self) -> None:
         if self._tx is not None:
             self._tx.rollback()
             self._tx = None
+        if self._conn is not None:
+            self._conn.close()
+            self._conn = None
