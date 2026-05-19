@@ -12,7 +12,14 @@ Claude Desktop や `claude` CLI から直接 CRUD 操作が可能になります
 
 ## Claude Desktop への設定
 
-`claude_desktop_config.json` に以下を追加します:
+`claude_desktop_config.json` のパス:
+
+| OS | パス |
+|---|---|
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+
+### macOS / Linux（ネイティブ）
 
 ```json
 {
@@ -37,6 +44,48 @@ Claude Desktop や `claude` CLI から直接 CRUD 操作が可能になります
 ```
 
 `/path/to/nene2-python` をリポジトリの絶対パスに変更してください。
+
+### Windows + WSL2
+
+Claude Desktop は Windows で動作しますが、プロジェクトは WSL2 内にあります。
+`wsl` コマンドでブリッジします:
+
+```json
+{
+  "mcpServers": {
+    "nene2-example": {
+      "command": "wsl",
+      "args": [
+        "-e", "bash", "-c",
+        "cd /home/<user>/nene2-python && PYTHONPATH=src uv run python -m example.mcp"
+      ],
+      "env": {
+        "DB_ADAPTER": "sqlite",
+        "DB_NAME": "/home/<user>/nene2-python/data/nene2.db"
+      }
+    }
+  }
+}
+```
+
+> パスはすべて **WSL の Linux パス**（例: `/home/user/...`）で指定します。
+> `DB_NAME` も Linux パスにすることで、SQLite ファイルが WSL 内に作成されます。
+
+`uv add git+...` でインストールした外部プロジェクトの場合:
+
+```json
+{
+  "mcpServers": {
+    "myapp": {
+      "command": "wsl",
+      "args": [
+        "-e", "bash", "-c",
+        "cd /home/<user>/my-project && PYTHONPATH=src uv run python -m mcp_server"
+      ]
+    }
+  }
+}
+```
 
 ## 利用可能なツール
 
