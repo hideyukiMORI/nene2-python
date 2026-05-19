@@ -13,8 +13,15 @@ from mcp.server.fastmcp import FastMCP
 class LocalMcpServer:
     """MCP server with sensible defaults for local / stdio transport."""
 
-    def __init__(self, name: str, instructions: str = "") -> None:
-        self._mcp = FastMCP(name, instructions=instructions)
+    def __init__(
+        self,
+        name: str,
+        instructions: str = "",
+        *,
+        host: str = "127.0.0.1",
+        port: int = 8000,
+    ) -> None:
+        self._mcp = FastMCP(name, instructions=instructions, host=host, port=port)
 
     def tool(self, description: str = "") -> Callable[[Any], Any]:
         """Register a function as an MCP tool."""
