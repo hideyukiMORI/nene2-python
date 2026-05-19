@@ -231,6 +231,58 @@ result = mgr.transactional(
 )
 ```
 
+#### `transactional()` とリポジトリパターンの組み合わせ（`_in_tx` パターン）
+
+複数テーブルへの書き込みを原子的に行う UseCase では、リポジトリインターフェースに `_in_tx` サフィックスのメソッドを定義し、`transactional()` コールバックから渡された `executor` を受け取ります。
+
+**リポジトリインターフェース:**
+
+```python
+from nene2.database import DatabaseQueryExecutorInterface
+from abc import ABC, abstractmethod
+
+class AccountRepositoryInterface(ABC):
+    # 通常メソッド — self._executor を使う（自動コミット）
+    @abstractmethod
+    def find_by_id(self, account_id: int) -> Account | None: ...
+
+    # _in_tx バリアント — transactional() コールバック内からのみ呼ぶ
+    @abstractmethod
+    def find_by_id_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int
+    ) -> Account | None: ...
+
+    @abstractmethod
+    def update_balance_in_tx(
+        self, executor: DatabaseQueryExecutorInterface, account_id: int, delta: int
+    ) -> None: ...
+```
+
+**UseCase（送金の例）:**
+
+```python
+from nene2.database import DatabaseQueryExecutorInterface, DatabaseTransactionManagerInterface
+
+class TransferUseCase:
+    def execute(self, input_: TransferInput) -> Transfer:
+        def _run(executor: DatabaseQueryExecutorInterface) -> Transfer:
+            source = self._accounts.find_by_id_in_tx(executor, input_.from_account_id)
+            if source is None:
+                raise AccountNotFoundException(input_.from_account_id)
+            if source.balance_cents < input_.amount_cents:
+                raise InsufficientBalanceException(...)
+
+            self._accounts.update_balance_in_tx(executor, input_.from_account_id, -input_.amount_cents)
+            self._accounts.update_balance_in_tx(executor, input_.to_account_id, input_.amount_cents)
+            return self._transfers.create_in_tx(executor, ...)
+
+        return self._tx.transactional(_run)
+```
+
+`transactional()` は内部で `engine.begin()` を使用します — コールバック内で例外が発生した場合、自動的にロールバックされます。
+
+詳細なパターンと InMemory テスト実装は [sqlalchemy-repository.md](../how-to/sqlalchemy-repository.md) を参照してください。
+
 ---
 
 ## nene2.mcp
