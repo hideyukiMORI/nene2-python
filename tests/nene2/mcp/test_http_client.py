@@ -3,7 +3,6 @@
 import json
 
 import httpx
-import pytest
 
 from nene2.mcp import HttpxMcpClient, McpHttpClientProtocol, McpHttpResponse
 
