@@ -1,57 +1,55 @@
-# 認証を設定する
+# Configure authentication
 
-nene2-python は Bearer Token 認証と API Key 認証の 2 種類をサポートしています。
-どちらもミドルウェアとして実装されており、環境変数で有効化できます。
+nene2-python supports Bearer Token and API Key authentication, both implemented as middleware and enabled via environment variables.
 
-## Bearer Token 認証
+## Bearer Token
 
-### 有効化する
+### Enable
 
-`.env` ファイルに以下を追加します:
+Add to your `.env` file:
 
 ```dotenv
 BEARER_TOKEN_ENABLED=true
 BEARER_TOKENS=token1,token2,token3
 ```
 
-### 動作
+### Behaviour
 
-- `Authorization: Bearer <token>` ヘッダーが必須になります
-- トークンは `secrets.compare_digest` でタイミング安全な比較を行います
-- 無効なトークンは `401 Unauthorized` を返します
+- Every request must include `Authorization: Bearer <token>`
+- Tokens are compared with `secrets.compare_digest` (timing-safe)
+- Invalid tokens return `401 Unauthorized` (RFC 9457 Problem Details)
 
-### curl での利用
+### Example
 
 ```bash
 curl -H "Authorization: Bearer token1" http://localhost:8080/notes
 ```
 
-## API Key 認証
+## API Key
 
-### 有効化する
+### Enable
 
 ```dotenv
 API_KEY_ENABLED=true
 API_KEYS=key1,key2
 ```
 
-### 動作
+### Behaviour
 
-- `X-Api-Key: <key>` ヘッダーが必須になります
-- 無効なキーは `401 Unauthorized` を返します
+- Every request must include `X-Api-Key: <key>`
+- Invalid keys return `401 Unauthorized`
 
-### curl での利用
+### Example
 
 ```bash
 curl -H "X-Api-Key: key1" http://localhost:8080/notes
 ```
 
-## 両方を有効化する場合
+## Using both at once
 
-Bearer Token と API Key を同時に有効化すると、リクエストは両方の認証を通過する必要があります。
-通常は どちらか一方を使います。
+When both `BEARER_TOKEN_ENABLED` and `API_KEY_ENABLED` are set, requests must pass both checks. In practice you would choose one or the other.
 
-## テスト時に認証を無効化する
+## Disabling auth in tests
 
 ```python
 from nene2.config import AppSettings
@@ -61,11 +59,12 @@ from example.app import create_app
 client = TestClient(create_app(AppSettings(bearer_token_enabled=False)))
 ```
 
-## カスタム TokenVerifier を実装する
+## Custom TokenVerifier (e.g. JWT)
 
-`TokenVerifierProtocol` を実装することで、JWT や外部サービスによる検証を追加できます。
+Implement `TokenVerifierProtocol` and raise `TokenVerificationException` on failure.
 
 ```python
+from nene2.auth import TokenVerificationException
 from nene2.auth.interfaces import TokenVerifierProtocol
 import jwt
 
@@ -77,8 +76,8 @@ class JwtTokenVerifier:
         try:
             jwt.decode(token, self._secret, algorithms=["HS256"])
             return True
-        except jwt.InvalidTokenError:
-            return False
+        except jwt.InvalidTokenError as exc:
+            raise TokenVerificationException(str(exc)) from exc
 ```
 
-`create_app()` の `verifier` 引数に渡すか、`BearerTokenMiddleware` を直接使います。
+Pass your verifier directly to `BearerTokenMiddleware`.

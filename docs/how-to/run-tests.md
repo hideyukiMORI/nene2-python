@@ -1,45 +1,48 @@
-# テストを実行する
+# Run tests
 
-## 基本コマンド
+## Basic commands
 
 ```bash
-# 全テストを実行（カバレッジ付き）
+# Run all tests with coverage
 uv run pytest
 
-# 失敗時の詳細表示
+# Verbose output on failure
 uv run pytest --tb=short -v
 
-# 特定のファイルだけ実行
+# Run a specific directory
 uv run pytest tests/example/note/
 
-# カバレッジ HTML レポートを生成
+# Generate an HTML coverage report
 uv run pytest --cov=src --cov-report=html
-# → htmlcov/index.html をブラウザで開く
+# → open htmlcov/index.html in your browser
 ```
 
-## テスト構造
+## Test layout
 
 ```
 tests/
-  nene2/              フレームワークコアの単体テスト
-    use_case/         UseCaseProtocol 準拠テスト
-    ...
+  nene2/              Framework core unit tests
+    use_case/         UseCaseProtocol compliance
+    auth/             Auth middleware and verifiers
+    database/         TransactionManager tests
+    mcp/              McpHttpClient tests
+    middleware/       Each middleware in isolation
   example/
-    note/             Note ドメインテスト
-      test_list_notes.py          UseCase 単体テスト
-      test_note_repository.py     Repository 契約テスト
-      test_async_note_use_case.py 非同期 UseCase テスト
+    note/             Note domain tests
+      test_list_notes.py           UseCase unit tests
+      test_note_repository.py      Repository contract tests
+      test_async_note_use_case.py  Async UseCase tests
     comment/
-      test_comment_use_case.py    UseCase 単体テスト（DB なし）
-      test_comment_repository.py  InMemory + SQLAlchemy の契約テスト
-      test_comment_http.py        HTTP 統合テスト（TestClient）
+      test_comment_use_case.py     UseCase unit tests (no DB)
+      test_comment_repository.py   InMemory + SQLAlchemy contract tests
+      test_comment_http.py         HTTP integration tests (TestClient)
 ```
 
-## テストの種類
+## Test types
 
-### UseCase 単体テスト
+### UseCase unit tests
 
-DB なし・InMemory リポジトリを使用。最も高速。
+No database, no HTTP — use InMemory repositories. Fastest.
 
 ```python
 def test_create_note() -> None:
@@ -48,9 +51,9 @@ def test_create_note() -> None:
     assert note.title == "t"
 ```
 
-### Repository 契約テスト
+### Repository contract tests
 
-`@pytest.fixture(params=["inmemory", "sqlalchemy"])` で 2 実装を同一テストで検証。
+`@pytest.fixture(params=["inmemory", "sqlalchemy"])` runs the same assertions against both implementations.
 
 ```python
 @pytest.fixture(params=["inmemory", "sqlalchemy"])
@@ -61,9 +64,9 @@ def test_save_and_find(repo) -> None:
     assert repo.find_by_id(note.id) == note
 ```
 
-### HTTP 統合テスト
+### HTTP integration tests
 
-FastAPI `TestClient` 経由。ルーター全体を検証。
+Use FastAPI's `TestClient`. Tests the full stack from HTTP to repository.
 
 ```python
 def test_create_note_returns_201() -> None:
@@ -72,9 +75,9 @@ def test_create_note_returns_201() -> None:
     assert response.status_code == 201
 ```
 
-### 非同期テスト
+### Async tests
 
-`asyncio_mode = "auto"` 設定済みのため `async def test_*` がそのまま動きます。
+`asyncio_mode = "auto"` is set in `pyproject.toml`, so `async def test_*` works directly.
 
 ```python
 async def test_async_list_notes() -> None:
@@ -83,16 +86,18 @@ async def test_async_list_notes() -> None:
     assert result.total == 0
 ```
 
-## カバレッジ要件
+## Coverage requirements
 
-- 全体: 80% 以上（CI で強制）
-- UseCase / Domain 層: 90% 以上を目標
+| Scope | Target |
+|---|---|
+| Overall | ≥ 80% (CI enforced) |
+| UseCase / Domain | ≥ 90% (goal) |
 
-## 静的解析
+## Static analysis
 
 ```bash
-uv run mypy src/          # 型チェック
-uv run ruff check src/    # リント
-uv run ruff format --check src/ tests/  # フォーマットチェック
-uv run pip-audit          # 依存関係の脆弱性スキャン
+uv run mypy src/          # Type checking (strict)
+uv run ruff check src/    # Lint
+uv run ruff format --check src/ tests/  # Format check
+uv run pip-audit          # Dependency vulnerability scan
 ```

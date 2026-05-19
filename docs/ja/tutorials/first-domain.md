@@ -1,23 +1,23 @@
-# Implement a new domain
+# 新しいドメインを実装する
 
-This tutorial walks you through adding the `Tag` domain from scratch.
-By building each layer in order you will see how nene2-python's clean architecture fits together.
+このチュートリアルでは、`Tag` ドメインを例に nene2-python のクリーンアーキテクチャを体験します。
+各レイヤーを順番に実装することで、フレームワークの構造全体を理解できます。
 
-> **Prerequisite**: Complete [Getting started](getting-started.md) first.
+> **前提**: [はじめての nene2-python](getting-started.md) を完了していること
 
-## What we are building
+## 実装するもの
 
 ```
-GET    /tags           — list tags
-POST   /tags           — create a tag
-GET    /tags/{tag_id}  — get a tag
-PUT    /tags/{tag_id}  — update a tag
-DELETE /tags/{tag_id}  — delete a tag
+GET    /tags           — タグ一覧
+POST   /tags           — タグ作成
+GET    /tags/{tag_id}  — タグ取得
+PUT    /tags/{tag_id}  — タグ更新
+DELETE /tags/{tag_id}  — タグ削除
 ```
 
-## Step 1: Entity
+## ステップ 1: Entity を作る
 
-Create `src/example/tag/entity.py`.
+`src/example/tag/entity.py` を作成します。
 
 ```python
 from dataclasses import dataclass
@@ -28,11 +28,11 @@ class Tag:
     name: str
 ```
 
-`frozen=True` makes the object immutable; `slots=True` reduces memory overhead.
+`frozen=True` で不変オブジェクト、`slots=True` でメモリ効率を高めています。
 
-## Step 2: Repository Interface
+## ステップ 2: Repository Interface を作る
 
-Define the contract in `src/example/tag/repository.py`.
+`src/example/tag/repository.py` に ABC を定義します。
 
 ```python
 from abc import ABC, abstractmethod
@@ -58,9 +58,9 @@ class TagRepositoryInterface(ABC):
     def count(self) -> int: ...
 ```
 
-## Step 3: InMemory implementation
+## ステップ 3: InMemory 実装を作る
 
-Provide an in-memory repository for tests — no database required.
+テスト用の InMemory リポジトリを実装します。
 
 ```python
 class InMemoryTagRepository(TagRepositoryInterface):
@@ -73,12 +73,12 @@ class InMemoryTagRepository(TagRepositoryInterface):
         self._store[self._next_id] = tag
         self._next_id += 1
         return tag
-    # ... other methods
+    # ... 省略
 ```
 
-## Step 4: UseCase
+## ステップ 4: UseCase を作る
 
-`src/example/tag/use_case.py` contains business logic — no HTTP or database imports.
+`src/example/tag/use_case.py` に UseCase を定義します。UseCase は HTTP・DB を知りません。
 
 ```python
 from dataclasses import dataclass
@@ -98,9 +98,9 @@ class CreateTagUseCase:
         return self._repository.save(input_.name)
 ```
 
-## Step 5: HTTP Handler
+## ステップ 5: Handler を作る
 
-`src/example/tag/handler.py` — only three steps: **parse → use-case → response**.
+`src/example/tag/handler.py` に HTTP ルーターを定義します。**parse → use-case → response** の 3 ステップだけ。
 
 ```python
 from fastapi import APIRouter
@@ -122,9 +122,9 @@ def make_tag_router(create_use_case: CreateTagUseCase, ...) -> APIRouter:
     return router
 ```
 
-## Step 6: Wire into app.py
+## ステップ 6: app.py に組み込む
 
-Add the router in `src/example/app.py`.
+`src/example/app.py` の `create_app()` にルーターを追加します。
 
 ```python
 app.include_router(make_tag_router(
@@ -133,7 +133,7 @@ app.include_router(make_tag_router(
 ))
 ```
 
-## Step 7: Write tests
+## ステップ 7: テストを書く
 
 ```python
 # tests/example/tag/test_tag_use_case.py
@@ -143,12 +143,12 @@ def test_create_tag() -> None:
     assert tag.name == "python"
 ```
 
-## Done
+## 完了
 
-The Tag domain you just built matches the Comment domain at `src/example/comment/`.
-See `src/example/tag/` for the full reference implementation.
+実装した Tag ドメインは Comment ドメイン (`src/example/comment/`) と同じ構造です。
+実際の実装は `src/example/tag/` を参照してください。
 
-## Next steps
+## 次のステップ
 
-- [Add a new domain](../how-to/add-new-domain.md) — a checklist for production-quality domain additions
-- [Architecture overview](../explanation/architecture.md) — understand the role of each layer
+- [新しいドメインを追加する](../how-to/add-new-domain.md) — チェックリスト形式の実践ガイド
+- [アーキテクチャ概要](../explanation/architecture.md) — 各レイヤーの役割を深く理解する
