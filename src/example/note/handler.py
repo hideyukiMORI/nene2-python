@@ -12,6 +12,7 @@ from .use_case import (
     CreateNoteUseCase,
     DeleteNoteInput,
     DeleteNoteUseCase,
+    GetNoteInput,
     GetNoteUseCase,
     ListNotesInput,
     ListNotesUseCase,
@@ -54,7 +55,7 @@ def make_note_router(
 
     @router.get("/{note_id}")
     async def get_note(note_id: int) -> JSONResponse:
-        note = get_use_case.execute(note_id)
+        note = get_use_case.execute(GetNoteInput(note_id))
         return JSONResponse({"id": note.id, "title": note.title, "body": note.body})
 
     @router.post("", status_code=201)

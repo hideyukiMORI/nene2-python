@@ -11,6 +11,7 @@ from example.note.use_case import (
     CreateNoteUseCase,
     DeleteNoteInput,
     DeleteNoteUseCase,
+    GetNoteInput,
     GetNoteUseCase,
     ListNotesInput,
     ListNotesUseCase,
@@ -44,7 +45,7 @@ def test_note_lifecycle_via_use_cases() -> None:
 
     note = create_uc.execute(CreateNoteInput(title="MCP note", body="content"))
     assert list_uc.execute(ListNotesInput(limit=10, offset=0)).total == 1
-    fetched = get_uc.execute(note.id)
+    fetched = get_uc.execute(GetNoteInput(note_id=note.id))
     assert fetched.title == "MCP note"
     delete_uc.execute(DeleteNoteInput(note_id=note.id))
     assert list_uc.execute(ListNotesInput(limit=10, offset=0)).total == 0
