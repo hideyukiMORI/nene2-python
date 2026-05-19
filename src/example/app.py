@@ -25,6 +25,17 @@ from nene2.middleware import (
 )
 from nene2.validation.exceptions import ValidationException
 
+from .comment.exceptions import CommentNotFoundExceptionHandler
+from .comment.handler import make_comment_router
+from .comment.repository import CommentRepositoryInterface, InMemoryCommentRepository
+from .comment.sqlalchemy_repository import SqlAlchemyCommentRepository
+from .comment.use_case import (
+    CreateCommentUseCase,
+    DeleteCommentUseCase,
+    GetCommentUseCase,
+    ListCommentsUseCase,
+    UpdateCommentUseCase,
+)
 from .note.exceptions import NoteNotFoundExceptionHandler
 from .note.handler import make_note_router
 from .note.repository import InMemoryNoteRepository, NoteRepositoryInterface
@@ -49,10 +60,15 @@ from .tag.use_case import (
     UpdateTagUseCase,
 )
 
+type _Repos = tuple[
+    NoteRepositoryInterface,
+    TagRepositoryInterface,
+    CommentRepositoryInterface,
+    DatabaseQueryExecutorInterface | None,
+]
 
-def _build_repositories(
-    cfg: AppSettings,
-) -> tuple[NoteRepositoryInterface, TagRepositoryInterface, DatabaseQueryExecutorInterface | None]:
+
+def _build_repositories(cfg: AppSettings) -> _Repos:
     """Build repositories based on DB_ADAPTER setting."""
     if cfg.db_adapter == "sqlite":
         is_memory = cfg.db_name == ":memory:"
@@ -63,12 +79,22 @@ def _build_repositories(
         )
         ensure_schema(engine)
         executor = SqlAlchemyQueryExecutor(engine)
-        return SqlAlchemyNoteRepository(executor), SqlAlchemyTagRepository(executor), executor
+        return (
+            SqlAlchemyNoteRepository(executor),
+            SqlAlchemyTagRepository(executor),
+            SqlAlchemyCommentRepository(executor),
+            executor,
+        )
     if cfg.db_adapter in ("mysql", "pgsql"):
         engine = create_engine(cfg.db_url)
         executor = SqlAlchemyQueryExecutor(engine)
-        return SqlAlchemyNoteRepository(executor), SqlAlchemyTagRepository(executor), executor
-    return InMemoryNoteRepository(), InMemoryTagRepository(), None
+        return (
+            SqlAlchemyNoteRepository(executor),
+            SqlAlchemyTagRepository(executor),
+            SqlAlchemyCommentRepository(executor),
+            executor,
+        )
+    return InMemoryNoteRepository(), InMemoryTagRepository(), InMemoryCommentRepository(), None
 
 
 def create_app(settings: AppSettings | None = None) -> FastAPI:
@@ -114,14 +140,18 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
     app.add_middleware(
         ErrorHandlerMiddleware,
         debug=cfg.app_debug,
-        domain_handlers=[NoteNotFoundExceptionHandler(), TagNotFoundExceptionHandler()],
+        domain_handlers=[
+            NoteNotFoundExceptionHandler(),
+            TagNotFoundExceptionHandler(),
+            CommentNotFoundExceptionHandler(),
+        ],
     )
     app.add_exception_handler(
         ValidationException,
         ErrorHandlerMiddleware.handle_validation_exception,
     )
 
-    note_repo, tag_repo, db_executor = _build_repositories(cfg)
+    note_repo, tag_repo, comment_repo, db_executor = _build_repositories(cfg)
 
     app.include_router(
         make_note_router(
@@ -140,6 +170,16 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             CreateTagUseCase(tag_repo),
             UpdateTagUseCase(tag_repo),
             DeleteTagUseCase(tag_repo),
+        )
+    )
+
+    app.include_router(
+        make_comment_router(
+            ListCommentsUseCase(comment_repo),
+            GetCommentUseCase(comment_repo),
+            CreateCommentUseCase(comment_repo),
+            UpdateCommentUseCase(comment_repo),
+            DeleteCommentUseCase(comment_repo),
         )
     )
 
