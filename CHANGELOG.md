@@ -5,6 +5,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.13] — 2026-05-20
+
+FT53 フィールドトライアル — ApiKeyAuthMiddleware 実運用検証 + header_name パラメータ追加。
+
+### Added
+- `ApiKeyAuthMiddleware` に `header_name: str = "X-Api-Key"` パラメータを追加 — カスタムヘッダー名 (`X-Service-Token` 等) を指定可能に。エラーメッセージにも `header_name` が反映される (#286) (FT53)
+- Field trial report: `docs/field-trials/2026-05-field-trial-53.md`
+
+---
+
 ## [1.8.12] — 2026-05-20
 
 FT52 フィールドトライアル — ミドルウェアスタック組み合わせ検証 + LocalTokenVerifier 改善。
