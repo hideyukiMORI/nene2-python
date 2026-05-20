@@ -87,3 +87,38 @@ def test_verifier_raises_token_verification_exception_returns_401() -> None:
     client = TestClient(app, raise_server_exceptions=False)
     response = client.get("/secret", headers={"X-Api-Key": "any-key"})
     assert response.status_code == 401
+
+
+def test_custom_header_name() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        ApiKeyAuthMiddleware,
+        verifier=LocalTokenVerifier(["svc-token"]),
+        header_name="X-Service-Token",
+    )
+
+    @app.get("/secret")
+    async def secret() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app, raise_server_exceptions=False)
+    assert client.get("/secret", headers={"X-Service-Token": "svc-token"}).status_code == 200
+    assert client.get("/secret", headers={"X-Api-Key": "svc-token"}).status_code == 401
+
+
+def test_custom_header_name_in_error_message() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        ApiKeyAuthMiddleware,
+        verifier=LocalTokenVerifier(["tok"]),
+        header_name="X-Internal-Key",
+    )
+
+    @app.get("/secret")
+    async def secret() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app, raise_server_exceptions=False)
+    response = client.get("/secret")
+    assert response.status_code == 401
+    assert "X-Internal-Key" in response.json().get("detail", "")
