@@ -5,6 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.19] — 2026-05-20
+
+FT68 フィールドトライアル — SimpleDomainHandler + extra_factory 実運用検証。
+
+### Changed
+- `problem_details_response` の docstring に `extra` がトップレベルにフラットマージされることを明記 (#308) (FT68)
+- `SimpleDomainHandler` の docstring に `extra_factory` のフラットマージ動作を例示 (#308) (FT68)
+
+### Added
+- Field trial report: `docs/field-trials/2026-05-field-trial-68.md`
+
+---
+
 ## [1.8.18] — 2026-05-20
 
 FT67 フィールドトライアル — SqlAlchemyTransactionManager 実運用検証。
