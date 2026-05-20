@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.30] — 2026-05-20
+
+FT87 フィールドトライアル — カスタムレスポンスヘッダーパターン検証と problem_details_response() 改善。
+
+### Added
+- `problem_details_response()` に `headers: dict[str, str] | None = None` パラメーターを追加 (#369) (FT87)
+  — エラーレスポンスに `Retry-After`（429）、`WWW-Authenticate`（401）などのカスタムヘッダーを付与可能に
+- Field trial reports: `docs/field-trials/2026-05-field-trial-85.md`, `2026-05-field-trial-86.md`, `2026-05-field-trial-87.md` (FT85, FT86, FT87)
+
+---
+
 ## [1.8.29] — 2026-05-20
 
 FT84 フィールドトライアル — 認証 Depends ユーティリティ検証と make_require_auth() 追加。
