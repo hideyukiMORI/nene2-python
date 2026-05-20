@@ -55,6 +55,20 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
     Path-limited endpoints are tracked independently from the global counter
     (the key includes the path, so ``/api/expensive`` quota is separate from
     the default quota for other paths).
+
+    .. warning:: **Single-process only.**
+        Counters are stored in an in-memory dict.  When running multiple
+        uvicorn workers (e.g. ``gunicorn -w 4``) or multiple containers,
+        each process maintains its own counter, so the effective rate limit
+        is ``limit × worker_count``.  For multi-process deployments, enforce
+        rate limits at the reverse proxy (nginx, Caddy) or use a shared
+        store (Redis).
+
+    .. note:: **Fixed-window burst at boundaries.**
+        Fixed-window counting can pass up to ``2 × limit`` requests in a
+        short burst when requests arrive just before and just after a window
+        boundary.  If you need protection against burst traffic, consider
+        sliding-window rate limiting at the proxy layer.
     """
 
     def __init__(

@@ -90,6 +90,12 @@ def setup_middlewares(
         throttle_window: Rate-limit window in seconds (default: 60).
         throttle_path_limits: Per-path overrides for throttle limits.
         throttle_exclude_paths: Paths excluded from throttling.
+
+            .. warning::
+                ``ThrottleMiddleware`` uses an in-memory counter that is **not
+                shared across workers or pods**.  Multi-process deployments will
+                see an effective limit of ``throttle_limit × worker_count``.
+                See :class:`ThrottleMiddleware` for details.
         max_request_bytes: Maximum request body size in bytes (default: 1 MiB).
         request_size_path_limits: Per-path size limits.
         request_size_exclude_paths: Paths excluded from size limiting.
