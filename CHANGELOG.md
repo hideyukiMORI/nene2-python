@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.27] — 2026-05-20
+
+FT81 フィールドトライアル — CORS 設定パターン検証と setup_middlewares() への CORS 統合。
+
+### Added
+- `setup_middlewares()` に `cors_allowed_origins` / `cors_allow_credentials` / `cors_allow_methods` / `cors_allow_headers` パラメーターを追加 (#348) (FT81)
+  — `CORSMiddleware` を最外側に自動配置し、OPTIONS プリフライトが確実に処理される
+  — `cors_allowed_origins=["*"]` を渡すと `ValueError` を raise（wildcard 禁止ポリシーの実装強制）
+- Field trial report: `docs/field-trials/2026-05-field-trial-81.md` (FT81)
+
+---
+
 ## [1.8.26] — 2026-05-20
 
 FT80 フィールドトライアル — LocalMcpServer + HttpxMcpClient MCP E2E 検証と list_tools() 追加。
