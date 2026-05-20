@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.3] — 2026-05-20
+
+FT31〜FT32 フィールドトライアル — HealthCheck・SecurityHeaders 改善。
+
+### Added
+- `HealthStatus.http_status_code` プロパティ — `is_healthy` → 200、それ以外 → 503 のマッピングを提供 (FT31)
+- `SecurityHeadersMiddleware` に `permissions_policy: str | None = None` パラメータを追加 (FT32)
+- `SecurityHeadersMiddleware` に `hsts: str | None = None` パラメータを追加 (FT32)
+- Field trial reports: `docs/field-trials/2026-05-field-trial-31.md`、`docs/field-trials/2026-05-field-trial-32.md`
+
+---
+
 ## [1.8.2] — 2026-05-20
 
 FT29〜FT30 フィールドトライアル — AsyncUseCase ドキュメント・RequestLoggingMiddleware 改善。
