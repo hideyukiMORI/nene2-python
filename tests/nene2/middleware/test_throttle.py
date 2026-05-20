@@ -1,5 +1,7 @@
 """Tests for ThrottleMiddleware."""
 
+import time
+
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
@@ -103,3 +105,21 @@ def test_429_response_includes_rate_limit_headers() -> None:
     assert r.headers["X-RateLimit-Remaining"] == "0"
     assert "X-RateLimit-Reset" in r.headers
     assert "Retry-After" in r.headers
+
+
+def test_stale_entries_are_evicted_after_window_expires() -> None:
+    app = FastAPI()
+    middleware = ThrottleMiddleware(app, limit=100, window=1)
+
+    for i in range(10):
+        middleware._check_rate(f"192.168.1.{i}")
+
+    assert len(middleware._counts) == 10
+
+    time.sleep(1.1)
+
+    # 新しいリクエストでクリーンアップがトリガーされる
+    middleware._check_rate("10.0.0.99")
+
+    # 古い 10 エントリは削除され、新しい 1 エントリのみ残る
+    assert len(middleware._counts) == 1
