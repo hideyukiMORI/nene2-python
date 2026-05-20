@@ -60,6 +60,19 @@ def problem_details_response(
 ) -> JSONResponse:
     """Build an RFC 9457 Problem Details JSON response.
 
+    Args:
+        problem_type: Short identifier appended to ``base_url`` for the ``type`` URI.
+        title:        Human-readable summary of the error.
+        status:       HTTP status code.
+        detail:       Optional human-readable explanation.
+        extra:        Additional fields merged **at the top level** of the response body
+                      (RFC 9457 extension members).  They are NOT nested under an
+                      ``"extra"`` key.  For example, ``extra={"item_id": 42}`` produces
+                      ``{"type": "...", "status": 404, "item_id": 42}``.
+                      Raises ``ValueError`` if any key shadows a reserved field
+                      (``type``, ``title``, ``status``, ``detail``).
+        base_url:     Override the base URL for this call only.
+
     ``base_url`` resolution order:
     1. Explicit ``base_url`` argument
     2. Value set by :func:`configure_problem_details`
