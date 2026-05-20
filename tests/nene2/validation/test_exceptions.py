@@ -20,3 +20,27 @@ def test_validation_exception_stores_errors() -> None:
     exc = ValidationException(errors)
     assert exc.errors == errors
     assert str(exc) == "Validation failed"
+
+
+def test_validation_error_empty_field_message_names_the_field() -> None:
+    with pytest.raises(ValueError, match="ValidationError.field must not be empty"):
+        ValidationError(field="", message="msg", code="code")
+
+    with pytest.raises(ValueError, match="ValidationError.message must not be empty"):
+        ValidationError(field="f", message="", code="code")
+
+    with pytest.raises(ValueError, match="ValidationError.code must not be empty"):
+        ValidationError(field="f", message="msg", code="")
+
+
+def test_validation_exception_single() -> None:
+    exc = ValidationException.single("email", "invalid", "invalid_email")
+    assert len(exc.errors) == 1
+    assert exc.errors[0].field == "email"
+    assert exc.errors[0].message == "invalid"
+    assert exc.errors[0].code == "invalid_email"
+
+
+def test_validation_exception_single_is_validation_exception() -> None:
+    exc = ValidationException.single("f", "m", "c")
+    assert isinstance(exc, ValidationException)
