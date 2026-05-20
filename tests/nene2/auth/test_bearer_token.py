@@ -113,3 +113,16 @@ def test_exclude_paths_default_is_empty() -> None:
 
     client = TestClient(app)
     assert client.get("/health").status_code == 401
+
+
+def test_local_verifier_accepts_set() -> None:
+    verifier = LocalTokenVerifier({"tok-a", "tok-b"})
+    assert verifier.verify("tok-a") is True
+    assert verifier.verify("tok-b") is True
+    assert verifier.verify("tok-c") is False
+
+
+def test_local_verifier_accepts_frozenset() -> None:
+    verifier = LocalTokenVerifier(frozenset({"tok-x", "tok-y"}))
+    assert verifier.verify("tok-x") is True
+    assert verifier.verify("unknown") is False
