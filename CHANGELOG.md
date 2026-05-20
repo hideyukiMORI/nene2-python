@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.25] — 2026-05-20
+
+FT79 フィールドトライアル — RequestLoggingMiddleware の構造化ログ検証と context_extractor 追加。
+
+### Added
+- `RequestLoggingMiddleware` に `context_extractor` コールバックパラメーターを追加 (#339) (FT79)
+  — リクエストごとの動的なログコンテキスト（user_id、テナントID等）を注入できる
+- Field trial report: `docs/field-trials/2026-05-field-trial-79.md` (FT79)
+
+---
+
 ## [1.8.24] — 2026-05-20
 
 FT78 フィールドトライアル — ThrottleMiddleware の境界動作検証とドキュメント強化。
