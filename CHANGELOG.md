@@ -5,6 +5,26 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.7.0] — 2026-05-20
+
+FT14〜FT17 フィールドトライアル — プロトコル docstring 改善・ミドルウェアカスタマイズ・DB 例外統一・バグ修正。
+
+### Added
+- `SecurityHeadersMiddleware` — `csp: str | None` パラメータで Content-Security-Policy 値をカスタマイズ可能に (FT15)
+- `SecurityHeadersMiddleware` — `extra_no_csp_paths: list[str] | None` パラメータでカスタム OpenAPI パスの CSP スキップを設定可能に (FT15)
+- `DatabaseIntegrityException` — UNIQUE/FK/CHECK 制約違反時に発生する新例外クラス (FT16)
+- Field trial reports: `docs/field-trials/2026-05-field-trial-14.md` 〜 `docs/field-trials/2026-05-field-trial-17.md`
+
+### Changed
+- `AsyncUseCaseProtocol` / `UseCaseProtocol` — docstring に `@runtime_checkable` の `isinstance` 制限と `inspect.iscoroutinefunction()` によるランタイム確認方法を明記 (FT14)
+- `SqlAlchemyTransactionManager.transactional()` — `IntegrityError` をキャッチして `DatabaseIntegrityException` にラップするよう変更 (FT16)
+
+### Fixed
+- `SqlAlchemyQueryExecutor.write()` — `IntegrityError` が `DatabaseIntegrityException` にラップされない不整合を修正 (FT17-F1)
+- `SqlAlchemyQueryExecutor.write()` と `_BoundQueryExecutor.write()` — UPDATE/DELETE で 0 行影響した場合に前の INSERT の `lastrowid` が返るバグを修正; INSERT のみ `lastrowid`、UPDATE/DELETE は `rowcount` を返すよう変更 (FT17-F2)
+
+---
+
 ## [1.6.0] — 2026-05-20
 
 FT13 (ValidationException実運用) field trial — validation DX improvements.
