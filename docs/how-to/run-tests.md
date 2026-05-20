@@ -103,6 +103,27 @@ engine = create_engine(
 
 `StaticPool` guarantees all logical connections share the same underlying SQLite connection, so tables created in one operation are visible to the next.
 
+## Capturing structlog output with caplog
+
+Call `configure_for_testing()` at module level in `conftest.py` to route structlog through stdlib logging so pytest's `caplog` fixture can capture it.
+
+```python
+# conftest.py
+from nene2.log import configure_for_testing
+configure_for_testing()
+```
+
+Then assert on message strings in tests:
+
+```python
+def test_handler_logs(caplog: pytest.LogCaptureFixture) -> None:
+    client = TestClient(create_app())
+    client.post("/api/echo", json={"message": "hello"})
+    assert any("processing echo" in r.message for r in caplog.records)
+```
+
+**Note**: `caplog.records` returns stdlib `LogRecord` objects. Fields bound with `structlog.contextvars.bind_contextvars()` (such as `request_id`) are not directly accessible as `record.request_id` — they appear as part of the formatted message string instead.
+
 ## Coverage requirements
 
 | Scope | Target |
