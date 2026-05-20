@@ -133,3 +133,27 @@ from nene2.middleware import ErrorHandlerMiddleware
 app = FastAPI()
 app.add_middleware(ErrorHandlerMiddleware)
 ```
+
+---
+
+## 7. 外部入力のデコード失敗を 400 で返す
+
+Pydantic の `Query()` / `Body()` では型変換に失敗すると 422 になるが、
+カーソル (Base64) やトークンなど「文字列として受け取ってから自前でデコードする」場合、
+デコード失敗の例外を捕捉しないと `ErrorHandlerMiddleware` が 500 として返す。
+
+```python
+from fastapi.responses import JSONResponse
+
+@app.get("/posts")
+def list_posts(after: str | None = Query(None)) -> JSONResponse:
+    if after is not None:
+        try:
+            cursor_id = _decode_cursor(after)  # base64.urlsafe_b64decode など
+        except Exception:
+            return JSONResponse({"detail": "Invalid cursor"}, status_code=400)
+        # 以降は cursor_id を使って処理
+```
+
+`binascii.Error` などのデコード失敗は `ValueError` / `Exception` でまとめて捕捉し、
+`400 Bad Request` を返すのが適切（ユーザー入力ミスであり、サーバーエラーではない）。
