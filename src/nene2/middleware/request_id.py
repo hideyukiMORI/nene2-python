@@ -30,6 +30,24 @@ def _validated_request_id(value: str | None) -> str:
     return str(uuid.uuid4())
 
 
+def get_request_id() -> str:
+    """FastAPI ``Depends``-compatible helper that returns the current request ID.
+
+    Use this in route handlers to inject the request ID via dependency injection::
+
+        from nene2.middleware import get_request_id
+
+
+        @app.get("/")
+        async def handler(request_id: str = Depends(get_request_id)) -> JSONResponse:
+            return JSONResponse({"request_id": request_id})
+
+    Returns an empty string when called outside of a request context
+    (e.g., in tests without :class:`RequestIdMiddleware`).
+    """
+    return request_id_var.get()
+
+
 class RequestIdMiddleware(BaseHTTPMiddleware):
     """Generate or forward X-Request-Id and expose it via contextvars.
 

@@ -2,11 +2,12 @@
 
 import re
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from nene2.middleware import RequestIdMiddleware, request_id_var
+import nene2.middleware
+from nene2.middleware import RequestIdMiddleware, get_request_id, request_id_var
 
 _UUID_V4_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 
@@ -67,3 +68,27 @@ def test_each_request_gets_unique_id() -> None:
     client = TestClient(_make_app())
     ids = {client.get("/ping").headers["X-Request-Id"] for _ in range(5)}
     assert len(ids) == 5
+
+
+def test_get_request_id_returns_empty_outside_request_context() -> None:
+    assert get_request_id() == ""
+
+
+def test_get_request_id_via_depends_returns_current_id() -> None:
+    app = FastAPI()
+    app.add_middleware(RequestIdMiddleware)
+
+    @app.get("/with-depends")
+    async def handler(request_id: str = Depends(get_request_id)) -> JSONResponse:
+        return JSONResponse({"request_id": request_id})
+
+    client = TestClient(app)
+    response = client.get("/with-depends")
+    body = response.json()
+    assert _UUID_V4_RE.match(body["request_id"])
+    assert body["request_id"] == response.headers["X-Request-Id"]
+
+
+def test_get_request_id_exportable_from_nene2_middleware() -> None:
+    assert hasattr(nene2.middleware, "get_request_id")
+    assert callable(nene2.middleware.get_request_id)

@@ -2,7 +2,7 @@
 
 from .domain_exception import DomainExceptionHandlerProtocol, SimpleDomainHandler
 from .error_handler import ErrorHandlerMiddleware
-from .request_id import RequestIdMiddleware, request_id_var
+from .request_id import RequestIdMiddleware, get_request_id, request_id_var
 from .request_logging import RequestLoggingMiddleware
 from .request_size_limit import RequestSizeLimitMiddleware
 from .security_headers import SecurityHeadersMiddleware
@@ -13,6 +13,7 @@ __all__ = [
     "SimpleDomainHandler",
     "ErrorHandlerMiddleware",
     "RequestIdMiddleware",
+    "get_request_id",
     "RequestLoggingMiddleware",
     "RequestSizeLimitMiddleware",
     "SecurityHeadersMiddleware",
