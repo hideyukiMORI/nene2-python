@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.9] — 2026-05-20
+
+FT46〜FT49 フィールドトライアル — ドキュメント改善。
+
+### Added
+- Field trial reports: `docs/field-trials/2026-05-field-trial-46.md` 〜 `docs/field-trials/2026-05-field-trial-49.md`
+
+### Changed
+- `docs/how-to/run-tests.md` — SQLite 外部キー制約 (`PRAGMA foreign_keys=ON`) の注意事項を追記 (FT46)
+
+---
+
 ## [1.8.8] — 2026-05-20
 
 FT45 フィールドトライアル — SecurityHeadersMiddleware CSP バグ修正。
