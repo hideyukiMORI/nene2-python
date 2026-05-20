@@ -47,4 +47,6 @@ jobs:
         run: uv run ruff format --check src/ tests/
 
       - name: pip-audit
-        run: uv run pip-audit
+        # PYSEC-2025-183: pyjwt weak-key-length — disputed by supplier, no fix version available.
+        # Transitive via mcp>=1.0. Re-evaluate when pyjwt releases a fix. (#280)
+        run: uv run pip-audit --ignore-vuln PYSEC-2025-183
