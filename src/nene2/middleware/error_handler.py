@@ -11,6 +11,7 @@ from typing import Any
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
@@ -32,7 +33,20 @@ logger = logging.getLogger(__name__)
 
 
 class ErrorHandlerMiddleware(BaseHTTPMiddleware):
-    """Catch-all error handler that maps exceptions to Problem Details responses."""
+    """Catch-all error handler that maps exceptions to Problem Details responses.
+
+    **Recommended usage** — use :meth:`install` instead of ``add_middleware`` directly.
+    ``install`` also registers ``request_validation_error_handler`` so that
+    FastAPI's Pydantic validation errors (422) are formatted as nene2 Problem Details::
+
+        ErrorHandlerMiddleware.install(app)
+        # Equivalent to:
+        #   app.add_middleware(ErrorHandlerMiddleware)
+        #   app.add_exception_handler(RequestValidationError, request_validation_error_handler)
+
+    Using ``add_middleware`` directly works, but FastAPI's ``RequestValidationError``
+    will be returned in Pydantic's default format rather than nene2 Problem Details.
+    """
 
     def __init__(
         self,
@@ -44,6 +58,35 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.debug = debug
         self._domain_handlers: list[DomainExceptionHandlerProtocol] = domain_handlers or []
+
+    @classmethod
+    def install(
+        cls,
+        app: object,
+        *,
+        debug: bool = False,
+        domain_handlers: list[DomainExceptionHandlerProtocol] | None = None,
+    ) -> None:
+        """Add this middleware and register the nene2 validation error handler.
+
+        Registers both ``ErrorHandlerMiddleware`` and ``request_validation_error_handler``
+        so that all 422 responses (Pydantic body validation and ``ValidationException``)
+        are formatted as nene2 Problem Details::
+
+            from nene2.middleware import ErrorHandlerMiddleware
+
+            app = FastAPI()
+            ErrorHandlerMiddleware.install(app)
+
+        Equivalent to::
+
+            app.add_middleware(ErrorHandlerMiddleware, debug=debug, domain_handlers=domain_handlers)
+            app.add_exception_handler(RequestValidationError, request_validation_error_handler)
+        """
+        if not isinstance(app, Starlette):
+            raise TypeError(f"app must be a Starlette/FastAPI instance, got {type(app)!r}")
+        app.add_middleware(cls, debug=debug, domain_handlers=domain_handlers)
+        app.add_exception_handler(RequestValidationError, request_validation_error_handler)
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         try:
