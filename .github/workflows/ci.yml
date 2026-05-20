@@ -31,6 +31,12 @@ jobs:
       - name: pytest (with coverage)
         run: uv run pytest
 
+      - name: coverage gate — domain/use_case layers (90%)
+        run: |
+          uv run coverage report \
+            --include="src/example/*/use_case.py,src/example/*/async_use_case.py,src/example/*/entity.py" \
+            --fail-under=90
+
       - name: mypy
         run: uv run mypy src/
 
