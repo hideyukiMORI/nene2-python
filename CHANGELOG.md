@@ -5,6 +5,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.10] — 2026-05-20
+
+FT50 フィールドトライアル — ValidationException + ValidationCode(StrEnum) 実運用検証。
+
+### Added
+- Field trial report: `docs/field-trials/2026-05-field-trial-50.md`
+
+---
+
 ## [1.8.9] — 2026-05-20
 
 FT46〜FT49 フィールドトライアル — ドキュメント改善。
