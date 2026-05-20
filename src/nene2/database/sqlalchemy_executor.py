@@ -7,9 +7,9 @@ from collections.abc import Callable
 from typing import Any
 
 from sqlalchemy import Connection, Engine, text
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import IntegrityError, OperationalError
 
-from .exceptions import DatabaseConnectionException
+from .exceptions import DatabaseConnectionException, DatabaseIntegrityException
 from .interfaces import DatabaseQueryExecutorInterface, DatabaseTransactionManagerInterface
 
 
@@ -82,6 +82,8 @@ class _BoundQueryExecutor(DatabaseQueryExecutorInterface):
     def write(self, sql: str, params: dict[str, Any] | None = None) -> int:
         try:
             result = self._conn.execute(text(sql), params or {})
+        except IntegrityError as exc:
+            raise DatabaseIntegrityException(str(exc)) from exc
         except OperationalError as exc:
             raise DatabaseConnectionException(str(exc)) from exc
         return result.lastrowid or result.rowcount
@@ -104,6 +106,10 @@ class SqlAlchemyTransactionManager(DatabaseTransactionManagerInterface):
         try:
             with self._engine.begin() as conn:
                 return callback(_BoundQueryExecutor(conn))
+        except DatabaseIntegrityException:
+            raise
+        except IntegrityError as exc:
+            raise DatabaseIntegrityException(str(exc)) from exc
         except OperationalError as exc:
             raise DatabaseConnectionException(str(exc)) from exc
 
