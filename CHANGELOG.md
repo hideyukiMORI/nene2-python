@@ -5,6 +5,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.17] — 2026-05-20
+
+FT64 フィールドトライアル — ValidationException 複数エラー実運用検証。
+
+### Fixed
+- `ValidationError.code` にスペースが含まれる場合 `ValueError` を発生させるよう修正 — `message` と `code` の混同を早期検出できるようになった (#300) (FT64)
+
+### Changed
+- `ValidationError` と `ValidationException.single()` の docstring を改善 — `message` (人間可読) と `code` (機械可読 snake_case) の違いをキーワード引数付き例で明示 (#300) (FT64)
+
+### Added
+- Field trial report: `docs/field-trials/2026-05-field-trial-64.md`
+
+---
+
 ## [1.8.16] — 2026-05-20
 
 FT63 フィールドトライアル — configure_problem_details 実運用検証 + PROBLEM_DETAILS_BASE_URL エクスポート修正。
