@@ -5,6 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.6] — 2026-05-20
+
+FT41〜FT42 フィールドトライアル — structlog テスト統合ドキュメント・configure_problem_details リセット関数。
+
+### Added
+- `nene2.http.reset_problem_details()` — `configure_problem_details()` で設定したグローバル状態をテスト間でリセットするヘルパー関数 (FT42)
+- Field trial reports: `docs/field-trials/2026-05-field-trial-41.md`、`docs/field-trials/2026-05-field-trial-42.md`
+
+### Changed
+- `docs/how-to/run-tests.md` — `configure_for_testing()` + `caplog` による structlog ログキャプチャパターンを追記 (FT41)
+
+---
+
 ## [1.8.5] — 2026-05-20
 
 FT37〜FT40 フィールドトライアル — RequestSizeLimitMiddleware パスごとサイズ制限とドキュメント改善。
