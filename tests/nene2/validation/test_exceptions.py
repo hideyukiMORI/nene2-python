@@ -44,3 +44,8 @@ def test_validation_exception_single() -> None:
 def test_validation_exception_single_is_validation_exception() -> None:
     exc = ValidationException.single("f", "m", "c")
     assert isinstance(exc, ValidationException)
+
+
+def test_validation_error_code_with_spaces_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="must not contain spaces"):
+        ValidationError(field="email", message="Invalid email", code="invalid email")
