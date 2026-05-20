@@ -120,6 +120,9 @@ nene2 の `RequestIdMiddleware`・`SecurityHeadersMiddleware` は `StreamingResp
 
 ## 6. テスト
 
+`client.stream()` コンテキスト内では `r.text` / `r.content` は使えない（`ResponseNotRead`）。
+`r.iter_lines()` / `r.iter_text()` / `r.iter_bytes()` でチャンクを収集する。
+
 ```python
 def test_sse_stream() -> None:
     with TestClient(app, raise_server_exceptions=False) as client:
@@ -132,4 +135,14 @@ def test_sse_stream() -> None:
                 if len(lines) >= 3:
                     break
             assert any("data:" in line for line in lines)
+
+def test_csv_stream() -> None:
+    with TestClient(app) as client:
+        with client.stream("GET", "/export/users.csv") as r:
+            assert r.status_code == 200
+            # ✅ iter_text() でテキストを収集
+            content = "".join(r.iter_text())
+            # ❌ r.text は ResponseNotRead になる
+        lines = [l for l in content.splitlines() if l]
+        assert lines[0] == "id,name,email"
 ```
