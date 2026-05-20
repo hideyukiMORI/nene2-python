@@ -2,7 +2,12 @@
 
 import pytest
 
-from nene2.http import configure_problem_details, problem_details_response, reset_problem_details
+from nene2.http import (
+    PROBLEM_DETAILS_BASE_URL,
+    configure_problem_details,
+    problem_details_response,
+    reset_problem_details,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -11,6 +16,10 @@ def reset_configured_base_url() -> None:
     reset_problem_details()
     yield
     reset_problem_details()
+
+
+def test_problem_details_base_url_constant_is_importable() -> None:
+    assert PROBLEM_DETAILS_BASE_URL == "https://nene2.dev/problems/"
 
 
 def test_problem_details_response_uses_default_base_url() -> None:
