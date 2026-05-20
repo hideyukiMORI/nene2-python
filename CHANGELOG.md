@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.29] — 2026-05-20
+
+FT84 フィールドトライアル — 認証 Depends ユーティリティ検証と make_require_auth() 追加。
+
+### Added
+- `nene2.auth` に `make_require_auth(verifier)` Depends ファクトリーを追加 (#359) (FT84)
+  — `TokenVerifierProtocol` を FastAPI の `Depends` に接続するボイラープレートを解消
+  — 有効トークンで token 文字列を返し、未認証・無効トークンで 401 を raise
+- Field trial report: `docs/field-trials/2026-05-field-trial-84.md` (FT84)
+
+---
+
 ## [1.8.28] — 2026-05-20
 
 FT83 フィールドトライアル — Depends() DI パターン検証と PaginationResponse / PaginationDep 改善。
