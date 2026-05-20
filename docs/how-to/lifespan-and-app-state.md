@@ -79,14 +79,18 @@ with TestClient(app) as client:
 **pytest fixture パターン**:
 
 ```python
+from collections.abc import Generator
+
 import pytest
 from fastapi.testclient import TestClient
 
-@pytest.fixture()
-def client() -> TestClient:
+@pytest.fixture
+def client() -> Generator[TestClient, None, None]:
     with TestClient(app) as c:
         yield c
 ```
+
+戻り値型は `Generator[TestClient, None, None]` にする（`TestClient` 単体では型エラーになる）。
 
 ---
 
