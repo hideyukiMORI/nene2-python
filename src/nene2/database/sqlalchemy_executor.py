@@ -41,7 +41,7 @@ class SqlAlchemyQueryExecutor(DatabaseQueryExecutorInterface):
 
         Return value semantics:
         - INSERT with AUTOINCREMENT/SERIAL column → ``lastrowid`` (the new row's PK, always > 0)
-        - INSERT without auto-PK, or multi-row INSERT → falls back to ``rowcount``
+        - INSERT without auto-PK, or multi-row INSERT → ``rowcount``
         - UPDATE / DELETE → ``rowcount`` (number of rows affected; 0 means nothing matched)
 
         Use the return value to detect missing rows::
@@ -53,7 +53,11 @@ class SqlAlchemyQueryExecutor(DatabaseQueryExecutorInterface):
         try:
             with self._engine.begin() as conn:
                 result = conn.execute(text(sql), params or {})
-                return result.lastrowid or result.rowcount
+                if sql.strip().upper().startswith("INSERT"):
+                    return result.lastrowid or result.rowcount
+                return result.rowcount
+        except IntegrityError as exc:
+            raise DatabaseIntegrityException(str(exc)) from exc
         except OperationalError as exc:
             raise DatabaseConnectionException(str(exc)) from exc
 
@@ -86,7 +90,9 @@ class _BoundQueryExecutor(DatabaseQueryExecutorInterface):
             raise DatabaseIntegrityException(str(exc)) from exc
         except OperationalError as exc:
             raise DatabaseConnectionException(str(exc)) from exc
-        return result.lastrowid or result.rowcount
+        if sql.strip().upper().startswith("INSERT"):
+            return result.lastrowid or result.rowcount
+        return result.rowcount
 
 
 class SqlAlchemyTransactionManager(DatabaseTransactionManagerInterface):
