@@ -122,3 +122,68 @@ def test_pydantic_422_formatted_as_nene2() -> None:
 def test_raises_type_error_for_non_starlette_app() -> None:
     with pytest.raises(TypeError, match="Starlette/FastAPI"):
         setup_middlewares(object())
+
+
+def test_cors_allowed_origin_returns_access_control_header() -> None:
+    app = _make_app(cors_allowed_origins=["https://app.example.com"])
+    client = TestClient(app, raise_server_exceptions=False)
+    r = client.get("/ok", headers={"Origin": "https://app.example.com"})
+    assert r.headers.get("access-control-allow-origin") == "https://app.example.com"
+
+
+def test_cors_disallowed_origin_no_header() -> None:
+    app = _make_app(cors_allowed_origins=["https://app.example.com"])
+    client = TestClient(app, raise_server_exceptions=False)
+    r = client.get("/ok", headers={"Origin": "https://evil.example.com"})
+    assert "access-control-allow-origin" not in r.headers
+
+
+def test_cors_preflight_options_returns_200() -> None:
+    app = _make_app(cors_allowed_origins=["https://app.example.com"])
+    client = TestClient(app, raise_server_exceptions=False)
+    r = client.options(
+        "/ok",
+        headers={
+            "Origin": "https://app.example.com",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert r.headers.get("access-control-allow-origin") == "https://app.example.com"
+
+
+def test_cors_wildcard_origin_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="wildcard"):
+        _make_app(cors_allowed_origins=["*"])
+
+
+def test_cors_none_means_no_cors_middleware() -> None:
+    app = _make_app(cors_allowed_origins=None)
+    client = TestClient(app, raise_server_exceptions=False)
+    r = client.get("/ok", headers={"Origin": "https://app.example.com"})
+    assert "access-control-allow-origin" not in r.headers
+
+
+def test_cors_credentials_can_be_enabled() -> None:
+    app = _make_app(
+        cors_allowed_origins=["https://app.example.com"],
+        cors_allow_credentials=True,
+    )
+    client = TestClient(app, raise_server_exceptions=False)
+    r = client.get("/ok", headers={"Origin": "https://app.example.com"})
+    assert r.headers.get("access-control-allow-credentials") == "true"
+
+
+def test_cors_request_id_still_present() -> None:
+    """CORS ミドルウェアと X-Request-Id が共存する。"""
+    app = _make_app(cors_allowed_origins=["https://app.example.com"])
+    client = TestClient(app, raise_server_exceptions=False)
+    r = client.get("/ok", headers={"Origin": "https://app.example.com"})
+    assert "x-request-id" in r.headers
+
+
+def test_cors_security_headers_still_present() -> None:
+    """CORS ミドルウェアとセキュリティヘッダーが共存する。"""
+    app = _make_app(cors_allowed_origins=["https://app.example.com"])
+    client = TestClient(app, raise_server_exceptions=False)
+    r = client.get("/ok", headers={"Origin": "https://app.example.com"})
+    assert r.headers.get("x-content-type-options") == "nosniff"
