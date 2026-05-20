@@ -1,6 +1,6 @@
 [project]
 name = "nene2-python"
-version = "1.8.32"
+version = "1.8.33"
 description = "NENE2 Python — minimal API framework following NENE2's design philosophy"
 readme = "README.md"
 license = {text = "MIT"}
