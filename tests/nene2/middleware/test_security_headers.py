@@ -130,3 +130,16 @@ def test_default_no_csp_paths_still_work_with_extra_paths() -> None:
     assert "Content-Security-Policy" not in client.get("/docs").headers
     assert "Content-Security-Policy" not in client.get("/custom").headers
     assert "Content-Security-Policy" in client.get("/ping").headers
+
+
+def test_csp_empty_string_disables_csp_header() -> None:
+    app = FastAPI()
+    app.add_middleware(SecurityHeadersMiddleware, csp="")
+
+    @app.get("/ping")
+    async def ping() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    r = client.get("/ping")
+    assert "Content-Security-Policy" not in r.headers
