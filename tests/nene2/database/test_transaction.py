@@ -4,7 +4,11 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
-from nene2.database import DatabaseQueryExecutorInterface, SqlAlchemyTransactionManager
+from nene2.database import (
+    DatabaseIntegrityException,
+    DatabaseQueryExecutorInterface,
+    SqlAlchemyTransactionManager,
+)
 
 
 def _manager() -> SqlAlchemyTransactionManager:
@@ -16,7 +20,7 @@ def _manager() -> SqlAlchemyTransactionManager:
     manager = SqlAlchemyTransactionManager(engine)
     manager.transactional(
         lambda ex: ex.write(
-            "CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL)"
+            "CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE)"
         )
     )
     return manager
@@ -71,3 +75,28 @@ def test_begin_rollback_workflow() -> None:
     mgr.rollback()
     rows = mgr.transactional(lambda ex: ex.fetch_all("SELECT * FROM items"))
     assert rows == []
+
+
+def test_transactional_raises_database_integrity_exception_on_unique_violation() -> None:
+    mgr = _manager()
+    mgr.transactional(lambda ex: ex.write("INSERT INTO items (name) VALUES ('dup')"))
+
+    def _duplicate(ex: DatabaseQueryExecutorInterface) -> None:
+        ex.write("INSERT INTO items (name) VALUES ('dup')")
+
+    with pytest.raises(DatabaseIntegrityException):
+        mgr.transactional(_duplicate)
+
+
+def test_transactional_rollback_on_integrity_error() -> None:
+    mgr = _manager()
+
+    def _partial_then_fail(ex: DatabaseQueryExecutorInterface) -> None:
+        ex.write("INSERT INTO items (name) VALUES ('first')")
+        ex.write("INSERT INTO items (name) VALUES ('first')")  # UNIQUE violation
+
+    with pytest.raises(DatabaseIntegrityException):
+        mgr.transactional(_partial_then_fail)
+
+    rows = mgr.transactional(lambda ex: ex.fetch_all("SELECT * FROM items"))
+    assert rows == []  # ロールバックされて何も残っていない
