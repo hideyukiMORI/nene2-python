@@ -119,3 +119,44 @@ inspect.iscoroutinefunction(use_case.execute)  # → True/False
 ```
 
 型安全性は `mypy --strict` の静的解析で保証します。詳細は ADR-0010 を参照してください。
+
+---
+
+## 同期 DB 呼び出しのブロッキング問題
+
+`async def` ハンドラーで同期の DB 呼び出し（SQLAlchemy sync API 等）を行うと、イベントループをブロックして他のリクエストが詰まる。
+
+```python
+# ❌ async def 内での同期 DB 呼び出しはブロッキング
+@app.get("/notes")
+async def list_notes() -> JSONResponse:
+    notes = session.execute(select(Note)).scalars().all()  # ブロック！
+    return JSONResponse(...)
+```
+
+**解決策1: `run_in_threadpool` でスレッドプールで実行する**
+
+```python
+from nene2.middleware import run_in_threadpool
+
+@app.get("/notes")
+async def list_notes() -> JSONResponse:
+    notes = await run_in_threadpool(session.execute, select(Note))
+    return JSONResponse(...)
+```
+
+**解決策2: `def`（同期）ハンドラーを使う**
+
+同期 DB を使う場合は、ハンドラーを `async def` にしない。FastAPI が自動でスレッドプールで実行する。
+
+```python
+# ✅ def ハンドラー + 同期 DB = 問題なし
+@app.get("/notes")
+def list_notes() -> JSONResponse:
+    notes = session.execute(select(Note)).scalars().all()
+    return JSONResponse(...)
+```
+
+**解決策3: SQLAlchemy async API に移行する**
+
+長期的には SQLAlchemy の async API（`AsyncSession`）への移行を検討する。
