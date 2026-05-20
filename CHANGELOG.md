@@ -5,6 +5,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.15] — 2026-05-20
+
+FT55 フィールドトライアル — parse_db_datetime 実運用検証。
+
+### Added
+- Field trial report: `docs/field-trials/2026-05-field-trial-55.md`
+
+---
+
 ## [1.8.14] — 2026-05-20
 
 FT54 フィールドトライアル — RequestSizeLimitMiddleware + path_limits 実運用検証。
