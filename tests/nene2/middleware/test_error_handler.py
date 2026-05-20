@@ -1,5 +1,6 @@
 """Tests for ErrorHandlerMiddleware."""
 
+import pytest
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -127,3 +128,42 @@ def test_pydantic_validation_error_field_names_are_extracted() -> None:
     assert r.status_code == 422
     fields = [e["field"] for e in r.json()["errors"]]
     assert "rating" in fields
+
+
+def _make_app_via_install() -> FastAPI:
+    class _Body(BaseModel):
+        score: int = Field(ge=0, le=100)
+
+    app = FastAPI()
+    ErrorHandlerMiddleware.install(app)
+
+    @app.post("/scores")
+    async def create_score(body: _Body) -> JSONResponse:
+        return JSONResponse({"score": body.score})
+
+    @app.get("/boom")
+    async def boom() -> JSONResponse:
+        raise RuntimeError("error via install")
+
+    return app
+
+
+def test_install_registers_both_middleware_and_validation_handler() -> None:
+    client = TestClient(_make_app_via_install(), raise_server_exceptions=False)
+    r = client.post("/scores", json={"score": 999})
+    assert r.status_code == 422
+    body = r.json()
+    assert body["type"].endswith("validation-failed")
+    assert "errors" in body
+
+
+def test_install_middleware_still_catches_runtime_errors() -> None:
+    client = TestClient(_make_app_via_install(), raise_server_exceptions=False)
+    r = client.get("/boom")
+    assert r.status_code == 500
+    assert r.json()["type"].endswith("internal-server-error")
+
+
+def test_install_raises_type_error_for_non_starlette_app() -> None:
+    with pytest.raises(TypeError, match="Starlette/FastAPI"):
+        ErrorHandlerMiddleware.install(object())
