@@ -66,3 +66,24 @@ def test_malformed_content_length_is_tolerated() -> None:
         headers={"Content-Length": "abc", "Content-Type": "application/octet-stream"},
     )
     assert response.status_code == 200
+
+
+def test_exclude_paths_bypasses_size_limit() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        RequestSizeLimitMiddleware,
+        max_bytes=10,
+        exclude_paths=["/upload/large"],
+    )
+
+    @app.post("/upload")
+    async def upload() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    @app.post("/upload/large")
+    async def upload_large() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    assert client.post("/upload", content=b"x" * 100).status_code == 413
+    assert client.post("/upload/large", content=b"x" * 100).status_code == 200

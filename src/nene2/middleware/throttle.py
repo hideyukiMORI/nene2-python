@@ -25,7 +25,17 @@ _DEFAULT_WINDOW = 60  # seconds
 
 
 class ThrottleMiddleware(BaseHTTPMiddleware):
-    """Fixed-window rate limiter keyed by client IP."""
+    """Fixed-window rate limiter keyed by client IP.
+
+    Use ``exclude_paths`` to bypass rate limiting for health checks and API docs::
+
+        app.add_middleware(
+            ThrottleMiddleware,
+            limit=60,
+            window=60,
+            exclude_paths=["/health", "/docs", "/openapi.json"],
+        )
+    """
 
     def __init__(
         self,
@@ -33,10 +43,12 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
         *,
         limit: int = _DEFAULT_LIMIT,
         window: int = _DEFAULT_WINDOW,
+        exclude_paths: list[str] | None = None,
     ) -> None:
         super().__init__(app)  # type: ignore[arg-type]
         self._limit = limit
         self._window = window
+        self._exclude_paths = set(exclude_paths or [])
         self._counts: dict[str, tuple[int, float]] = {}
         self._lock = threading.Lock()
 
@@ -58,6 +70,8 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
         return count <= self._limit, remaining
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        if request.url.path in self._exclude_paths:
+            return await call_next(request)
         key = self._client_key(request)
         allowed, retry_after = self._is_allowed(key)
         if not allowed:

@@ -43,3 +43,35 @@ def test_forwarded_for_header_used_as_key() -> None:
 
     response2 = client.get("/ping", headers={"X-Forwarded-For": "10.0.0.2"})
     assert response2.status_code == 200
+
+
+def test_exclude_paths_bypasses_throttle() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        ThrottleMiddleware,
+        limit=2,
+        window=60,
+        exclude_paths=["/health"],
+    )
+
+    @app.get("/health")
+    async def health() -> JSONResponse:
+        return JSONResponse({"status": "ok"})
+
+    @app.get("/ping")
+    async def ping() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    for _ in range(5):
+        assert client.get("/health").status_code == 200
+
+    client.get("/ping")
+    client.get("/ping")
+    assert client.get("/ping").status_code == 429
+
+
+def test_exclude_paths_default_is_empty() -> None:
+    client = TestClient(_make_app(limit=1))
+    client.get("/ping")
+    assert client.get("/ping").status_code == 429
