@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.8] — 2026-05-20
+
+FT45 フィールドトライアル — SecurityHeadersMiddleware CSP バグ修正。
+
+### Fixed
+- `SecurityHeadersMiddleware` — `csp=""` を渡したとき空の `Content-Security-Policy` ヘッダーが付与される問題を修正。`csp=""` の場合は CSP ヘッダーを付与しないよう変更 (#271) (FT45)
+
+### Added
+- Field trial report: `docs/field-trials/2026-05-field-trial-45.md`
+
+---
+
 ## [1.8.7] — 2026-05-20
 
 FT43〜FT44 フィールドトライアル — ThrottleMiddleware path_limits 確認・PaginationQueryParser バリデーション改善。
