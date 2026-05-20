@@ -74,3 +74,18 @@ def test_reset_problem_details_is_idempotent() -> None:
     reset_problem_details()
     r = problem_details_response("not-found", "Not Found", 404)
     assert b"nene2.dev/problems/not-found" in r.body
+
+
+def test_extra_with_reserved_field_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="reserved Problem Details fields"):
+        problem_details_response("x", "X", 400, extra={"title": "bad"})
+
+
+def test_extra_with_type_reserved_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="reserved Problem Details fields"):
+        problem_details_response("x", "X", 400, extra={"type": "overridden"})
+
+
+def test_extra_with_status_reserved_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="reserved Problem Details fields"):
+        problem_details_response("x", "X", 400, extra={"status": 500})

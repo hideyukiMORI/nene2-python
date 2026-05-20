@@ -8,6 +8,7 @@ from typing import Any
 from fastapi.responses import JSONResponse
 
 PROBLEM_DETAILS_BASE_URL = "https://nene2.dev/problems/"
+_RESERVED_FIELDS = frozenset({"type", "title", "status", "detail"})
 
 _configured_base_url: str | None = None
 
@@ -73,6 +74,9 @@ def problem_details_response(
     if detail:
         body["detail"] = detail
     if extra:
+        overlap = _RESERVED_FIELDS & extra.keys()
+        if overlap:
+            raise ValueError(f"extra contains reserved Problem Details fields: {sorted(overlap)}")
         body.update(extra)
 
     return JSONResponse(
