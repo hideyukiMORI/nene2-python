@@ -5,6 +5,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.5] — 2026-05-20
+
+FT37〜FT40 フィールドトライアル — RequestSizeLimitMiddleware パスごとサイズ制限とドキュメント改善。
+
+### Added
+- `RequestSizeLimitMiddleware` に `path_limits: dict[str, int] | None = None` パラメータを追加 — パスごとに異なるリクエストボディサイズ制限を設定可能に (FT39)
+- Field trial reports: `docs/field-trials/2026-05-field-trial-37.md` 〜 `docs/field-trials/2026-05-field-trial-40.md`
+
+---
+
 ## [1.8.4] — 2026-05-20
 
 FT33〜FT36 フィールドトライアル — バリデーション・DB整合性・混合認証・非同期ヘルスチェック改善。
