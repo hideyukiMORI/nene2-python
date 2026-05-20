@@ -88,7 +88,41 @@ ValidationError("items.0.quantity", "1 以上を入力してください", Valid
 
 ---
 
-## 5. ErrorHandlerMiddleware との連携
+## 5. @model_validator エラーの field は "request" になる
+
+Pydantic の `@model_validator(mode="after")` で `raise ValueError(...)` すると、`loc` が空タプルになる。nene2 の `ValidationException` 変換ではこれを `field: "request"` に変換する。
+
+```python
+class RegisterBody(BaseModel):
+    password: str
+    password_confirm: str
+
+    @model_validator(mode="after")
+    def passwords_match(self) -> Self:
+        if self.password != self.password_confirm:
+            raise ValueError("Passwords do not match")
+        return self
+```
+
+レスポンス例（422）:
+
+```json
+{
+  "errors": [
+    {
+      "field": "request",
+      "message": "Value error, Passwords do not match",
+      "code": "value_error"
+    }
+  ]
+}
+```
+
+フロントエンドでは `field: "request"` をフォーム全体に対するエラーとして扱い、エラーメッセージに関係するフィールド名を文言に含める。
+
+---
+
+## 6. ErrorHandlerMiddleware との連携
 
 `nene2.middleware.ErrorHandlerMiddleware` をアプリに追加すると、
 `ValidationException` が自動で 422 Problem Details レスポンスに変換される。
