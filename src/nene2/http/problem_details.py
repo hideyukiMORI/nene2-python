@@ -27,6 +27,27 @@ def configure_problem_details(base_url: str) -> None:
     _configured_base_url = base_url
 
 
+def reset_problem_details() -> None:
+    """Reset the base_url configured by configure_problem_details().
+
+    Intended for use in tests only. Restores the default behaviour of
+    falling back to ``PROBLEM_DETAILS_BASE_URL``.
+
+    Example::
+
+        import pytest
+        from nene2.http import reset_problem_details
+
+
+        @pytest.fixture(autouse=True)
+        def _reset():
+            yield
+            reset_problem_details()
+    """
+    global _configured_base_url  # noqa: PLW0603
+    _configured_base_url = None
+
+
 def problem_details_response(
     problem_type: str,
     title: str,
