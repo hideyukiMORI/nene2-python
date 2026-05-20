@@ -5,6 +5,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.34] — 2026-05-20
+
+テストの ResourceWarning 解消と `SqlAlchemyQueryExecutor` / `SqlAlchemyTransactionManager` の `engine` プロパティ追加。
+
+### Added
+- `SqlAlchemyQueryExecutor.engine` プロパティ — 下層の SQLAlchemy エンジンを公開（テストのティアダウンで `executor.engine.dispose()` に使用）(#428)
+- `SqlAlchemyTransactionManager.engine` プロパティ — 同上 (#428)
+
+### Fixed
+- テスト実行時に Python 3.14 で 80+ 件出ていた `ResourceWarning: unclosed database` を解消 (#428)
+  - `create_app()` で `app.state.db_executor` を保存してテストからエンジンを dispose できるように変更
+  - `export_openapi.py` でエンジンを dispose するように修正
+  - テストフィクスチャを `yield` + `engine.dispose()` パターンに統一
+  - `tests/conftest.py` を新規作成し module-level app エンジンをセッション終了時に dispose
+  - `StaticPool` の最後の 1 件は `pyproject.toml` の `filterwarnings` で抑制
+
+---
+
 ## [1.8.33] — 2026-05-20
 
 FT100 フィールドトライアル — In-memory TTL レスポンスキャッシュパターン検証と nene2.cache モジュール追加。
