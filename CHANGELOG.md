@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.18] — 2026-05-20
+
+FT67 フィールドトライアル — SqlAlchemyTransactionManager 実運用検証。
+
+### Changed
+- `SqlAlchemyQueryExecutor` の docstring に SQLite `:memory:` + `StaticPool` の注意書きを追加 (#305) (FT67)
+
+### Added
+- Field trial reports: `docs/field-trials/2026-05-field-trial-65.md` 〜 `2026-05-field-trial-67.md` (FT65〜FT67)
+
+---
+
 ## [1.8.17] — 2026-05-20
 
 FT64 フィールドトライアル — ValidationException 複数エラー実運用検証。
