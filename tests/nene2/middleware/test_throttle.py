@@ -75,3 +75,31 @@ def test_exclude_paths_default_is_empty() -> None:
     client = TestClient(_make_app(limit=1))
     client.get("/ping")
     assert client.get("/ping").status_code == 429
+
+
+def test_successful_response_includes_rate_limit_headers() -> None:
+    client = TestClient(_make_app(limit=5))
+    r = client.get("/ping")
+    assert r.status_code == 200
+    assert r.headers["X-RateLimit-Limit"] == "5"
+    assert r.headers["X-RateLimit-Remaining"] == "4"
+    assert "X-RateLimit-Reset" in r.headers
+
+
+def test_rate_limit_remaining_decrements_per_request() -> None:
+    client = TestClient(_make_app(limit=5))
+    r1 = client.get("/ping")
+    r2 = client.get("/ping")
+    assert int(r1.headers["X-RateLimit-Remaining"]) > int(r2.headers["X-RateLimit-Remaining"])
+
+
+def test_429_response_includes_rate_limit_headers() -> None:
+    client = TestClient(_make_app(limit=2))
+    client.get("/ping")
+    client.get("/ping")
+    r = client.get("/ping")
+    assert r.status_code == 429
+    assert r.headers["X-RateLimit-Limit"] == "2"
+    assert r.headers["X-RateLimit-Remaining"] == "0"
+    assert "X-RateLimit-Reset" in r.headers
+    assert "Retry-After" in r.headers

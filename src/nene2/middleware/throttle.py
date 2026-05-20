@@ -2,6 +2,8 @@
 
 Tracks request counts per client IP in an in-memory dict.
 Exceeding the limit returns 429 with a Retry-After header.
+All responses include ``X-RateLimit-Limit``, ``X-RateLimit-Remaining``, and
+``X-RateLimit-Reset`` headers so clients can adapt their request rate.
 
 .. warning::
     ``X-Forwarded-For`` is trusted as-is when present.  In environments
@@ -13,6 +15,7 @@ Exceeding the limit returns 429 with a Retry-After header.
 
 import threading
 import time
+from dataclasses import dataclass
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
@@ -24,8 +27,20 @@ _DEFAULT_LIMIT = 60
 _DEFAULT_WINDOW = 60  # seconds
 
 
+@dataclass(frozen=True, slots=True)
+class _RateInfo:
+    allowed: bool
+    remaining: int
+    retry_after: int
+    reset_at: int  # Unix timestamp
+
+
 class ThrottleMiddleware(BaseHTTPMiddleware):
     """Fixed-window rate limiter keyed by client IP.
+
+    Adds ``X-RateLimit-Limit``, ``X-RateLimit-Remaining``, and
+    ``X-RateLimit-Reset`` headers to every response so clients can monitor
+    their quota.  On 429, also adds ``Retry-After``.
 
     Use ``exclude_paths`` to bypass rate limiting for health checks and API docs::
 
@@ -58,29 +73,46 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
             return forwarded.split(",")[0].strip()
         return request.client.host if request.client else "unknown"
 
-    def _is_allowed(self, key: str) -> tuple[bool, int]:
+    def _check_rate(self, key: str) -> _RateInfo:
         now = time.monotonic()
+        wall_now = int(time.time())
         with self._lock:
             count, window_start = self._counts.get(key, (0, now))
             if now - window_start >= self._window:
                 count, window_start = 0, now
             count += 1
             self._counts[key] = (count, window_start)
-            remaining = max(0, self._window - int(now - window_start))
-        return count <= self._limit, remaining
+            elapsed = int(now - window_start)
+            retry_after = max(0, self._window - elapsed)
+            reset_at = wall_now + retry_after
+            remaining = max(0, self._limit - count)
+        return _RateInfo(
+            allowed=count <= self._limit,
+            remaining=remaining,
+            retry_after=retry_after,
+            reset_at=reset_at,
+        )
+
+    def _apply_rate_headers(self, response: Response, info: _RateInfo) -> None:
+        response.headers["X-RateLimit-Limit"] = str(self._limit)
+        response.headers["X-RateLimit-Remaining"] = str(info.remaining)
+        response.headers["X-RateLimit-Reset"] = str(info.reset_at)
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         if request.url.path in self._exclude_paths:
             return await call_next(request)
         key = self._client_key(request)
-        allowed, retry_after = self._is_allowed(key)
-        if not allowed:
-            response = problem_details_response(
+        info = self._check_rate(key)
+        if not info.allowed:
+            error_response = problem_details_response(
                 "too-many-requests",
                 "Too Many Requests",
                 429,
-                f"Rate limit exceeded. Retry after {retry_after} seconds.",
+                f"Rate limit exceeded. Retry after {info.retry_after} seconds.",
             )
-            response.headers["Retry-After"] = str(retry_after)
-            return response
-        return await call_next(request)
+            error_response.headers["Retry-After"] = str(info.retry_after)
+            self._apply_rate_headers(error_response, info)
+            return error_response
+        response = await call_next(request)
+        self._apply_rate_headers(response, info)
+        return response
