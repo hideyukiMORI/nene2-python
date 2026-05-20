@@ -7,6 +7,7 @@ from sqlalchemy.pool import StaticPool
 from nene2.database import (
     DatabaseIntegrityException,
     DatabaseQueryExecutorInterface,
+    SqlAlchemyQueryExecutor,
     SqlAlchemyTransactionManager,
 )
 
@@ -100,3 +101,37 @@ def test_transactional_rollback_on_integrity_error() -> None:
 
     rows = mgr.transactional(lambda ex: ex.fetch_all("SELECT * FROM items"))
     assert rows == []  # ロールバックされて何も残っていない
+
+
+def test_executor_write_raises_database_integrity_exception() -> None:
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    executor = SqlAlchemyQueryExecutor(engine)
+    executor.write("CREATE TABLE t (id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE)")
+    executor.write("INSERT INTO t VALUES (1, 'alice')")
+
+    with pytest.raises(DatabaseIntegrityException):
+        executor.write("INSERT INTO t VALUES (2, 'alice')")
+
+
+def test_write_returns_zero_for_update_no_match() -> None:
+    mgr = _manager()
+    mgr.transactional(lambda ex: ex.write("INSERT INTO items (name) VALUES ('alice')"))
+
+    affected = mgr.transactional(
+        lambda ex: ex.write("UPDATE items SET name = 'bob' WHERE id = 999")
+    )
+    assert affected == 0  # 0 行影響 → 0 を返す
+
+
+def test_write_returns_rowcount_for_update_match() -> None:
+    mgr = _manager()
+    mgr.transactional(lambda ex: ex.write("INSERT INTO items (name) VALUES ('alice')"))
+
+    affected = mgr.transactional(
+        lambda ex: ex.write("UPDATE items SET name = 'bob' WHERE name = 'alice'")
+    )
+    assert affected == 1
