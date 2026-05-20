@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.11] — 2026-05-20
+
+FT51 フィールドトライアル — SimpleDomainHandler 実運用検証 + problem_details_response バグ修正。
+
+### Fixed
+- `problem_details_response()` — `extra` に RFC 9457 予約済みフィールド (`type`, `title`, `status`, `detail`) が含まれる場合に `ValueError` を raise するよう修正 (#282) (FT51)
+
+### Added
+- Field trial report: `docs/field-trials/2026-05-field-trial-51.md`
+
+---
+
 ## [1.8.10] — 2026-05-20
 
 FT50 フィールドトライアル — ValidationException + ValidationCode(StrEnum) 実運用検証。
