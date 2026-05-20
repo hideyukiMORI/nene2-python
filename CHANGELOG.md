@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.2] — 2026-05-20
+
+FT29〜FT30 フィールドトライアル — AsyncUseCase ドキュメント・RequestLoggingMiddleware 改善。
+
+### Added
+- `docs/how-to/async-use-case.md` — `AsyncUseCaseProtocol` + FastAPI `Depends` の DI パターンガイドを追加 (FT29)
+- `RequestLoggingMiddleware` に `extra_context: dict[str, str] | None = None` パラメータを追加し、全ログに静的フィールドを付加できるように (FT30)
+- Field trial reports: `docs/field-trials/2026-05-field-trial-29.md`、`docs/field-trials/2026-05-field-trial-30.md`
+
+---
+
 ## [1.8.1] — 2026-05-20
 
 FT25〜FT28 フィールドトライアル — RequestId ヘルパー・structlog ログレベル・ThrottleMiddleware 改善。
