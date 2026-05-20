@@ -56,3 +56,11 @@ def test_composite_with_empty_checks_returns_ok() -> None:
     result = composite.check()
     assert result.is_healthy is True
     assert result.checks == {}
+
+
+def test_health_status_http_status_code_ok() -> None:
+    assert HealthStatus(status="ok").http_status_code == 200
+
+
+def test_health_status_http_status_code_error() -> None:
+    assert HealthStatus(status="error").http_status_code == 503

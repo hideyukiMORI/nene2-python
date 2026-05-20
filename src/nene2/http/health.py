@@ -13,6 +13,10 @@ class HealthStatus:
     def is_healthy(self) -> bool:
         return self.status == "ok"
 
+    @property
+    def http_status_code(self) -> int:
+        return 200 if self.is_healthy else 503
+
 
 @runtime_checkable
 class HealthCheckProtocol(Protocol):
