@@ -27,6 +27,22 @@ class LocalMcpServer:
         """Register a function as an MCP tool."""
         return self._mcp.tool(description=description)
 
+    def list_tools(self) -> list[str]:
+        """Return the names of all registered tools.
+
+        Useful for debugging and introspection::
+
+            server = LocalMcpServer("my-server")
+
+
+            @server.tool("Get data")
+            def get_data() -> str: ...
+
+
+            print(server.list_tools())  # ["get_data"]
+        """
+        return [t.name for t in self._mcp._tool_manager.list_tools()]
+
     def run(self, transport: Literal["stdio", "sse", "streamable-http"] = "stdio") -> None:
         """Start the MCP server. Blocks until the client disconnects."""
         self._mcp.run(transport=transport)
