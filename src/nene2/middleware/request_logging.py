@@ -13,9 +13,21 @@ logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
-    """Log each request and response with method, path, status, and duration."""
+    """Log each request and response with method, path, status, and duration.
+
+    Args:
+        exclude_paths: Paths to skip logging for (e.g. ``["/health"]``).
+            Useful for high-frequency health-check endpoints where log noise is unwanted.
+    """
+
+    def __init__(self, app: object, exclude_paths: list[str] | None = None) -> None:
+        super().__init__(app)  # type: ignore[arg-type]
+        self._exclude_paths = set(exclude_paths or [])
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        if request.url.path in self._exclude_paths:
+            return await call_next(request)
+
         start = time.perf_counter()
         structlog.contextvars.clear_contextvars()
         structlog.contextvars.bind_contextvars(
