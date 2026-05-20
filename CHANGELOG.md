@@ -5,6 +5,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.21] — 2026-05-20
+
+FT75 フィールドトライアル — ミドルウェアスタック順序問題の発見と根本解決。
+
+### Added
+- `setup_middlewares(app, ...)` ユーティリティ関数を追加 (#320 #321) (FT75)
+  — 全ミドルウェアを正しい順序（RequestId 最外側・ErrorHandler 最内側）で一括登録し、
+  エラーレスポンスにも X-Request-Id とセキュリティヘッダーが確実に付与される
+- `docs/how-to/middleware-stack.md` — ミドルウェア順序の解説ガイドを追加
+- CLAUDE.md セクション 8 に推奨 `add_middleware` 順序を追記
+- Field trial report: `docs/field-trials/2026-05-field-trial-75.md` (FT75)
+
+---
+
 ## [1.8.20] — 2026-05-20
 
 FT72 フィールドトライアル — DatabaseIntegrityException + ErrorHandlerMiddleware.install() 改善。
