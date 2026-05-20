@@ -12,6 +12,7 @@ class AppSettings(BaseSettings):
     app_env: str = "local"
     app_debug: bool = False
     app_name: str = "nene2-python"
+    log_level: str = "INFO"
     security_headers_enabled: bool = True
     max_body_size: int = 1_048_576  # 1 MiB
     throttle_enabled: bool = True
@@ -49,6 +50,15 @@ class AppSettings(BaseSettings):
         if v not in allowed:
             raise ValueError(f"app_env must be one of {allowed}")
         return v
+
+    @field_validator("log_level")
+    @classmethod
+    def validate_log_level(cls, v: str) -> str:
+        allowed = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
+        upper = v.upper()
+        if upper not in allowed:
+            raise ValueError(f"log_level must be one of {allowed}")
+        return upper
 
     @field_validator("db_adapter")
     @classmethod
