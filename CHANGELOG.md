@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.32] — 2026-05-20
+
+FT99 フィールドトライアル — Webhook HMAC-SHA256 署名検証パターン検証と nene2.security モジュール追加。
+
+### Added
+- `nene2.security` モジュールを新設 (#404) (FT99)
+  - `verify_hmac_signature(body, secret, signature, *, prefix="")` — GitHub/Stripe 方式の Webhook HMAC-SHA256 署名を timing-safe に検証
+  - `hmac.compare_digest()` による timing attack 対策済み
+- Field trial report: `docs/field-trials/2026-05-field-trial-99.md` (FT99)
+
+---
+
 ## [1.8.31] — 2026-05-20
 
 FT97 フィールドトライアル — HTTP キャッシュヘッダーパターン検証と generate_etag() 追加。
