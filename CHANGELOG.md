@@ -5,6 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.33] — 2026-05-20
+
+FT100 フィールドトライアル — In-memory TTL レスポンスキャッシュパターン検証と nene2.cache モジュール追加。
+
+### Added
+- `nene2.cache` モジュールを新設 (#409) (FT100)
+  - `TtlCache[V]` — TTL 付きインメモリキャッシュ（ジェネリック型）
+  - `time.monotonic()` ベースの TTL で NTP 調整の影響を受けない
+  - `get()`, `set()`, `delete()`, `clear()`, `size()` API
+- Field trial report: `docs/field-trials/2026-05-field-trial-100.md` (FT100)
+
+---
+
 ## [1.8.32] — 2026-05-20
 
 FT99 フィールドトライアル — Webhook HMAC-SHA256 署名検証パターン検証と nene2.security モジュール追加。
