@@ -7,7 +7,7 @@ from .health import (
     HealthCheckProtocol,
     HealthStatus,
 )
-from .pagination import PaginationQuery, PaginationQueryParser, PaginationResponse
+from .pagination import PaginationDep, PaginationQuery, PaginationQueryParser, PaginationResponse
 from .problem_details import (
     PROBLEM_DETAILS_BASE_URL,
     configure_problem_details,
@@ -21,6 +21,7 @@ __all__ = [
     "CompositeHealthCheck",
     "HealthCheckProtocol",
     "HealthStatus",
+    "PaginationDep",
     "PaginationQuery",
     "PaginationQueryParser",
     "PaginationResponse",

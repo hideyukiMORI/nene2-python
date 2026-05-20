@@ -9,7 +9,7 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from nene2.http import PaginationQueryParser, PaginationResponse
+from nene2.http import PaginationDep, PaginationQueryParser, PaginationResponse
 from nene2.validation.exceptions import ValidationException
 
 
@@ -125,3 +125,24 @@ def test_pagination_response_to_dict_serializes_dataclass_items() -> None:
 def test_pagination_response_to_dict_passes_through_dict_items() -> None:
     r = PaginationResponse(items=[{"id": 1}, {"id": 2}], limit=20, offset=0, total=2)
     assert r.to_dict()["items"] == [{"id": 1}, {"id": 2}]
+
+
+def test_pagination_response_model_dump_is_alias_for_to_dict() -> None:
+    """model_dump() は to_dict() の Pydantic 互換エイリアス。"""
+    r = PaginationResponse(items=[{"id": 1}], limit=10, offset=0, total=1)
+    assert r.model_dump() == r.to_dict()
+
+
+def test_pagination_dep_type_alias_usable_in_handler() -> None:
+    """PaginationDep 型エイリアスで Depends を省略して記述できる。"""
+    test_app = FastAPI()
+
+    @test_app.get("/things")
+    def list_things(pagination: PaginationDep) -> JSONResponse:
+        return JSONResponse({"limit": pagination.limit, "offset": pagination.offset})
+
+    test_client = TestClient(test_app)
+    r = test_client.get("/things?limit=5&offset=10")
+    assert r.status_code == 200
+    assert r.json()["limit"] == 5
+    assert r.json()["offset"] == 10
