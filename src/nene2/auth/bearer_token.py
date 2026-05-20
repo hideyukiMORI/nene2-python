@@ -17,11 +17,28 @@ _WWW_AUTH = 'Bearer realm="api"'
 
 
 class BearerTokenMiddleware(BaseHTTPMiddleware):
-    """Require a valid Bearer token on every request.
+    """Require a valid Bearer token on matching requests.
 
-    Use ``exclude_paths`` to skip authentication for specific paths such as
-    health-check endpoints or API documentation::
+    **Path filtering** — two complementary options (mutually exclusive):
 
+    - ``include_paths``: only protect paths whose prefix matches one of these values.
+      All other paths pass through without authentication.
+      Ideal for protecting a specific sub-tree (e.g. ``["/admin"]``).
+    - ``exclude_paths``: protect every path **except** these exact paths.
+      Ideal for skipping docs / health endpoints.
+
+    When both are provided, ``include_paths`` takes precedence.
+
+    Examples::
+
+        # Protect only /admin/* routes (prefix match)
+        app.add_middleware(
+            BearerTokenMiddleware,
+            verifier=LocalTokenVerifier(tokens),
+            include_paths=["/admin"],
+        )
+
+        # Protect everything except docs/health (exact match)
         app.add_middleware(
             BearerTokenMiddleware,
             verifier=LocalTokenVerifier(tokens),
@@ -35,13 +52,20 @@ class BearerTokenMiddleware(BaseHTTPMiddleware):
         *,
         verifier: TokenVerifierProtocol,
         exclude_paths: list[str] | None = None,
+        include_paths: list[str] | None = None,
     ) -> None:
         super().__init__(app)  # type: ignore[arg-type]
         self._verifier = verifier
         self._exclude_paths = set(exclude_paths or [])
+        self._include_paths = list(include_paths or [])
+
+    def _should_authenticate(self, path: str) -> bool:
+        if self._include_paths:
+            return any(path.startswith(prefix) for prefix in self._include_paths)
+        return path not in self._exclude_paths
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        if request.url.path in self._exclude_paths:
+        if not self._should_authenticate(request.url.path):
             return await call_next(request)
         auth = request.headers.get("Authorization", "")
         if not auth.startswith("Bearer "):
