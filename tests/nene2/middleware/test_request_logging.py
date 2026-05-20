@@ -1,5 +1,6 @@
 """Tests for RequestLoggingMiddleware."""
 
+import structlog
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
@@ -39,6 +40,42 @@ def test_logging_does_not_remove_headers() -> None:
     client = TestClient(_make_app())
     response = client.get("/ping")
     assert "X-Request-Id" in response.headers
+
+
+def test_extra_context_is_bound_to_structlog() -> None:
+    captured: list[dict] = []
+    app = FastAPI()
+    app.add_middleware(
+        RequestLoggingMiddleware,
+        extra_context={"service": "my-api", "version": "1.0"},
+    )
+    app.add_middleware(RequestIdMiddleware)
+
+    @app.get("/ping")
+    async def ping() -> JSONResponse:
+        captured.append(dict(structlog.contextvars.get_contextvars()))
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    client.get("/ping")
+    assert captured[0]["service"] == "my-api"
+    assert captured[0]["version"] == "1.0"
+
+
+def test_extra_context_default_is_empty() -> None:
+    captured: list[dict] = []
+    app = FastAPI()
+    app.add_middleware(RequestLoggingMiddleware)  # extra_context なし
+    app.add_middleware(RequestIdMiddleware)
+
+    @app.get("/ping")
+    async def ping() -> JSONResponse:
+        captured.append(dict(structlog.contextvars.get_contextvars()))
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    client.get("/ping")
+    assert "service" not in captured[0]
 
 
 def test_exclude_paths_passes_requests_through() -> None:
