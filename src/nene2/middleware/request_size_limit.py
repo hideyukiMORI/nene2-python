@@ -22,13 +22,31 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
     Checks the Content-Length header first for a fast pre-flight reject,
     then reads the actual body to catch chunked-transfer requests that
     omit Content-Length entirely.
+
+    Use ``exclude_paths`` to bypass the size limit for specific endpoints::
+
+        app.add_middleware(
+            RequestSizeLimitMiddleware,
+            max_bytes=1_048_576,
+            exclude_paths=["/upload/multipart"],
+        )
     """
 
-    def __init__(self, app: object, *, max_bytes: int = _DEFAULT_MAX_BYTES) -> None:
+    def __init__(
+        self,
+        app: object,
+        *,
+        max_bytes: int = _DEFAULT_MAX_BYTES,
+        exclude_paths: list[str] | None = None,
+    ) -> None:
         super().__init__(app)  # type: ignore[arg-type]
         self._max_bytes = max_bytes
+        self._exclude_paths = set(exclude_paths or [])
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        if request.url.path in self._exclude_paths:
+            return await call_next(request)
+
         content_length = request.headers.get("Content-Length")
         if content_length is not None:
             try:
