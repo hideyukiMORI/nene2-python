@@ -1,5 +1,7 @@
 """Tests for SqlAlchemyTransactionManager — transactional() and begin/commit/rollback."""
 
+from collections.abc import Generator
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
@@ -12,7 +14,8 @@ from nene2.database import (
 )
 
 
-def _manager() -> SqlAlchemyTransactionManager:
+@pytest.fixture
+def mgr() -> Generator[SqlAlchemyTransactionManager, None, None]:
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
@@ -24,12 +27,11 @@ def _manager() -> SqlAlchemyTransactionManager:
             "CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE)"
         )
     )
-    return manager
+    yield manager
+    engine.dispose()
 
 
-def test_transactional_commits_on_success() -> None:
-    mgr = _manager()
-
+def test_transactional_commits_on_success(mgr: SqlAlchemyTransactionManager) -> None:
     def insert(ex: DatabaseQueryExecutorInterface) -> int:
         return ex.write("INSERT INTO items (name) VALUES (:name)", {"name": "hello"})
 
@@ -39,9 +41,7 @@ def test_transactional_commits_on_success() -> None:
     assert rows[0]["name"] == "hello"
 
 
-def test_transactional_rollback_on_exception() -> None:
-    mgr = _manager()
-
+def test_transactional_rollback_on_exception(mgr: SqlAlchemyTransactionManager) -> None:
     def failing(ex: DatabaseQueryExecutorInterface) -> None:
         ex.write("INSERT INTO items (name) VALUES (:name)", {"name": "will-rollback"})
         raise ValueError("intentional failure")
@@ -53,16 +53,14 @@ def test_transactional_rollback_on_exception() -> None:
     assert rows == []
 
 
-def test_transactional_returns_callback_value() -> None:
-    mgr = _manager()
+def test_transactional_returns_callback_value(mgr: SqlAlchemyTransactionManager) -> None:
     mgr.transactional(lambda ex: ex.write("INSERT INTO items (name) VALUES ('x')"))
     count = mgr.transactional(lambda ex: ex.fetch_one("SELECT COUNT(*) AS cnt FROM items"))
     assert count is not None
     assert count["cnt"] == 1
 
 
-def test_begin_commit_workflow() -> None:
-    mgr = _manager()
+def test_begin_commit_workflow(mgr: SqlAlchemyTransactionManager) -> None:
     mgr.begin()
     mgr.transactional(lambda ex: ex.write("INSERT INTO items (name) VALUES ('low-level')"))
     mgr.commit()
@@ -70,16 +68,16 @@ def test_begin_commit_workflow() -> None:
     assert any(r["name"] == "low-level" for r in rows)
 
 
-def test_begin_rollback_workflow() -> None:
-    mgr = _manager()
+def test_begin_rollback_workflow(mgr: SqlAlchemyTransactionManager) -> None:
     mgr.begin()
     mgr.rollback()
     rows = mgr.transactional(lambda ex: ex.fetch_all("SELECT * FROM items"))
     assert rows == []
 
 
-def test_transactional_raises_database_integrity_exception_on_unique_violation() -> None:
-    mgr = _manager()
+def test_transactional_raises_database_integrity_exception_on_unique_violation(
+    mgr: SqlAlchemyTransactionManager,
+) -> None:
     mgr.transactional(lambda ex: ex.write("INSERT INTO items (name) VALUES ('dup')"))
 
     def _duplicate(ex: DatabaseQueryExecutorInterface) -> None:
@@ -89,9 +87,7 @@ def test_transactional_raises_database_integrity_exception_on_unique_violation()
         mgr.transactional(_duplicate)
 
 
-def test_transactional_rollback_on_integrity_error() -> None:
-    mgr = _manager()
-
+def test_transactional_rollback_on_integrity_error(mgr: SqlAlchemyTransactionManager) -> None:
     def _partial_then_fail(ex: DatabaseQueryExecutorInterface) -> None:
         ex.write("INSERT INTO items (name) VALUES ('first')")
         ex.write("INSERT INTO items (name) VALUES ('first')")  # UNIQUE violation
@@ -116,9 +112,10 @@ def test_executor_write_raises_database_integrity_exception() -> None:
     with pytest.raises(DatabaseIntegrityException):
         executor.write("INSERT INTO t VALUES (2, 'alice')")
 
+    engine.dispose()
 
-def test_write_returns_zero_for_update_no_match() -> None:
-    mgr = _manager()
+
+def test_write_returns_zero_for_update_no_match(mgr: SqlAlchemyTransactionManager) -> None:
     mgr.transactional(lambda ex: ex.write("INSERT INTO items (name) VALUES ('alice')"))
 
     affected = mgr.transactional(
@@ -127,8 +124,7 @@ def test_write_returns_zero_for_update_no_match() -> None:
     assert affected == 0  # 0 行影響 → 0 を返す
 
 
-def test_write_returns_rowcount_for_update_match() -> None:
-    mgr = _manager()
+def test_write_returns_rowcount_for_update_match(mgr: SqlAlchemyTransactionManager) -> None:
     mgr.transactional(lambda ex: ex.write("INSERT INTO items (name) VALUES ('alice')"))
 
     affected = mgr.transactional(

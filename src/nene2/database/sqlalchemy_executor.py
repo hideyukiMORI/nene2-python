@@ -35,6 +35,11 @@ class SqlAlchemyQueryExecutor(DatabaseQueryExecutorInterface):
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
 
+    @property
+    def engine(self) -> Engine:
+        """Underlying SQLAlchemy engine. Useful for teardown: ``executor.engine.dispose()``."""
+        return self._engine
+
     def fetch_all(self, sql: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         try:
             with self._engine.connect() as conn:
@@ -123,6 +128,11 @@ class SqlAlchemyTransactionManager(DatabaseTransactionManagerInterface):
         self._conn: Connection | None = None
         # reason: RootTransaction is an internal SQLAlchemy type not exported in the public API
         self._tx: Any = None
+
+    @property
+    def engine(self) -> Engine:
+        """Underlying SQLAlchemy engine. Useful for teardown: ``manager.engine.dispose()``."""
+        return self._engine
 
     def transactional[T](self, callback: Callable[[DatabaseQueryExecutorInterface], T]) -> T:
         try:

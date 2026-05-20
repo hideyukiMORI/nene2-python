@@ -1,5 +1,7 @@
 """Repository contract tests for CommentRepository."""
 
+from collections.abc import Generator
+
 import pytest
 from sqlalchemy import create_engine
 
@@ -10,20 +12,19 @@ from example.schema import ensure_schema
 from nene2.database import SqlAlchemyQueryExecutor
 
 
-def _sqlalchemy_repos() -> tuple[SqlAlchemyCommentRepository, SqlAlchemyNoteRepository]:
+@pytest.fixture(params=["inmemory", "sqlalchemy"])
+def repo(request: pytest.FixtureRequest) -> Generator[CommentRepositoryInterface, None, None]:
+    if request.param == "inmemory":
+        yield InMemoryCommentRepository()
+        return
     engine = create_engine("sqlite:///:memory:")
     ensure_schema(engine)
     executor = SqlAlchemyQueryExecutor(engine)
-    return SqlAlchemyCommentRepository(executor), SqlAlchemyNoteRepository(executor)
-
-
-@pytest.fixture(params=["inmemory", "sqlalchemy"])
-def repo(request: pytest.FixtureRequest) -> CommentRepositoryInterface:
-    if request.param == "inmemory":
-        return InMemoryCommentRepository()
-    comment_repo, note_repo = _sqlalchemy_repos()
+    comment_repo = SqlAlchemyCommentRepository(executor)
+    note_repo = SqlAlchemyNoteRepository(executor)
     note_repo.save("Note", "body")
-    return comment_repo
+    yield comment_repo
+    engine.dispose()
 
 
 def test_save_and_find_by_id(repo: CommentRepositoryInterface) -> None:

@@ -12,6 +12,7 @@ import sys
 import yaml  # type: ignore[import-untyped]
 
 from example.app import create_app
+from nene2.database import SqlAlchemyQueryExecutor
 
 
 def main() -> None:
@@ -23,6 +24,10 @@ def main() -> None:
     output_path.write_text(yaml.dump(json.loads(json.dumps(schema)), allow_unicode=True))
 
     sys.stdout.write(f"OpenAPI schema written to {output_path}\n")
+
+    executor = getattr(app.state, "db_executor", None)
+    if isinstance(executor, SqlAlchemyQueryExecutor):
+        executor.engine.dispose()
 
 
 if __name__ == "__main__":
