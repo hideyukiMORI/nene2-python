@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.6.0] — 2026-05-20
+
+FT13 (ValidationException実運用) field trial — validation DX improvements.
+
+### Added
+- `ValidationException.single(field, message, code)` — convenience classmethod for single-error raises
+- `ValidationError.__post_init__` now names the specific empty field in the error message
+- Field trial report: `docs/field-trials/2026-05-field-trial-13.md`
+
+---
+
 ## [1.5.0] — 2026-05-20
 
 FT12 (ThrottleMiddleware + RequestSizeLimitMiddleware) field trial — middleware exclude_paths consistency.
