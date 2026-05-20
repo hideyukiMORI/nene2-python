@@ -18,11 +18,19 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     Args:
         exclude_paths: Paths to skip logging for (e.g. ``["/health"]``).
             Useful for high-frequency health-check endpoints where log noise is unwanted.
+        extra_context: Additional key-value pairs bound to every request log entry
+            (e.g. ``{"service": "my-api", "version": "1.0.0"}``).
     """
 
-    def __init__(self, app: object, exclude_paths: list[str] | None = None) -> None:
+    def __init__(
+        self,
+        app: object,
+        exclude_paths: list[str] | None = None,
+        extra_context: dict[str, str] | None = None,
+    ) -> None:
         super().__init__(app)  # type: ignore[arg-type]
         self._exclude_paths = set(exclude_paths or [])
+        self._extra_context: dict[str, str] = extra_context or {}
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         if request.url.path in self._exclude_paths:
@@ -34,6 +42,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             request_id=request_id_var.get(),
             method=request.method,
             path=request.url.path,
+            **self._extra_context,
         )
         logger.info("request.received")
         response = await call_next(request)
