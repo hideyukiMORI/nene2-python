@@ -90,7 +90,56 @@ def client() -> TestClient:
 
 ---
 
-## 4. app.state に設定した値が lifespan 後に消える
+## 4. TtlCache を app.state で管理する
+
+`nene2.cache.TtlCache` を `app.state` に格納すると、テスト時にグローバル変数を避けられる。
+
+```python
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
+
+from fastapi import Depends, FastAPI, Request
+from fastapi.responses import JSONResponse
+
+from nene2.cache import TtlCache
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    app.state.cache = TtlCache[dict[str, object]](ttl_seconds=60.0)
+    yield
+    # TtlCache はクリーンアップ不要（メモリのみ）
+
+app = FastAPI(lifespan=lifespan)
+
+
+def get_cache(request: Request) -> TtlCache[dict[str, object]]:
+    cache: TtlCache[dict[str, object]] = request.app.state.cache  # type: ignore[attr-defined]  # reason: lifespan で確実に設定される
+    return cache
+
+
+@app.get("/items/{item_id}")
+def get_item(
+    item_id: int,
+    cache: TtlCache[dict[str, object]] = Depends(get_cache),
+) -> JSONResponse:
+    key = f"item:{item_id}"
+    if (cached := cache.get(key)) is not None:
+        return JSONResponse({"source": "cache", **cached})
+    result = {"item_id": item_id, "name": f"Item {item_id}"}
+    cache.set(key, result)
+    return JSONResponse({"source": "fresh", **result})
+```
+
+**グローバル変数 vs app.state の比較**:
+
+| 方法 | メリット | デメリット |
+|---|---|---|
+| グローバル変数 | シンプル | テスト間で状態が共有される |
+| `app.state` | テストごとに独立した `TestClient` でリセット可能 | `type: ignore` が必要 |
+
+---
+
+## 6. app.state に設定した値が lifespan 後に消える
 
 `app.state` への設定は `lifespan` 内で行う。`startup` イベント（旧 API）は FastAPI 0.93+ では非推奨。
 
