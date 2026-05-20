@@ -51,7 +51,7 @@ def configure_for_testing() -> None:
     root.setLevel(logging.DEBUG)
 
 
-def setup_logging(app_env: str = "local") -> None:
+def setup_logging(app_env: str = "local", log_level: str = "INFO") -> None:
     shared_processors: list[structlog.types.Processor] = [
         structlog.stdlib.add_log_level,
         structlog.stdlib.add_logger_name,
@@ -86,4 +86,4 @@ def setup_logging(app_env: str = "local") -> None:
     root = logging.getLogger()
     root.handlers.clear()
     root.addHandler(handler)
-    root.setLevel(logging.INFO)
+    root.setLevel(getattr(logging, log_level.upper(), logging.INFO))
