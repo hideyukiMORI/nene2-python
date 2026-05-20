@@ -45,9 +45,56 @@ API_KEYS=["key1","key2"]
 curl -H "X-Api-Key: key1" http://localhost:8080/notes
 ```
 
-## Using both at once
+## Using both at once (AND condition)
 
-When both `BEARER_TOKEN_ENABLED` and `API_KEY_ENABLED` are set, requests must pass both checks. In practice you would choose one or the other.
+When both middlewares are added via `add_middleware`, requests must pass **both** checks (AND condition). A Bearer token alone or an API key alone will both result in 401.
+
+## Either-or authentication (Bearer Token OR API Key)
+
+If you want to accept **either** a Bearer token or an API key — whichever is present — the built-in middlewares cannot express this. Implement a custom middleware that reuses the existing verifiers:
+
+```python
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.requests import Request
+from starlette.responses import Response
+
+from nene2.auth import LocalTokenVerifier
+from nene2.auth.exceptions import TokenVerificationException
+from nene2.http.problem_details import problem_details_response
+
+class EitherOrAuthMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, *, bearer_tokens: list[str], api_keys: list[str],
+                 exclude_paths: list[str] | None = None) -> None:
+        super().__init__(app)
+        self._bearer = LocalTokenVerifier(bearer_tokens)
+        self._api_key = LocalTokenVerifier(api_keys)
+        self._exclude_paths = set(exclude_paths or [])
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        if request.url.path in self._exclude_paths:
+            return await call_next(request)
+
+        auth = request.headers.get("Authorization", "")
+        if auth.startswith("Bearer "):
+            try:
+                if self._bearer.verify(auth[len("Bearer "):]):
+                    return await call_next(request)
+            except TokenVerificationException:
+                pass
+
+        api_key = request.headers.get("X-Api-Key", "")
+        if api_key:
+            try:
+                if self._api_key.verify(api_key):
+                    return await call_next(request)
+            except TokenVerificationException:
+                pass
+
+        return problem_details_response(
+            "unauthorized", "Unauthorized", 401,
+            "A valid Bearer token or X-Api-Key header is required.",
+        )
+```
 
 ## Disabling auth in tests
 
