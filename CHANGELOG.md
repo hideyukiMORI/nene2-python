@@ -5,6 +5,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.0] — 2026-05-20
+
+FT18〜FT23 フィールドトライアル — ログテスト・Problem Details・ThrottleMiddleware・ドメイン例外・HealthCheck・RequestSizeLimit の各改善。
+
+### Added
+- `nene2.log.configure_for_testing()` — structlog を pytest の `caplog` でキャプチャできるように設定するヘルパー関数 (FT18)
+- `nene2.http.configure_problem_details(base_url)` — プロジェクト全体のデフォルト `base_url` を一箇所で設定する関数 (FT19)
+- `ThrottleMiddleware` — 全レスポンスに `X-RateLimit-Limit`/`Remaining`/`Reset` ヘッダーを付与 (FT20)
+- `SimpleDomainHandler` — `exception_class`/`problem_type`/`title`/`status` を渡すだけでドメイン例外ハンドラーを作成できるファクトリクラス (FT21)
+- `nene2.http.CompositeHealthCheck` — 複数の `HealthCheckProtocol` を集約するクラス (FT22)
+- `HealthCheckProtocol` に `@runtime_checkable` を追加 (FT22)
+- Field trial reports: `docs/field-trials/2026-05-field-trial-18.md` 〜 `docs/field-trials/2026-05-field-trial-23.md`
+- `docs/how-to/problem-details.md` — Problem Details の使い方ガイドを追加
+
+### Changed
+- `RequestLoggingMiddleware` — `exclude_paths: list[str] | None` パラメータを追加（特定パスのログをスキップ可能に）(FT18)
+- `ThrottleMiddleware` — 内部の `_is_allowed()` を `_check_rate()` にリネームし、戻り値を `_RateInfo` dataclass に変更 (FT20)
+- `RequestSizeLimitMiddleware` — 413 レスポンスに `max_bytes` 構造化フィールドを追加 (FT23)
+
+---
+
 ## [1.7.0] — 2026-05-20
 
 FT14〜FT17 フィールドトライアル — プロトコル docstring 改善・ミドルウェアカスタマイズ・DB 例外統一・バグ修正。
