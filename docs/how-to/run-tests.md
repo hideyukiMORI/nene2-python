@@ -135,6 +135,27 @@ def test_handler_logs(caplog: pytest.LogCaptureFixture) -> None:
 
 **Note**: `caplog.records` returns stdlib `LogRecord` objects. Fields bound with `structlog.contextvars.bind_contextvars()` (such as `request_id`) are not directly accessible as `record.request_id` — they appear as part of the formatted message string instead.
 
+## TestClient HTTP メソッドと json パラメーター
+
+`TestClient` の `.get()`, `.post()`, `.put()`, `.patch()` は `json=` パラメーターを受け付けるが、
+`.delete()` は受け付けない（`TypeError`）。DELETE にボディを付ける場合は `.request()` を使う。
+
+```python
+# ✅ GET/POST/PUT/PATCH は json= が使える
+r = client.post("/items", json={"name": "Alice"})
+r = client.put("/items/1", json={"name": "Bob"})
+
+# ❌ DELETE は json= が使えない
+r = client.delete("/items/bulk", json={"ids": [1, 2]})  # TypeError
+
+# ✅ DELETE + ボディは request() を使う
+r = client.request("DELETE", "/items/bulk", json={"ids": [1, 2]})
+```
+
+**設計上の注意**: DELETE にリクエストボディを持たせることは RFC 9110 では「推奨されない」（サーバーによっては無視される）。一括削除の代替として `POST /items/bulk-delete` パターンも検討する。
+
+---
+
 ## Coverage requirements
 
 | Scope | Target |
