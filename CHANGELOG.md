@@ -5,6 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.28] — 2026-05-20
+
+FT83 フィールドトライアル — Depends() DI パターン検証と PaginationResponse / PaginationDep 改善。
+
+### Added
+- `PaginationResponse.model_dump()` を `to_dict()` の Pydantic 互換エイリアスとして追加 (#355) (FT83)
+  — Pydantic v2 ユーザーが `model_dump()` を期待して AttributeError になる問題を解消
+- `PaginationDep` 型エイリアスを `nene2.http` に追加 (#355) (FT83)
+  — `Annotated[PaginationQueryParser, Depends(PaginationQueryParser)]` の省略形
+- Field trial report: `docs/field-trials/2026-05-field-trial-83.md` (FT83)
+
+---
+
 ## [1.8.27] — 2026-05-20
 
 FT81 フィールドトライアル — CORS 設定パターン検証と setup_middlewares() への CORS 統合。
