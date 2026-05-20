@@ -27,10 +27,10 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
 
         app.add_middleware(
             RequestSizeLimitMiddleware,
-            max_bytes=1_048_576,               # default: 1 MiB
+            max_bytes=1_048_576,  # default: 1 MiB
             path_limits={
-                "/upload/file": 10_485_760,    # /upload/file: 10 MiB
-                "/api/import": 5_242_880,      # /api/import: 5 MiB
+                "/upload/file": 10_485_760,  # /upload/file: 10 MiB
+                "/api/import": 5_242_880,  # /api/import: 5 MiB
             },
         )
 
