@@ -14,7 +14,23 @@ from .interfaces import DatabaseQueryExecutorInterface, DatabaseTransactionManag
 
 
 class SqlAlchemyQueryExecutor(DatabaseQueryExecutorInterface):
-    """Execute queries using SQLAlchemy Core (connection-per-call, no ORM)."""
+    """Execute queries using SQLAlchemy Core (connection-per-call, no ORM).
+
+    .. note:: SQLite in-memory databases
+
+        When using ``sqlite:///:memory:`` in tests, each new connection receives
+        a separate empty database.  To share one in-memory DB across all
+        connections (including ``setup_db`` / schema creation) use
+        ``StaticPool``::
+
+            from sqlalchemy.pool import StaticPool
+
+            engine = create_engine(
+                "sqlite:///:memory:",
+                connect_args={"check_same_thread": False},
+                poolclass=StaticPool,
+            )
+    """
 
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
