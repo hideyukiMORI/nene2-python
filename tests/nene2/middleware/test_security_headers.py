@@ -80,6 +80,44 @@ def test_extra_no_csp_paths() -> None:
     assert "Content-Security-Policy" in client.get("/ping").headers
 
 
+def test_custom_permissions_policy() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        SecurityHeadersMiddleware,
+        permissions_policy="geolocation=(self), microphone=()",
+    )
+
+    @app.get("/ping")
+    async def ping() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    r = client.get("/ping")
+    assert r.headers["Permissions-Policy"] == "geolocation=(self), microphone=()"
+
+
+def test_hsts_header_when_specified() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        SecurityHeadersMiddleware,
+        hsts="max-age=31536000; includeSubDomains",
+    )
+
+    @app.get("/ping")
+    async def ping() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    r = client.get("/ping")
+    assert r.headers["Strict-Transport-Security"] == "max-age=31536000; includeSubDomains"
+
+
+def test_no_hsts_by_default() -> None:
+    client = TestClient(_make_app())
+    r = client.get("/ping")
+    assert "Strict-Transport-Security" not in r.headers
+
+
 def test_default_no_csp_paths_still_work_with_extra_paths() -> None:
     app = FastAPI()
     app.add_middleware(SecurityHeadersMiddleware, extra_no_csp_paths=["/custom"])
