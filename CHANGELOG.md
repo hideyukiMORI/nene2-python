@@ -5,6 +5,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.7] — 2026-05-20
+
+FT43〜FT44 フィールドトライアル — ThrottleMiddleware path_limits 確認・PaginationQueryParser バリデーション改善。
+
+### Added
+- `nene2.middleware.request_validation_error_handler` を公開エクスポートに追加 — FastAPI の `RequestValidationError` を Problem Details 形式に変換するハンドラーを `from nene2.middleware import request_validation_error_handler` でアクセス可能に (FT44)
+- Field trial reports: `docs/field-trials/2026-05-field-trial-43.md`、`docs/field-trials/2026-05-field-trial-44.md`
+
+---
+
 ## [1.8.6] — 2026-05-20
 
 FT41〜FT42 フィールドトライアル — structlog テスト統合ドキュメント・configure_problem_details リセット関数。
