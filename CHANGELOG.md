@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.20] — 2026-05-20
+
+FT72 フィールドトライアル — DatabaseIntegrityException + ErrorHandlerMiddleware.install() 改善。
+
+### Added
+- `ErrorHandlerMiddleware.install(app)` クラスメソッドを追加 (#315) (FT72)
+  — `add_middleware` と `add_exception_handler(RequestValidationError)` を一度に設定し、
+  Pydantic の 422 バリデーションエラーも nene2 Problem Details 形式に自動統一する
+- Field trial reports: `docs/field-trials/2026-05-field-trial-70.md` 〜 `2026-05-field-trial-72.md` (FT70〜FT72)
+
+---
+
 ## [1.8.19] — 2026-05-20
 
 FT68 フィールドトライアル — SimpleDomainHandler + extra_factory 実運用検証。

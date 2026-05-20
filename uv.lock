@@ -925,7 +925,7 @@ wheels = [
 
 [[package]]
 name = "nene2-python"
-version = "1.8.19"
+version = "1.8.20"
 source = { editable = "." }
 dependencies = [
     { name = "alembic" },
