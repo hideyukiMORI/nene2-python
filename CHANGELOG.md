@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.31] — 2026-05-20
+
+FT97 フィールドトライアル — HTTP キャッシュヘッダーパターン検証と generate_etag() 追加。
+
+### Added
+- `nene2.http.generate_etag(data)` — ETag 生成ユーティリティ関数を追加 (#397) (FT97)
+  — dict / list / str / bytes から RFC 9110 形式の ETag 文字列を生成
+  — HTTP キャッシュ (`If-None-Match` / `304 Not Modified`) パターンで利用
+- Field trial reports: `docs/field-trials/2026-05-field-trial-92.md` 〜 `2026-05-field-trial-97.md` (FT92〜FT97)
+
+---
+
 ## [1.8.30] — 2026-05-20
 
 FT87 フィールドトライアル — カスタムレスポンスヘッダーパターン検証と problem_details_response() 改善。
