@@ -38,6 +38,7 @@ def test_oversized_request_returns_413() -> None:
     assert response.status_code == 413
     body = response.json()
     assert body["type"].endswith("payload-too-large")
+    assert body["max_bytes"] == 100
 
 
 def test_no_content_length_passes() -> None:

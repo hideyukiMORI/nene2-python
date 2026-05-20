@@ -67,4 +67,5 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
             "Payload Too Large",
             413,
             _TOO_LARGE.format(limit=self._max_bytes),
+            extra={"max_bytes": self._max_bytes},
         )
