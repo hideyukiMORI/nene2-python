@@ -122,3 +122,72 @@ def test_custom_header_name_in_error_message() -> None:
     response = client.get("/secret")
     assert response.status_code == 401
     assert "X-Internal-Key" in response.json().get("detail", "")
+
+
+# ---------------------------------------------------------------------------
+# include_paths tests
+# ---------------------------------------------------------------------------
+def test_include_paths_protects_matching_prefix() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        ApiKeyAuthMiddleware,
+        verifier=LocalTokenVerifier(["key"]),
+        include_paths=["/webhook"],
+    )
+
+    @app.get("/webhook/event")
+    async def webhook_event() -> JSONResponse:
+        return JSONResponse({"received": True})
+
+    @app.get("/public/hello")
+    async def public_hello() -> JSONResponse:
+        return JSONResponse({"hello": True})
+
+    client = TestClient(app)
+    assert client.get("/webhook/event").status_code == 401
+    assert client.get("/webhook/event", headers={"X-Api-Key": "key"}).status_code == 200
+    assert client.get("/public/hello").status_code == 200
+
+
+def test_include_paths_multiple_prefixes() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        ApiKeyAuthMiddleware,
+        verifier=LocalTokenVerifier(["key"]),
+        include_paths=["/webhook", "/internal"],
+    )
+
+    @app.get("/webhook/x")
+    async def webhook_x() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    @app.get("/internal/y")
+    async def internal_y() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    @app.get("/public/z")
+    async def public_z() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    assert client.get("/webhook/x").status_code == 401
+    assert client.get("/internal/y").status_code == 401
+    assert client.get("/public/z").status_code == 200
+
+
+def test_include_paths_takes_precedence_over_exclude_paths() -> None:
+    """両方指定されたときは include_paths が優先される。"""
+    app = FastAPI()
+    app.add_middleware(
+        ApiKeyAuthMiddleware,
+        verifier=LocalTokenVerifier(["key"]),
+        include_paths=["/webhook"],
+        exclude_paths=["/webhook/open"],  # include_paths があるので無視される
+    )
+
+    @app.get("/webhook/open")
+    async def webhook_open() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    assert client.get("/webhook/open").status_code == 401

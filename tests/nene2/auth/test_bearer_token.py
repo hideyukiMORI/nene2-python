@@ -126,3 +126,84 @@ def test_local_verifier_accepts_frozenset() -> None:
     verifier = LocalTokenVerifier(frozenset({"tok-x", "tok-y"}))
     assert verifier.verify("tok-x") is True
     assert verifier.verify("unknown") is False
+
+
+# ---------------------------------------------------------------------------
+# include_paths tests
+# ---------------------------------------------------------------------------
+def _make_app_with_include_paths(tokens: list[str], include_paths: list[str]) -> FastAPI:
+    app = FastAPI()
+    app.add_middleware(
+        BearerTokenMiddleware,
+        verifier=LocalTokenVerifier(tokens),
+        include_paths=include_paths,
+    )
+
+    @app.get("/admin/dashboard")
+    async def admin_dashboard() -> JSONResponse:
+        return JSONResponse({"admin": True})
+
+    @app.get("/public/hello")
+    async def public_hello() -> JSONResponse:
+        return JSONResponse({"hello": True})
+
+    return app
+
+
+def test_include_paths_protects_matching_prefix() -> None:
+    client = TestClient(_make_app_with_include_paths(["tok"], ["/admin"]))
+    assert client.get("/admin/dashboard").status_code == 401
+    assert (
+        client.get("/admin/dashboard", headers={"Authorization": "Bearer tok"}).status_code == 200
+    )
+
+
+def test_include_paths_skips_non_matching_prefix() -> None:
+    """include_paths にないパスは認証なしで通過する。"""
+    client = TestClient(_make_app_with_include_paths(["tok"], ["/admin"]))
+    assert client.get("/public/hello").status_code == 200
+
+
+def test_include_paths_multiple_prefixes() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        BearerTokenMiddleware,
+        verifier=LocalTokenVerifier(["tok"]),
+        include_paths=["/admin", "/private"],
+    )
+
+    @app.get("/admin/x")
+    async def admin_x() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    @app.get("/private/y")
+    async def private_y() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    @app.get("/public/z")
+    async def public_z() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    assert client.get("/admin/x").status_code == 401
+    assert client.get("/private/y").status_code == 401
+    assert client.get("/public/z").status_code == 200
+
+
+def test_include_paths_takes_precedence_over_exclude_paths() -> None:
+    """両方指定されたときは include_paths が優先される。"""
+    app = FastAPI()
+    app.add_middleware(
+        BearerTokenMiddleware,
+        verifier=LocalTokenVerifier(["tok"]),
+        include_paths=["/admin"],
+        exclude_paths=["/admin/open"],  # include_paths があるので無視される
+    )
+
+    @app.get("/admin/open")
+    async def admin_open() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    # include_paths=["/admin"] が優先 → /admin/open も保護される
+    assert client.get("/admin/open").status_code == 401
