@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.22] — 2026-05-20
+
+FT76 フィールドトライアル — async def + sync DB ブロッキング問題と run_in_threadpool 追加。
+
+### Added
+- `run_in_threadpool` を `nene2.use_case` から re-export (#326) (FT76)
+  — Starlette の `run_in_threadpool` を nene2 公開 API として公開し、
+  `async def` ハンドラーから同期 DB 処理を安全にスレッドプールへオフロードできる
+- Field trial report: `docs/field-trials/2026-05-field-trial-76.md` (FT76)
+
+---
+
 ## [1.8.21] — 2026-05-20
 
 FT75 フィールドトライアル — ミドルウェアスタック順序問題の発見と根本解決。
