@@ -11,8 +11,8 @@ import secrets
 class LocalTokenVerifier:
     """Verify tokens against a fixed allowlist using constant-time comparison."""
 
-    def __init__(self, allowed_tokens: list[str]) -> None:
-        self._allowed = allowed_tokens
+    def __init__(self, allowed_tokens: list[str] | set[str] | frozenset[str]) -> None:
+        self._allowed: frozenset[str] = frozenset(allowed_tokens)
 
     @classmethod
     def from_env(cls, env_var: str, *, separator: str = ",") -> "LocalTokenVerifier":

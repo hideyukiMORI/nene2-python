@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.12] — 2026-05-20
+
+FT52 フィールドトライアル — ミドルウェアスタック組み合わせ検証 + LocalTokenVerifier 改善。
+
+### Changed
+- `LocalTokenVerifier.__init__` — `allowed_tokens` の型を `list[str] | set[str] | frozenset[str]` に変更。内部で `frozenset` に変換し `in` 演算が O(1) になった (#284) (FT52)
+
+### Added
+- Field trial report: `docs/field-trials/2026-05-field-trial-52.md`
+
+---
+
 ## [1.8.11] — 2026-05-20
 
 FT51 フィールドトライアル — SimpleDomainHandler 実運用検証 + problem_details_response バグ修正。
