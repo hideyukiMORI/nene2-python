@@ -69,6 +69,45 @@ def test_malformed_content_length_is_tolerated() -> None:
     assert response.status_code == 200
 
 
+def test_path_limits_overrides_default_for_specific_paths() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        RequestSizeLimitMiddleware,
+        max_bytes=100,
+        path_limits={"/upload/large": 5000},
+    )
+
+    @app.post("/upload")
+    async def upload() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    @app.post("/upload/large")
+    async def upload_large() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    assert client.post("/upload", content=b"x" * 200).status_code == 413
+    assert client.post("/upload/large", content=b"x" * 200).status_code == 200
+
+
+def test_path_limits_413_response_shows_path_limit_not_default() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        RequestSizeLimitMiddleware,
+        max_bytes=1000,
+        path_limits={"/strict": 50},
+    )
+
+    @app.post("/strict")
+    async def strict() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    r = client.post("/strict", content=b"x" * 100)
+    assert r.status_code == 413
+    assert r.json()["max_bytes"] == 50
+
+
 def test_exclude_paths_bypasses_size_limit() -> None:
     app = FastAPI()
     app.add_middleware(
