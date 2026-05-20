@@ -2,16 +2,15 @@
 
 import pytest
 
-import nene2.http.problem_details as _mod
-from nene2.http import configure_problem_details, problem_details_response
+from nene2.http import configure_problem_details, problem_details_response, reset_problem_details
 
 
 @pytest.fixture(autouse=True)
 def reset_configured_base_url() -> None:
     """Reset module-level configured base_url between tests."""
-    _mod._configured_base_url = None
+    reset_problem_details()
     yield
-    _mod._configured_base_url = None
+    reset_problem_details()
 
 
 def test_problem_details_response_uses_default_base_url() -> None:
@@ -61,3 +60,17 @@ def test_problem_details_response_includes_detail_when_provided() -> None:
 def test_problem_details_response_includes_extra_fields() -> None:
     r = problem_details_response("not-found", "Not Found", 404, extra={"resource_id": 42})
     assert b'"resource_id":42' in r.body
+
+
+def test_reset_problem_details_restores_default_base_url() -> None:
+    configure_problem_details("https://custom.example.com/problems/")
+    reset_problem_details()
+    r = problem_details_response("not-found", "Not Found", 404)
+    assert b"nene2.dev/problems/not-found" in r.body
+
+
+def test_reset_problem_details_is_idempotent() -> None:
+    reset_problem_details()
+    reset_problem_details()
+    r = problem_details_response("not-found", "Not Found", 404)
+    assert b"nene2.dev/problems/not-found" in r.body
