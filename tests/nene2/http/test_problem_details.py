@@ -98,3 +98,26 @@ def test_extra_with_type_reserved_raises_value_error() -> None:
 def test_extra_with_status_reserved_raises_value_error() -> None:
     with pytest.raises(ValueError, match="reserved Problem Details fields"):
         problem_details_response("x", "X", 400, extra={"status": 500})
+
+
+def test_problem_details_response_with_headers() -> None:
+    r = problem_details_response("rate-limited", "Rate Limited", 429, headers={"Retry-After": "60"})
+    assert r.status_code == 429
+    assert r.headers["retry-after"] == "60"
+
+
+def test_problem_details_response_headers_with_multiple_entries() -> None:
+    r = problem_details_response(
+        "rate-limited",
+        "Rate Limited",
+        429,
+        headers={"Retry-After": "60", "X-RateLimit-Remaining": "0"},
+    )
+    assert r.headers["retry-after"] == "60"
+    assert r.headers["x-ratelimit-remaining"] == "0"
+
+
+def test_problem_details_response_headers_none_by_default() -> None:
+    r = problem_details_response("not-found", "Not Found", 404)
+    assert "retry-after" not in r.headers
+    assert r.status_code == 404

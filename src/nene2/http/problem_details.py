@@ -57,6 +57,7 @@ def problem_details_response(
     extra: dict[str, Any] | None = None,
     *,
     base_url: str | None = None,
+    headers: dict[str, str] | None = None,
 ) -> JSONResponse:
     """Build an RFC 9457 Problem Details JSON response.
 
@@ -72,6 +73,9 @@ def problem_details_response(
                       Raises ``ValueError`` if any key shadows a reserved field
                       (``type``, ``title``, ``status``, ``detail``).
         base_url:     Override the base URL for this call only.
+        headers:      Additional HTTP response headers.  Useful for error-specific headers
+                      such as ``Retry-After`` (429), ``WWW-Authenticate`` (401), or
+                      ``Location`` (3xx redirects in error flows).
 
     ``base_url`` resolution order:
     1. Explicit ``base_url`` argument
@@ -96,4 +100,5 @@ def problem_details_response(
         content=body,
         status_code=status,
         media_type="application/problem+json",
+        headers=headers,
     )
