@@ -117,3 +117,34 @@ assert executed[0].email == "alice@example.com"
 
 - `EventBus` はモジュールレベルのグローバル変数になりやすい。テスト間でハンドラーが蓄積する場合は `autouse` fixture でリセットする。
 - UseCase 内でイベントを発行する場合、UseCase の引数に `EventBus` を渡してコンストラクタインジェクションする（グローバル参照を避ける）。
+
+---
+
+## 5. dataclass 継承でデフォルト引数の後に必須引数を置く
+
+基底クラスに `default_factory` フィールドがある場合、サブクラスで必須フィールドを追加すると
+Python の dataclass 仕様でエラーになる。`kw_only=True`（Python 3.10+）で解決できる。
+
+```python
+# ❌ エラー: 'order_id' は 'occurred_at' の後に来る必須フィールド
+@dataclass(frozen=True)
+class DomainEvent:
+    occurred_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+
+@dataclass(frozen=True)
+class OrderPlaced(DomainEvent):
+    order_id: str  # TypeError: non-default argument follows default argument
+
+# ✅ kw_only=True で解決（Python 3.10+）
+@dataclass(frozen=True)
+class DomainEvent:
+    occurred_at: datetime = field(default_factory=lambda: datetime.now(UTC), kw_only=True)
+
+@dataclass(frozen=True)
+class OrderPlaced(DomainEvent):
+    order_id: str  # OK — kw_only フィールドは MRO の順序制約を受けない
+    total_amount: int
+```
+
+`kw_only=True` を指定すると `__init__` でキーワード引数専用になる。
+サブクラスの必須引数は通常の位置引数として定義でき、`occurred_at` はオプション扱いになる。
