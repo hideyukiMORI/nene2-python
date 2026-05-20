@@ -95,7 +95,36 @@ def get_item(item_id: int) -> JSONResponse:
 
 ---
 
-## 5. 204 No Content と response_model
+## 5. JSONResponse に model_dump() を渡す場合は mode="json" を使う
+
+`JSONResponse` に直接 `model_dump()` を渡すとき、`datetime` などの Python オブジェクトは
+`json.dumps` でシリアライズできず 500 エラーになる。`mode="json"` を指定すると
+Pydantic が JSON 互換な型に変換する。
+
+```python
+from pydantic import BaseModel
+from datetime import datetime
+
+class OrderLine(BaseModel):
+    created_at: datetime
+    quantity: int
+
+line = OrderLine(created_at=datetime(2026, 1, 1), quantity=3)
+
+# ❌ TypeError: Object of type datetime is not JSON serializable
+return JSONResponse(line.model_dump())
+
+# ✅ mode="json" で datetime → ISO 8601 文字列に変換される
+return JSONResponse(line.model_dump(mode="json"))
+```
+
+**影響が出る場面**: `response_model=` を使う通常ルートは FastAPI が自動変換するため問題ない。
+`JSONResponse` を直接返すルート（207 Multi-Status、カスタムレスポンス、ネストモデル含む `/preview` など）
+で注意が必要。
+
+---
+
+## 6. 204 No Content と response_model
 
 `204 No Content` のエンドポイントに `response_model` を指定すると FastAPI がアサーションエラーになる。
 
