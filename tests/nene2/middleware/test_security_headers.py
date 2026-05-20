@@ -51,3 +51,44 @@ def test_security_headers_on_error_response() -> None:
     response = client.get("/boom")
     assert response.status_code == 404
     assert response.headers["X-Content-Type-Options"] == "nosniff"
+
+
+def test_custom_csp_value() -> None:
+    app = FastAPI()
+    app.add_middleware(SecurityHeadersMiddleware, csp="default-src 'self' cdn.example.com")
+
+    @app.get("/ping")
+    async def ping() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    response = client.get("/ping")
+    assert response.headers["Content-Security-Policy"] == "default-src 'self' cdn.example.com"
+
+
+def test_extra_no_csp_paths() -> None:
+    app = FastAPI(docs_url="/api-docs", redoc_url="/api-redoc")
+    app.add_middleware(SecurityHeadersMiddleware, extra_no_csp_paths=["/api-docs", "/api-redoc"])
+
+    @app.get("/ping")
+    async def ping() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    assert "Content-Security-Policy" not in client.get("/api-docs").headers
+    assert "Content-Security-Policy" not in client.get("/api-redoc").headers
+    assert "Content-Security-Policy" in client.get("/ping").headers
+
+
+def test_default_no_csp_paths_still_work_with_extra_paths() -> None:
+    app = FastAPI()
+    app.add_middleware(SecurityHeadersMiddleware, extra_no_csp_paths=["/custom"])
+
+    @app.get("/ping")
+    async def ping() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    assert "Content-Security-Policy" not in client.get("/docs").headers
+    assert "Content-Security-Policy" not in client.get("/custom").headers
+    assert "Content-Security-Policy" in client.get("/ping").headers
