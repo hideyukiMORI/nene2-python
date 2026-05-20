@@ -2,7 +2,7 @@
 
 from .health import HealthCheckProtocol, HealthStatus
 from .pagination import PaginationQuery, PaginationQueryParser, PaginationResponse
-from .problem_details import problem_details_response
+from .problem_details import configure_problem_details, problem_details_response
 
 __all__ = [
     "HealthCheckProtocol",
@@ -10,5 +10,6 @@ __all__ = [
     "PaginationQuery",
     "PaginationQueryParser",
     "PaginationResponse",
+    "configure_problem_details",
     "problem_details_response",
 ]
