@@ -86,6 +86,23 @@ async def test_async_list_notes() -> None:
     assert result.total == 0
 ```
 
+## In-memory SQLite for integration tests
+
+When using `SqlAlchemyQueryExecutor` or `SqlAlchemyTransactionManager` with an in-memory SQLite database, always pass `poolclass=StaticPool`. Without it, SQLAlchemy may open a new physical connection that sees an empty database.
+
+```python
+from sqlalchemy import create_engine
+from sqlalchemy.pool import StaticPool
+
+engine = create_engine(
+    "sqlite:///:memory:",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+```
+
+`StaticPool` guarantees all logical connections share the same underlying SQLite connection, so tables created in one operation are visible to the next.
+
 ## Coverage requirements
 
 | Scope | Target |
