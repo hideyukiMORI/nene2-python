@@ -107,19 +107,84 @@ def test_429_response_includes_rate_limit_headers() -> None:
     assert "Retry-After" in r.headers
 
 
+def test_path_limits_override_default_limit() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        ThrottleMiddleware,
+        limit=100,
+        window=60,
+        path_limits={"/expensive": 2},
+    )
+
+    @app.get("/expensive")
+    async def expensive() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    @app.get("/cheap")
+    async def cheap() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    assert client.get("/expensive").status_code == 200
+    assert client.get("/expensive").status_code == 200
+    assert client.get("/expensive").status_code == 429
+    # cheap は path_limits に含まれないので 100 req まで許可
+    assert client.get("/cheap").status_code == 200
+
+
+def test_path_limit_and_default_limit_are_independent_counters() -> None:
+    app = FastAPI()
+    app.add_middleware(
+        ThrottleMiddleware,
+        limit=2,
+        window=60,
+        path_limits={"/special": 1},
+    )
+
+    @app.get("/special")
+    async def special() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    @app.get("/normal")
+    async def normal() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    # /special: limit=1
+    assert client.get("/special").status_code == 200
+    assert client.get("/special").status_code == 429
+    # /normal: limit=2 (別カウンター)
+    assert client.get("/normal").status_code == 200
+    assert client.get("/normal").status_code == 200
+    assert client.get("/normal").status_code == 429
+
+
+def test_path_limit_reflected_in_x_ratelimit_limit_header() -> None:
+    app = FastAPI()
+    app.add_middleware(ThrottleMiddleware, limit=100, window=60, path_limits={"/ping": 5})
+
+    @app.get("/ping")
+    async def ping() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    r = client.get("/ping")
+    assert r.headers["X-RateLimit-Limit"] == "5"
+
+
 def test_stale_entries_are_evicted_after_window_expires() -> None:
     app = FastAPI()
     middleware = ThrottleMiddleware(app, limit=100, window=1)
 
     for i in range(10):
-        middleware._check_rate(f"192.168.1.{i}")
+        middleware._check_rate(f"192.168.1.{i}", 100)
 
     assert len(middleware._counts) == 10
 
     time.sleep(1.1)
 
     # 新しいリクエストでクリーンアップがトリガーされる
-    middleware._check_rate("10.0.0.99")
+    middleware._check_rate("10.0.0.99", 100)
 
     # 古い 10 エントリは削除され、新しい 1 エントリのみ残る
     assert len(middleware._counts) == 1

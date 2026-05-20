@@ -42,14 +42,19 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
     ``X-RateLimit-Reset`` headers to every response so clients can monitor
     their quota.  On 429, also adds ``Retry-After``.
 
-    Use ``exclude_paths`` to bypass rate limiting for health checks and API docs::
+    Use ``path_limits`` to apply stricter limits on specific paths::
 
         app.add_middleware(
             ThrottleMiddleware,
-            limit=60,
+            limit=100,
             window=60,
+            path_limits={"/api/expensive": 10, "/api/search": 30},
             exclude_paths=["/health", "/docs", "/openapi.json"],
         )
+
+    Path-limited endpoints are tracked independently from the global counter
+    (the key includes the path, so ``/api/expensive`` quota is separate from
+    the default quota for other paths).
     """
 
     def __init__(
@@ -58,11 +63,13 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
         *,
         limit: int = _DEFAULT_LIMIT,
         window: int = _DEFAULT_WINDOW,
+        path_limits: dict[str, int] | None = None,
         exclude_paths: list[str] | None = None,
     ) -> None:
         super().__init__(app)  # type: ignore[arg-type]
         self._limit = limit
         self._window = window
+        self._path_limits: dict[str, int] = path_limits or {}
         self._exclude_paths = set(exclude_paths or [])
         self._counts: dict[str, tuple[int, float]] = {}
         self._lock = threading.Lock()
@@ -83,7 +90,7 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
         for k in stale:
             del self._counts[k]
 
-    def _check_rate(self, key: str) -> _RateInfo:
+    def _check_rate(self, key: str, limit: int) -> _RateInfo:
         now = time.monotonic()
         wall_now = int(time.time())
         with self._lock:
@@ -96,24 +103,31 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
             elapsed = int(now - window_start)
             retry_after = max(0, self._window - elapsed)
             reset_at = wall_now + retry_after
-            remaining = max(0, self._limit - count)
+            remaining = max(0, limit - count)
         return _RateInfo(
-            allowed=count <= self._limit,
+            allowed=count <= limit,
             remaining=remaining,
             retry_after=retry_after,
             reset_at=reset_at,
         )
 
-    def _apply_rate_headers(self, response: Response, info: _RateInfo) -> None:
-        response.headers["X-RateLimit-Limit"] = str(self._limit)
+    def _apply_rate_headers(self, response: Response, info: _RateInfo, limit: int) -> None:
+        response.headers["X-RateLimit-Limit"] = str(limit)
         response.headers["X-RateLimit-Remaining"] = str(info.remaining)
         response.headers["X-RateLimit-Reset"] = str(info.reset_at)
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        if request.url.path in self._exclude_paths:
+        path = request.url.path
+        if path in self._exclude_paths:
             return await call_next(request)
-        key = self._client_key(request)
-        info = self._check_rate(key)
+        client = self._client_key(request)
+        if path in self._path_limits:
+            effective_limit = self._path_limits[path]
+            key = f"{client}:{path}"
+        else:
+            effective_limit = self._limit
+            key = client
+        info = self._check_rate(key, effective_limit)
         if not info.allowed:
             error_response = problem_details_response(
                 "too-many-requests",
@@ -122,8 +136,8 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
                 f"Rate limit exceeded. Retry after {info.retry_after} seconds.",
             )
             error_response.headers["Retry-After"] = str(info.retry_after)
-            self._apply_rate_headers(error_response, info)
+            self._apply_rate_headers(error_response, info, effective_limit)
             return error_response
         response = await call_next(request)
-        self._apply_rate_headers(response, info)
+        self._apply_rate_headers(response, info, effective_limit)
         return response
