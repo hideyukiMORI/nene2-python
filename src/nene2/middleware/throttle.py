@@ -66,6 +66,7 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
         self._exclude_paths = set(exclude_paths or [])
         self._counts: dict[str, tuple[int, float]] = {}
         self._lock = threading.Lock()
+        self._last_cleanup: float = 0.0
 
     def _client_key(self, request: Request) -> str:
         forwarded = request.headers.get("X-Forwarded-For")
@@ -73,10 +74,20 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
             return forwarded.split(",")[0].strip()
         return request.client.host if request.client else "unknown"
 
+    def _evict_stale(self, now: float) -> None:
+        if now - self._last_cleanup < self._window:
+            return
+        self._last_cleanup = now
+        cutoff = now - self._window
+        stale = [k for k, (_, ws) in self._counts.items() if ws < cutoff]
+        for k in stale:
+            del self._counts[k]
+
     def _check_rate(self, key: str) -> _RateInfo:
         now = time.monotonic()
         wall_now = int(time.time())
         with self._lock:
+            self._evict_stale(now)
             count, window_start = self._counts.get(key, (0, now))
             if now - window_start >= self._window:
                 count, window_start = 0, now
