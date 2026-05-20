@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.16] — 2026-05-20
+
+FT63 フィールドトライアル — configure_problem_details 実運用検証 + PROBLEM_DETAILS_BASE_URL エクスポート修正。
+
+### Fixed
+- `PROBLEM_DETAILS_BASE_URL` 定数を `nene2.http` からエクスポートするよう修正 — テストで `from nene2.http import PROBLEM_DETAILS_BASE_URL` が利用可能になった (#296) (FT63)
+
+### Added
+- Field trial reports: `docs/field-trials/2026-05-field-trial-56.md` 〜 `2026-05-field-trial-63.md` (FT56〜FT63)
+
+---
+
 ## [1.8.15] — 2026-05-20
 
 FT55 フィールドトライアル — parse_db_datetime 実運用検証。
