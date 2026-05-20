@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.24] — 2026-05-20
+
+FT78 フィールドトライアル — ThrottleMiddleware の境界動作検証とドキュメント強化。
+
+### Changed
+- `ThrottleMiddleware` クラス docstring に Fixed Window バースト特性とマルチプロセス非対応の警告を追記 (#335) (FT78)
+- `setup_middlewares()` の `throttle_limit` docstring にマルチプロセス警告を追記 (#335) (FT78)
+- Field trial report: `docs/field-trials/2026-05-field-trial-78.md` (FT78)
+
+---
+
 ## [1.8.23] — 2026-05-20
 
 FT77 フィールドトライアル — BearerToken + ApiKey 混在認証と include_paths 追加。
