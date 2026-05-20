@@ -5,6 +5,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.4] — 2026-05-20
+
+FT33〜FT36 フィールドトライアル — バリデーション・DB整合性・混合認証・非同期ヘルスチェック改善。
+
+### Added
+- `AsyncHealthCheckProtocol` — `async def check() -> HealthStatus` の Protocol (FT36)
+- `AsyncCompositeHealthCheck` — 複数の非同期ヘルスチェックを `asyncio.gather` で並列実行して集約するクラス (FT36)
+- `docs/how-to/validation.md` — `ValidationCode(StrEnum)` パターンと複数フィールドバリデーションの how-to ガイドを追加 (FT33)
+- Field trial reports: `docs/field-trials/2026-05-field-trial-33.md` 〜 `docs/field-trials/2026-05-field-trial-36.md`
+
+### Changed
+- `docs/how-to/run-tests.md` — インメモリ SQLite テスト用 `StaticPool` パターンを追記 (FT34)
+- `docs/how-to/configure-auth.md` — AND / OR 条件の違いと `EitherOrAuthMiddleware` パターンを追記 (FT35)
+
+---
+
 ## [1.8.3] — 2026-05-20
 
 FT31〜FT32 フィールドトライアル — HealthCheck・SecurityHeaders 改善。
