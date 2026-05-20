@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.23] — 2026-05-20
+
+FT77 フィールドトライアル — BearerToken + ApiKey 混在認証と include_paths 追加。
+
+### Added
+- `BearerTokenMiddleware` / `ApiKeyAuthMiddleware` に `include_paths` パラメーターを追加 (#331) (FT77)
+  — プレフィックスマッチで「守りたいパス」を直接指定でき、混在認証の `exclude_paths` 二重管理を解消
+- Field trial report: `docs/field-trials/2026-05-field-trial-77.md` (FT77)
+
+---
+
 ## [1.8.22] — 2026-05-20
 
 FT76 フィールドトライアル — async def + sync DB ブロッキング問題と run_in_threadpool 追加。
