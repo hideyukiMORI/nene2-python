@@ -7,7 +7,7 @@ import dataclasses
 from dataclasses import dataclass, field
 from typing import Annotated, Any
 
-from fastapi import Query, Request
+from fastapi import Depends, Query, Request
 
 from nene2.validation.exceptions import ValidationError, ValidationException
 
@@ -128,3 +128,21 @@ class PaginationResponse:
         if self.total is not None:
             data["total"] = self.total
         return data
+
+    def model_dump(self) -> dict[str, Any]:
+        """Alias for :meth:`to_dict` — Pydantic-compatible name for familiarity."""
+        return self.to_dict()
+
+
+type PaginationDep = Annotated[PaginationQueryParser, Depends(PaginationQueryParser)]
+"""Type alias for injecting :class:`PaginationQueryParser` via ``Depends``.
+
+Usage::
+
+    from nene2.http import PaginationDep
+
+    @app.get("/items")
+    def list_items(pagination: PaginationDep) -> JSONResponse:
+        items, total = use_case.execute(pagination.limit, pagination.offset)
+        ...
+"""
