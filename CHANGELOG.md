@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.5.0] — 2026-05-20
+
+FT12 (ThrottleMiddleware + RequestSizeLimitMiddleware) field trial — middleware exclude_paths consistency.
+
+### Added
+- `ThrottleMiddleware` — `exclude_paths` parameter to bypass rate limiting for `/health`, `/docs`, etc.
+- `RequestSizeLimitMiddleware` — same `exclude_paths` parameter for consistency with other middleware
+- Field trial report: `docs/field-trials/2026-05-field-trial-12.md`
+
+---
+
 ## [1.4.0] — 2026-05-20
 
 FT11 (BearerTokenMiddleware + HttpxMcpClient) field trial — auth usability improvements.
