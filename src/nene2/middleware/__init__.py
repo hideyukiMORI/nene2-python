@@ -1,6 +1,6 @@
 """NENE2 middleware pipeline."""
 
-from .domain_exception import DomainExceptionHandlerProtocol
+from .domain_exception import DomainExceptionHandlerProtocol, SimpleDomainHandler
 from .error_handler import ErrorHandlerMiddleware
 from .request_id import RequestIdMiddleware, request_id_var
 from .request_logging import RequestLoggingMiddleware
@@ -10,6 +10,7 @@ from .throttle import ThrottleMiddleware
 
 __all__ = [
     "DomainExceptionHandlerProtocol",
+    "SimpleDomainHandler",
     "ErrorHandlerMiddleware",
     "RequestIdMiddleware",
     "RequestLoggingMiddleware",
