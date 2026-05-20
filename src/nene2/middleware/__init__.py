@@ -6,6 +6,7 @@ from .request_id import RequestIdMiddleware, get_request_id, request_id_var
 from .request_logging import RequestLoggingMiddleware
 from .request_size_limit import RequestSizeLimitMiddleware
 from .security_headers import SecurityHeadersMiddleware
+from .setup import setup_middlewares
 from .throttle import ThrottleMiddleware
 
 __all__ = [
@@ -18,6 +19,7 @@ __all__ = [
     "RequestLoggingMiddleware",
     "RequestSizeLimitMiddleware",
     "SecurityHeadersMiddleware",
+    "setup_middlewares",
     "ThrottleMiddleware",
     "request_id_var",
 ]
