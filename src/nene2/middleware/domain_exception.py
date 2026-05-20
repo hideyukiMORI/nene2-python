@@ -35,8 +35,11 @@ class SimpleDomainHandler:
         ]
         app.add_middleware(ErrorHandlerMiddleware, domain_handlers=handlers)
 
-    When you need a dynamic ``detail`` or ``extra`` fields derived from the exception,
-    pass an ``extra_factory`` callable::
+    When you need a dynamic ``detail`` or extra fields derived from the exception,
+    pass an ``extra_factory`` callable.  The dict returned by ``extra_factory`` is merged
+    **at the top level** of the Problem Details response (RFC 9457 extension members) —
+    the keys appear directly alongside ``type``, ``title``, etc., NOT nested under
+    an ``"extra"`` key::
 
         SimpleDomainHandler(
             PostNotFoundError,
@@ -46,6 +49,8 @@ class SimpleDomainHandler:
             detail_factory=lambda exc: str(exc),
             extra_factory=lambda exc: {"post_id": exc.post_id},
         )
+        # Response: {"type": "...", "status": 404, ..., "post_id": 123}
+        #       NOT: {"type": "...", ..., "extra": {"post_id": 123}}
     """
 
     def __init__(
