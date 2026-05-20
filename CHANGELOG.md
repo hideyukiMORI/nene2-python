@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.26] — 2026-05-20
+
+FT80 フィールドトライアル — LocalMcpServer + HttpxMcpClient MCP E2E 検証と list_tools() 追加。
+
+### Added
+- `LocalMcpServer` に `list_tools()` メソッドを追加 (#342) (FT80)
+  — 登録済みツール名の一覧を返す。デバッグ・イントロスペクション用途
+- Field trial report: `docs/field-trials/2026-05-field-trial-80.md` (FT80)
+
+---
+
 ## [1.8.25] — 2026-05-20
 
 FT79 フィールドトライアル — RequestLoggingMiddleware の構造化ログ検証と context_extractor 追加。
