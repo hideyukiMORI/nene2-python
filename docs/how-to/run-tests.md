@@ -103,6 +103,17 @@ engine = create_engine(
 
 `StaticPool` guarantees all logical connections share the same underlying SQLite connection, so tables created in one operation are visible to the next.
 
+**SQLite foreign-key enforcement**: SQLite disables foreign-key constraints by default. Enable them with `PRAGMA foreign_keys=ON` right after the engine is created:
+
+```python
+from sqlalchemy import text
+
+with engine.begin() as conn:
+    conn.execute(text("PRAGMA foreign_keys=ON"))
+```
+
+With `StaticPool`, one call applies to the single shared connection, so all subsequent operations see FK constraints enforced.
+
 ## Capturing structlog output with caplog
 
 Call `configure_for_testing()` at module level in `conftest.py` to route structlog through stdlib logging so pytest's `caplog` fixture can capture it.
