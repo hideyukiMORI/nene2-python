@@ -1,5 +1,7 @@
 """Repository contract tests — run against both InMemory and SqlAlchemy implementations."""
 
+from collections.abc import Generator
+
 import pytest
 from sqlalchemy import create_engine
 
@@ -19,18 +21,16 @@ def _create_schema(executor: SqlAlchemyQueryExecutor) -> None:
     )
 
 
-def _sqlalchemy_repo() -> SqlAlchemyTagRepository:
+@pytest.fixture(params=["inmemory", "sqlalchemy"])
+def repo(request: pytest.FixtureRequest) -> Generator[TagRepositoryInterface, None, None]:
+    if request.param == "inmemory":
+        yield InMemoryTagRepository()
+        return
     engine = create_engine("sqlite:///:memory:")
     executor = SqlAlchemyQueryExecutor(engine)
     _create_schema(executor)
-    return SqlAlchemyTagRepository(executor)
-
-
-@pytest.fixture(params=["inmemory", "sqlalchemy"])
-def repo(request: pytest.FixtureRequest) -> TagRepositoryInterface:
-    if request.param == "inmemory":
-        return InMemoryTagRepository()
-    return _sqlalchemy_repo()
+    yield SqlAlchemyTagRepository(executor)
+    engine.dispose()
 
 
 def test_save_and_find_by_id(repo: TagRepositoryInterface) -> None:

@@ -70,6 +70,11 @@ dev = [
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "--cov=src --cov-report=term-missing --cov-fail-under=80"
+filterwarnings = [
+    # StaticPool keeps one connection alive by design; dispose() does not fully close it.
+    # Fires only during interpreter shutdown on the module-level app singleton.
+    "ignore:unclosed database:ResourceWarning",
+]
 
 # ---------------------------------------------------------------------------
 # coverage

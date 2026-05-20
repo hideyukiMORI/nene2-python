@@ -163,6 +163,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
     )
 
     note_repo, tag_repo, comment_repo, db_executor = _build_repositories(cfg)
+    app.state.db_executor = db_executor
 
     app.include_router(
         make_note_router(
