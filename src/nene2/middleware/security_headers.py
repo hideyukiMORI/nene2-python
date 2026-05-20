@@ -63,6 +63,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Permissions-Policy"] = self._permissions_policy
         if self._hsts:
             response.headers["Strict-Transport-Security"] = self._hsts
-        if request.url.path not in self._no_csp_paths:
+        if request.url.path not in self._no_csp_paths and self._csp:
             response.headers["Content-Security-Policy"] = self._csp
         return response
