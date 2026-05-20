@@ -5,6 +5,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.1] — 2026-05-20
+
+FT25〜FT28 フィールドトライアル — RequestId ヘルパー・structlog ログレベル・ThrottleMiddleware 改善。
+
+### Added
+- `nene2.middleware.get_request_id()` — FastAPI `Depends` で注入できる request ID ヘルパー関数 (FT25)
+- `setup_logging()` に `log_level: str = "INFO"` パラメータを追加し `AppSettings.log_level` との統合が容易に (FT26)
+- `ThrottleMiddleware` に `path_limits: dict[str, int] | None` パラメータを追加し、パスごとに異なるレート制限を設定可能に (FT28)
+- Field trial reports: `docs/field-trials/2026-05-field-trial-25.md` 〜 `docs/field-trials/2026-05-field-trial-28.md`
+
+### Fixed
+- `ThrottleMiddleware` — ウィンドウ経過後も `_counts` に古いエントリが残り続ける問題を修正（定期クリーンアップを実装）(FT27)
+
+---
+
 ## [1.8.0] — 2026-05-20
 
 FT18〜FT23 フィールドトライアル — ログテスト・Problem Details・ThrottleMiddleware・ドメイン例外・HealthCheck・RequestSizeLimit の各改善。
