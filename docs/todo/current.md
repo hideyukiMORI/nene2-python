@@ -1,14 +1,14 @@
 # TODO — current
 
 最終更新: 2026-05-21
-現状: **v1.8.58 安定版 / フィールドトライアルループ継続中（FT187 完了）**
+現状: **v1.8.59 安定版 / フィールドトライアルループ継続中（FT188 完了）**
 
 ---
 
 ## 状態サマリー
 
-v1.8.58 完了済み。FT187（collections / Counter・defaultdict・deque・ChainMap・NamedTuple・OrderedDict）を含む FT187 件を実施済み。
-フィールドトライアルループは FT188 以降も継続中。
+v1.8.59 完了済み。FT188（threading — Thread・Lock・RLock・Semaphore・Event・ThreadPoolExecutor・Queue・Timer、クラッカーペンテスト実施）を含む FT188 件を実施済み。
+フィールドトライアルループは FT189 以降も継続中。
 
 ---
 
@@ -41,6 +41,7 @@ v1.8.58 完了済み。FT187（collections / Counter・defaultdict・deque・Cha
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.59 | FT188: threading — Thread・Lock・RLock・Semaphore・Event・ThreadPoolExecutor・Queue・Timer（クラッカーペンテスト） |
 | v1.8.58 | FT187: collections — Counter・defaultdict・deque・ChainMap・NamedTuple・OrderedDict |
 | v1.8.57 | FT186: functools — キャッシュ・部分適用・デコレーター・比較・ディスパッチ（診断実施） |
 | v1.8.56 | FT185: contextlib — コンテキストマネージャー・リソース管理・エラー抑制 |
@@ -62,12 +63,12 @@ v1.8.58 完了済み。FT187（collections / Counter・defaultdict・deque・Cha
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT187（全 187 件）
+**実施済み**: FT1〜FT188（全 188 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT187 以降を継続（FT188 は 188 % 4 = 0 → クラッカーペンテストあり、188 % 3 = 2 → 診断なし）
+- FT188 以降を継続（FT189 は 189 % 3 = 0 → セキュリティ診断あり、189 % 4 = 1 → ペンテストなし）
 
 ---
 

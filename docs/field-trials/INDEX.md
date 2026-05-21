@@ -221,6 +221,7 @@
 | [FT185](2026-05-field-trial-185.md) | contextlib モジュール — コンテキストマネージャー・リソース管理・エラー抑制 | | |
 | [FT186](2026-05-field-trial-186.md) | functools モジュール — キャッシュ・部分適用・デコレーター・比較・ディスパッチ | 🔒 | [#520](https://github.com/hideyukiMORI/nene2-python/issues/520) |
 | [FT187](2026-05-field-trial-187.md) | collections モジュール — Counter・defaultdict・deque・ChainMap・NamedTuple・OrderedDict | | |
+| [FT188](2026-05-field-trial-188.md) | threading モジュール — Thread・Lock・RLock・Semaphore・Event・ThreadPoolExecutor・Queue・Timer | 🔍 | |
 
 ---
 
@@ -228,12 +229,12 @@
 
 FT3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 99, 102, 105, 108, 111, 114, 117, 120, 121, 124, 127, 130, 133, 136, 139, 142, 145, 148, 151, 154, 157, 160, 163, 166, 169, 172, 174, 177, 180, 183, 186
 
-合計: **62件**（183 FT 中 約 34%）
+合計: **62件**（188 FT 中 約 33%）
 
 ## クラッカーペンテスト実施済み一覧（🔍）
 
-FT172, FT176, FT180, FT184
+FT172, FT176, FT180, FT184, FT188
 
 ---
 
-*最終更新: 2026-05-21 (FT187 / v1.8.58)*
+*最終更新: 2026-05-21 (FT188 / v1.8.59)*
