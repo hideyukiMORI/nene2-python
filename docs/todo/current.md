@@ -1,24 +1,26 @@
 # TODO — current
 
-最終更新: 2026-05-21
-現状: **v1.8.66 安定版 / フィールドトライアルループ継続中（FT194 完了）**
+最終更新: 2026-05-22
+現状: **v1.8.67 安定版 / フィールドトライアルループ継続中（FT195 完了）**
 
 ---
 
 ## 状態サマリー
 
-v1.8.66 完了済み。FT194（ipaddress — IPv4/IPv6 解析・CIDR 計算・SSRF 防御パターン）を含む FT194 件を実施済み。
-フィールドトライアルループは FT195 以降も継続中。
+v1.8.67 完了済み。FT195（ssl — SSLContext・暗号スイート・セキュリティ評価 API）まで全 195 件を実施済み。
+並行系（FT188〜192）→ ネットワーク系（FT193〜195）の縦断を完了。
+リポジトリは main ブランチ 1 本・Issue/PR/ブランチ全ゼロのクリーンな状態。
+フィールドトライアルループは FT196 以降も継続中。
 
 ---
 
 ## オープン PR
 
-なし（現在 main ブランチはクリーン）
+なし（main ブランチはクリーン）
 
 ---
 
-## オープン Issue（優先度順）
+## オープン Issue
 
 なし（すべて解消済み）
 
@@ -28,13 +30,14 @@ v1.8.66 完了済み。FT194（ipaddress — IPv4/IPv6 解析・CIDR 計算・SS
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.67 | FT195: ssl — SSLContext・暗号スイート列挙・セキュリティ評価 API（セキュリティ診断、条件付き合格） |
 | v1.8.66 | FT194: ipaddress — IPv4/IPv6 解析・CIDR 計算・SSRF 防御パターン |
 | v1.8.65 | FT193: socket — TCP/UDP socketpair・DNS 解決・ソケットオプション |
 | v1.8.64 | FT192: asyncio — コルーチン・タスク・Lock・Event・Semaphore・Queue・TaskGroup（診断＋ペンテスト） |
 | v1.8.63 | FT191: concurrent.futures — ThreadPoolExecutor / ProcessPoolExecutor / Future |
 | v1.8.62 | FT190: multiprocessing — プロセスベース並行処理・共有状態・プロセスプール |
 | v1.8.61 | バックログ Issue 一括解消（CLAUDE.md ルール更新・FT サンドボックス修正・ドキュメント追記） |
-| v1.8.60 | FT189: subprocess — 安全なプロセス実行・stdin/stdout 制御・ストリーミング（セキュリティ診断、Issue #524） |
+| v1.8.60 | FT189: subprocess — 安全なプロセス実行・stdin/stdout 制御・ストリーミング（セキュリティ診断） |
 | v1.8.59 | FT188: threading — Thread・Lock・RLock・Semaphore・Event・ThreadPoolExecutor・Queue・Timer（クラッカーペンテスト） |
 | v1.8.58 | FT187: collections — Counter・defaultdict・deque・ChainMap・NamedTuple・OrderedDict |
 | v1.8.57 | FT186: functools — キャッシュ・部分適用・デコレーター・比較・ディスパッチ（診断実施） |
@@ -57,12 +60,25 @@ v1.8.66 完了済み。FT194（ipaddress — IPv4/IPv6 解析・CIDR 計算・SS
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT194（全 194 件）
+**実施済み**: FT1〜FT195（全 195 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT195 以降を継続（FT195 は 195 % 3 = 0 → **セキュリティ診断あり**、195 % 4 = 3 → ペンテストなし）
+- FT196 を開始（196 % 3 = 1 → セキュリティ診断なし、196 % 4 = 0 → **クラッカーペンテストあり**）
+- テーマ候補: `http.client`（低レベル HTTP クライアント）または `select` / `selectors`（I/O 多重化）
+
+---
+
+## 明日以降の優先タスク
+
+| 優先度 | タスク | 種別 | 備考 |
+|---|---|---|---|
+| 高 | FT196 実施（クラッカーペンテストあり） | FT | テーマ: `http.client` or `select`/`selectors` |
+| 中 | 並行系 how-to ガイド作成 | docs | FT188〜192 の知見（threading / asyncio / concurrent.futures）を 1 本にまとめる |
+| 中 | PyPI 公開フロー検証（Field Trial 7） | FT | `uv publish` ワークフロー・バージョン管理・twine 代替 |
+| 低 | PostgreSQL / MySQL 実 DB 統合テスト | infra | CI に Docker service ジョブを追加検討 |
+| 低 | PyJWT 推移的 CVE（PYSEC-2025-183） | 保留 | mcp 側の修正を待ち。文書化済み |
 
 ---
 
@@ -70,8 +86,6 @@ v1.8.66 完了済み。FT194（ipaddress — IPv4/IPv6 解析・CIDR 計算・SS
 
 | 課題 | 優先度 | 備考 |
 |---|---|---|
+| 並行系 how-to（AsyncUseCase / threading / multiprocessing 比較） | 中 | FT188〜192 の知見を 1 本 how-to にまとめる |
 | PostgreSQL / MySQL 実 DB 統合テスト | 中〜高 | CI に Docker service ジョブを追加検討 |
 | PyJWT 推移的 CVE（PYSEC-2025-183） | 低 | mcp 側の修正を待ち。文書化済み |
-| APIRouter パターンを FT テンプレートに反映 | 完了 | #526 で CLAUDE.md に追記済み |
-| FT サマリ索引 | 完了 | `docs/field-trials/INDEX.md` 作成済み |
-| stdlib 並行系知見 → AsyncUseCase how-to | 中 | FT188〜192 の知見を1本 how-to にまとめる |
