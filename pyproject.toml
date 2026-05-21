@@ -1,6 +1,6 @@
 [project]
 name = "nene2-python"
-version = "1.8.48"
+version = "1.8.49"
 description = "NENE2 Python — minimal API framework following NENE2's design philosophy"
 readme = "README.md"
 license = {text = "MIT"}
@@ -60,6 +60,7 @@ dev = [
     "mypy>=1.13",
     "ruff>=0.9",
     "pip-audit>=2.7",
+    "psycopg2-binary>=2.9.12",
 ]
 
 # ---------------------------------------------------------------------------
