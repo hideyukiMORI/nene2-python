@@ -220,6 +220,7 @@
 | [FT184](2026-05-field-trial-184.md) | urllib.request モジュール — URL フェッチ・Basic 認証・SSRF 防御 | 🔍 | [#516](https://github.com/hideyukiMORI/nene2-python/issues/516) [#517](https://github.com/hideyukiMORI/nene2-python/issues/517) |
 | [FT185](2026-05-field-trial-185.md) | contextlib モジュール — コンテキストマネージャー・リソース管理・エラー抑制 | | |
 | [FT186](2026-05-field-trial-186.md) | functools モジュール — キャッシュ・部分適用・デコレーター・比較・ディスパッチ | 🔒 | [#520](https://github.com/hideyukiMORI/nene2-python/issues/520) |
+| [FT187](2026-05-field-trial-187.md) | collections モジュール — Counter・defaultdict・deque・ChainMap・NamedTuple・OrderedDict | | |
 
 ---
 
@@ -235,4 +236,4 @@ FT172, FT176, FT180, FT184
 
 ---
 
-*最終更新: 2026-05-21 (FT186 / v1.8.57)*
+*最終更新: 2026-05-21 (FT187 / v1.8.58)*
