@@ -217,6 +217,7 @@
 | [FT181](2026-05-field-trial-181.md) | gzip モジュール — 圧縮・解凍・メタデータ・ビルド再現性 | | |
 | [FT182](2026-05-field-trial-182.md) | email モジュール — MIME 構築・RFC 2047・パース・アドレス操作 | | |
 | [FT183](2026-05-field-trial-183.md) | smtplib モジュール — SMTP 送信・STARTTLS・ヘッダーインジェクション防御 | 🔒 | [#513](https://github.com/hideyukiMORI/nene2-python/issues/513) [#514](https://github.com/hideyukiMORI/nene2-python/issues/514) |
+| [FT184](2026-05-field-trial-184.md) | urllib.request モジュール — URL フェッチ・Basic 認証・SSRF 防御 | 🔍 | [#516](https://github.com/hideyukiMORI/nene2-python/issues/516) [#517](https://github.com/hideyukiMORI/nene2-python/issues/517) |
 
 ---
 
@@ -228,8 +229,8 @@ FT3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 6
 
 ## クラッカーペンテスト実施済み一覧（🔍）
 
-FT172, FT176, FT180
+FT172, FT176, FT180, FT184
 
 ---
 
-*最終更新: 2026-05-21 (FT183 / v1.8.54)*
+*最終更新: 2026-05-21 (FT184 / v1.8.55)*
