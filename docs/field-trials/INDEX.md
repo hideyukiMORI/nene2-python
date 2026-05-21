@@ -224,6 +224,7 @@
 | [FT188](2026-05-field-trial-188.md) | threading モジュール — Thread・Lock・RLock・Semaphore・Event・ThreadPoolExecutor・Queue・Timer | 🔍 | |
 | [FT189](2026-05-field-trial-189.md) | subprocess モジュール — 安全なプロセス実行・stdin/stdout 制御・ストリーミング | 🔒 | [#524](https://github.com/hideyukiMORI/nene2-python/issues/524) |
 | [FT190](2026-05-field-trial-190.md) | multiprocessing モジュール — プロセスベース並行処理・共有状態・プロセスプール | | |
+| [FT191](2026-05-field-trial-191.md) | concurrent.futures モジュール — ThreadPoolExecutor / ProcessPoolExecutor / Future | | |
 
 ---
 
@@ -239,4 +240,4 @@ FT172, FT176, FT180, FT184, FT188
 
 ---
 
-*最終更新: 2026-05-21 (FT190 / v1.8.62)*
+*最終更新: 2026-05-21 (FT191 / v1.8.63)*
