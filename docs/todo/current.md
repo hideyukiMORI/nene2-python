@@ -1,52 +1,63 @@
 # TODO — current
 
-最終更新: 2026-05-20
-現状: **v1.8.33 安定版 / フィールドトライアルループ継続中**
+最終更新: 2026-05-21
+現状: **v1.8.48 安定版 / フィールドトライアルループ継続中（FT177 完了）**
 
 ---
 
 ## 状態サマリー
 
-v1.8.33 完了済み。フィールドトライアル FT108/FT109 を含む docs 改善マージ済み。
-2026-05-20 時点でオープン PR は PR #428（ResourceWarning 修正）のみ。
+v1.8.48 完了済み。FT177（hashlib / PBKDF2・scrypt・Blake2）を含む FT177 件を実施済み。
+フィールドトライアルループは FT178 以降も継続中。
 
 ---
 
 ## オープン PR
 
-| PR | Issue | 内容 |
+なし（現在 main ブランチはクリーン）
+
+---
+
+## オープン Issue（優先度順）
+
+| Issue | 内容 | 優先度 |
 |---|---|---|
-| [#428](https://github.com/hideyukiMORI/nene2-python/pull/428) | #427 | テストの ResourceWarning: unclosed database を解消する |
+| [#501](https://github.com/hideyukiMORI/nene2-python/issues/501) | [FT177] FastAPI アプリファクトリで APIRouter パターンを標準化 | 中 |
+| [#500](https://github.com/hideyukiMORI/nene2-python/issues/500) | [FT176] parse_decimal_safe() の Unicode 全角数字受け入れ挙動を文書化 | 低 |
+| [#499](https://github.com/hideyukiMORI/nene2-python/issues/499) | [FT176] calculate_tax/discount にビジネスロジックバリデーション追加 | 中 |
 
 ---
 
 ## 直近の完了マイルストーン
 
-| バージョン | 主な追加機能 |
+| バージョン | 主な内容 |
 |---|---|
-| v1.8.33 | `nene2.cache.TtlCache[V]` |
-| v1.8.32 | `nene2.security.verify_hmac_signature()` |
-| v1.8.31 | `nene2.http.generate_etag()` |
-| v1.8.30 | `problem_details_response()` headers パラメーター |
-| v1.8.29 | `make_require_auth()` |
-| v1.8.28 | `PaginationDep`, `PaginationResponse.model_dump()` |
+| v1.8.48 | FT177: hashlib — PBKDF2 / scrypt / Blake2 キー付きハッシュ |
+| v1.8.47 | FT176: decimal — 金融計算・精度制御（クラッカーペンテスト実施） |
+| v1.8.46 | FT175: logging — SensitiveFilter / RequestIdAdapter |
+| v1.8.45 | FT174: itertools — 安全な組み合わせ計算（セキュリティ診断実施） |
+| v1.8.44 | FT173: pathlib — セキュアなファイル操作 |
+| v1.8.43 | FT172: dataclasses — フリーズ・スロット・バリデーション（診断＋ペンテスト） |
 
 ---
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT109（FT108, FT109 含む docs-only）
+**実施済み**: FT1〜FT177（全 177 件）
 
-**次のアクション候補**（優先度順）:
-1. ResourceWarning 修正 PR #428 マージ後、バグ修正リリース（v1.8.34）
-2. FT110+ — 未検証パターンの探索継続
-3. DB 実統合テスト（PostgreSQL/MySQL 実環境）の追加検討
-4. PyPI 公開体験の最終確認
+索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
+
+**次のアクション**:
+- FT178 以降を継続（FT180 は 180 % 4 = 0 → クラッカーペンテスト対象）
+- FT180 は 180 % 3 = 0 → セキュリティ診断も実施
 
 ---
 
 ## 改善検討事項
 
-- 警告ゼロ化: PR #428 でほぼ解消（StaticPool の 1 件は filterwarnings で抑制）
-- DB 実統合テスト: SQLite インメモリテストはあるが PostgreSQL/MySQL 実環境テストは未
-- PyPI 公開体験の仕上げ: パッケージメタデータ整備済み、公開フロー最終確認が残
+| 課題 | 優先度 | 備考 |
+|---|---|---|
+| PostgreSQL / MySQL 実 DB 統合テスト | 中〜高 | CI に Docker service ジョブを追加検討 |
+| PyJWT 推移的 CVE（PYSEC-2025-183） | 低 | mcp 側の修正を待ち。文書化済み |
+| APIRouter パターンを FT テンプレートに反映 | 中 | Issue #501 |
+| FT サマリ索引 | 完了 | `docs/field-trials/INDEX.md` 作成済み |
