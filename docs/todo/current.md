@@ -1,14 +1,14 @@
 # TODO — current
 
 最終更新: 2026-05-21
-現状: **v1.8.56 安定版 / フィールドトライアルループ継続中（FT185 完了）**
+現状: **v1.8.57 安定版 / フィールドトライアルループ継続中（FT186 完了）**
 
 ---
 
 ## 状態サマリー
 
-v1.8.56 完了済み。FT185（contextlib / コンテキストマネージャー・リソース管理・エラー抑制）を含む FT185 件を実施済み。
-フィールドトライアルループは FT186 以降も継続中。
+v1.8.57 完了済み。FT186（functools / キャッシュ・部分適用・デコレーター・比較・ディスパッチ）を含む FT186 件を実施済み。セキュリティ診断実施済み。
+フィールドトライアルループは FT187 以降も継続中。
 
 ---
 
@@ -22,6 +22,7 @@ v1.8.56 完了済み。FT185（contextlib / コンテキストマネージャー
 
 | Issue | 内容 | 優先度 |
 |---|---|---|
+| [#520](https://github.com/hideyukiMORI/nene2-python/issues/520) | [FT186] /flatten エンドポイントの内側リスト要素数に上限を追加 | 中 |
 | [#517](https://github.com/hideyukiMORI/nene2-python/issues/517) | [FT184] DNS リバインディング攻撃への対策検討（TTL0 + IP 切り替え） | 低 |
 | [#516](https://github.com/hideyukiMORI/nene2-python/issues/516) | [FT184] fetch_safe のリダイレクト SSRF 対策（Location ヘッダー先の IP 検証） | 中 |
 | [#514](https://github.com/hideyukiMORI/nene2-python/issues/514) | [FT183] SmtpConfig.password を SecretStr に変更 | 低 |
@@ -40,6 +41,7 @@ v1.8.56 完了済み。FT185（contextlib / コンテキストマネージャー
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.57 | FT186: functools — キャッシュ・部分適用・デコレーター・比較・ディスパッチ（診断実施） |
 | v1.8.56 | FT185: contextlib — コンテキストマネージャー・リソース管理・エラー抑制 |
 | v1.8.55 | FT184: urllib.request — URL フェッチ・Basic 認証・SSRF 防御（クラッカーペンテスト実施） |
 | v1.8.54 | FT183: smtplib — SMTP 送信・STARTTLS・ヘッダーインジェクション防御（診断実施） |
@@ -59,12 +61,12 @@ v1.8.56 完了済み。FT185（contextlib / コンテキストマネージャー
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT185（全 185 件）
+**実施済み**: FT1〜FT186（全 186 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT185 以降を継続（FT186 は 186 % 4 = 2 → ペンテストなし、186 % 3 = 0 → セキュリティ診断あり）
+- FT186 以降を継続（FT187 は 187 % 4 = 3 → ペンテストなし、187 % 3 = 1 → 診断なし）
 
 ---
 
