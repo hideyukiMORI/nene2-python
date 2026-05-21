@@ -211,6 +211,8 @@
 | [FT175](2026-05-field-trial-175.md) | logging モジュール — SensitiveFilter / RequestIdAdapter | | |
 | [FT176](2026-05-field-trial-176.md) | decimal モジュール — 金融計算・精度制御 | 🔍 | [#499](https://github.com/hideyukiMORI/nene2-python/issues/499) [#500](https://github.com/hideyukiMORI/nene2-python/issues/500) |
 | [FT177](2026-05-field-trial-177.md) | hashlib モジュール — PBKDF2 / scrypt / Blake2 | 🔒 | [#501](https://github.com/hideyukiMORI/nene2-python/issues/501) |
+| [FT178](2026-05-field-trial-178.md) | base64 モジュール — エンコード・URL セーフ・データ URI | | |
+| [FT179](2026-05-field-trial-179.md) | zlib モジュール — 圧縮・解凍・展開爆弾対策・チェックサム | | |
 
 ---
 
@@ -218,7 +220,7 @@
 
 FT3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 99, 102, 105, 108, 111, 114, 117, 120, 121, 124, 127, 130, 133, 136, 139, 142, 145, 148, 151, 154, 157, 160, 163, 166, 169, 172, 174, 177
 
-合計: **60件**（177 FT 中 約 34%）
+合計: **60件**（179 FT 中 約 34%）
 
 ## クラッカーペンテスト実施済み一覧（🔍）
 
@@ -226,4 +228,4 @@ FT172, FT176
 
 ---
 
-*最終更新: 2026-05-21 (FT177 / v1.8.48)*
+*最終更新: 2026-05-21 (FT179 / v1.8.50)*

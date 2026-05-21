@@ -1,14 +1,14 @@
 # TODO — current
 
 最終更新: 2026-05-21
-現状: **v1.8.48 安定版 / フィールドトライアルループ継続中（FT177 完了）**
+現状: **v1.8.50 安定版 / フィールドトライアルループ継続中（FT179 完了）**
 
 ---
 
 ## 状態サマリー
 
-v1.8.48 完了済み。FT177（hashlib / PBKDF2・scrypt・Blake2）を含む FT177 件を実施済み。
-フィールドトライアルループは FT178 以降も継続中。
+v1.8.50 完了済み。FT179（zlib / 圧縮・解凍・展開爆弾対策・チェックサム）を含む FT179 件を実施済み。
+フィールドトライアルループは FT180 以降も継続中。
 
 ---
 
@@ -32,6 +32,8 @@ v1.8.48 完了済み。FT177（hashlib / PBKDF2・scrypt・Blake2）を含む FT
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.50 | FT179: zlib — 圧縮・解凍・展開爆弾対策・CRC32/Adler-32 |
+| v1.8.49 | FT178: base64 — エンコード・URL セーフ・データ URI・HTTP Basic Auth |
 | v1.8.48 | FT177: hashlib — PBKDF2 / scrypt / Blake2 キー付きハッシュ |
 | v1.8.47 | FT176: decimal — 金融計算・精度制御（クラッカーペンテスト実施） |
 | v1.8.46 | FT175: logging — SensitiveFilter / RequestIdAdapter |
