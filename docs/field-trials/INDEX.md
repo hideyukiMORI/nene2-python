@@ -218,6 +218,7 @@
 | [FT182](2026-05-field-trial-182.md) | email モジュール — MIME 構築・RFC 2047・パース・アドレス操作 | | |
 | [FT183](2026-05-field-trial-183.md) | smtplib モジュール — SMTP 送信・STARTTLS・ヘッダーインジェクション防御 | 🔒 | [#513](https://github.com/hideyukiMORI/nene2-python/issues/513) [#514](https://github.com/hideyukiMORI/nene2-python/issues/514) |
 | [FT184](2026-05-field-trial-184.md) | urllib.request モジュール — URL フェッチ・Basic 認証・SSRF 防御 | 🔍 | [#516](https://github.com/hideyukiMORI/nene2-python/issues/516) [#517](https://github.com/hideyukiMORI/nene2-python/issues/517) |
+| [FT185](2026-05-field-trial-185.md) | contextlib モジュール — コンテキストマネージャー・リソース管理・エラー抑制 | | |
 
 ---
 
@@ -233,4 +234,4 @@ FT172, FT176, FT180, FT184
 
 ---
 
-*最終更新: 2026-05-21 (FT184 / v1.8.55)*
+*最終更新: 2026-05-21 (FT185 / v1.8.56)*
