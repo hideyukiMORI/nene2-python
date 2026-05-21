@@ -1,14 +1,14 @@
 # TODO — current
 
 最終更新: 2026-05-21
-現状: **v1.8.63 安定版 / フィールドトライアルループ継続中（FT191 完了）**
+現状: **v1.8.64 安定版 / フィールドトライアルループ継続中（FT192 完了）**
 
 ---
 
 ## 状態サマリー
 
-v1.8.63 完了済み。FT191（concurrent.futures — ThreadPoolExecutor / ProcessPoolExecutor / Future）を含む FT191 件を実施済み。
-フィールドトライアルループは FT192 以降も継続中。
+v1.8.64 完了済み。FT192（asyncio — コルーチン・タスク・Lock・Event・Semaphore・Queue・TaskGroup、セキュリティ診断＋クラッカーペンテスト実施）を含む FT192 件を実施済み。
+フィールドトライアルループは FT193 以降も継続中。
 
 ---
 
@@ -28,6 +28,7 @@ v1.8.63 完了済み。FT191（concurrent.futures — ThreadPoolExecutor / Proce
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.64 | FT192: asyncio — コルーチン・タスク・Lock・Event・Semaphore・Queue・TaskGroup（診断＋ペンテスト） |
 | v1.8.63 | FT191: concurrent.futures — ThreadPoolExecutor / ProcessPoolExecutor / Future |
 | v1.8.62 | FT190: multiprocessing — プロセスベース並行処理・共有状態・プロセスプール |
 | v1.8.61 | バックログ Issue 一括解消（CLAUDE.md ルール更新・FT サンドボックス修正・ドキュメント追記） |
@@ -54,12 +55,12 @@ v1.8.63 完了済み。FT191（concurrent.futures — ThreadPoolExecutor / Proce
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT191（全 191 件）
+**実施済み**: FT1〜FT192（全 192 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT192 以降を継続（FT192 は 192 % 3 = 0 → セキュリティ診断あり、192 % 4 = 0 → クラッカーペンテストあり）
+- FT193 以降を継続（FT193 は 193 % 3 = 1 → 診断なし、193 % 4 = 1 → ペンテストなし）
 
 ---
 
