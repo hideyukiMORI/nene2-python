@@ -1,6 +1,6 @@
 """HTTP helpers — JSON responses, pagination, problem details, health."""
 
-from .etag import generate_etag
+from .etag import check_not_modified, check_precondition, generate_etag
 from .health import (
     AsyncCompositeHealthCheck,
     AsyncHealthCheckProtocol,
@@ -17,6 +17,8 @@ from .problem_details import (
 )
 
 __all__ = [
+    "check_not_modified",
+    "check_precondition",
     "generate_etag",
     "AsyncCompositeHealthCheck",
     "AsyncHealthCheckProtocol",
