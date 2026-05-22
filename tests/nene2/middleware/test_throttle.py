@@ -1,4 +1,4 @@
-"""Tests for ThrottleMiddleware."""
+"""Tests for ThrottleMiddleware / InMemoryRateLimitStorage / RateLimitStorageProtocol."""
 
 import time
 
@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from nene2.middleware import ThrottleMiddleware
+from nene2.middleware import InMemoryRateLimitStorage, RateLimitStorageProtocol, ThrottleMiddleware
 
 
 def _make_app(limit: int = 3, window: int = 60) -> FastAPI:
@@ -173,18 +173,37 @@ def test_path_limit_reflected_in_x_ratelimit_limit_header() -> None:
 
 
 def test_stale_entries_are_evicted_after_window_expires() -> None:
-    app = FastAPI()
-    middleware = ThrottleMiddleware(app, limit=100, window=1)
-
+    storage = InMemoryRateLimitStorage()
+    now = time.monotonic()
     for i in range(10):
-        middleware._check_rate(f"192.168.1.{i}", 100)
+        storage.acquire(f"192.168.1.{i}", now, 1.0)
 
-    assert len(middleware._counts) == 10
+    assert len(storage._counts) == 10
 
     time.sleep(1.1)
 
     # 新しいリクエストでクリーンアップがトリガーされる
-    middleware._check_rate("10.0.0.99", 100)
+    storage.acquire("10.0.0.99", time.monotonic(), 1.0)
 
     # 古い 10 エントリは削除され、新しい 1 エントリのみ残る
-    assert len(middleware._counts) == 1
+    assert len(storage._counts) == 1
+
+
+def test_custom_storage_is_used_by_throttle_middleware() -> None:
+    storage = InMemoryRateLimitStorage()
+    app = FastAPI()
+    app.add_middleware(ThrottleMiddleware, limit=2, window=60, storage=storage)
+
+    @app.get("/ping")
+    async def ping() -> JSONResponse:
+        return JSONResponse({"ok": True})
+
+    client = TestClient(app)
+    assert client.get("/ping").status_code == 200
+    assert client.get("/ping").status_code == 200
+    assert client.get("/ping").status_code == 429
+
+
+def test_rate_limit_storage_protocol_is_satisfied() -> None:
+    storage = InMemoryRateLimitStorage()
+    assert isinstance(storage, RateLimitStorageProtocol)
