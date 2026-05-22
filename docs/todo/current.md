@@ -1,15 +1,15 @@
 # TODO — current
 
 最終更新: 2026-05-22
-現状: **v1.8.88 安定版 / FT211（typing）完了**
+現状: **v1.8.89 安定版 / FT212（dataclasses）完了**
 
 ---
 
 ## 状態サマリー
 
-v1.8.88 完了済み。FT211（typing — TypedDict / Protocol / runtime_checkable / get_type_hints / Literal / Annotated）完了。
-`isinstance` 後も mypy は Protocol 型に絞り込まない（F-1）を確認。
-Pydantic フィールドに `Literal` 型を直接使えば手動バリデーション + `type: ignore` が不要（F-2）を実証。フィールドトライアルループは FT212 以降も継続中。
+v1.8.89 完了済み。FT212（dataclasses — field / asdict / astuple / replace / __post_init__）完了。
+クラッカーペンテストで `Infinity`/`NaN` 非標準 JSON → FastAPI エラーシリアライザー 500 DoS を発見・修正（F-2 HIGH）。
+`_sanitize_value()` + カスタム `RequestValidationError` ハンドラーで 422 に修正。フィールドトライアルループは FT213 以降も継続中。
 
 ---
 
@@ -33,6 +33,7 @@ Pydantic フィールドに `Literal` 型を直接使えば手動バリデーシ
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.89 | FT212: dataclasses — field / asdict / astuple / replace / __post_init__（Infinity/NaN 500 DoS 発見・修正）|
 | v1.8.88 | FT211: typing — TypedDict / Protocol / get_type_hints / Literal（isinstance 後の型絞り込み・Literal+Pydantic で type:ignore 排除）|
 | v1.8.87 | FT210: contextlib — contextmanager / suppress / ExitStack / nullcontext（__exit__ None 型・list[str] per-item length 制約）|
 | v1.8.86 | FT209: functools — partial / lru_cache / reduce / wraps（@wraps ANN401 回避・Python 3.14 type: ignore 不要化） |
@@ -62,13 +63,13 @@ Pydantic フィールドに `Literal` 型を直接使えば手動バリデーシ
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT211（全 211 件）
+**実施済み**: FT1〜FT212（全 212 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT212 を開始（212 % 3 = 2 → セキュリティ診断なし、212 % 4 = 0 → クラッカーペンテストあり）
-- テーマ候補: `dataclasses` モジュール（field / asdict / astuple / replace / post_init）
+- FT213 を開始（213 % 3 = 0 → セキュリティ診断あり、213 % 4 = 1 → クラッカーペンテストなし）
+- テーマ候補: `abc` モジュール（ABC / abstractmethod / register / __subclasshook__）
 
 ---
 
@@ -76,7 +77,7 @@ Pydantic フィールドに `Literal` 型を直接使えば手動バリデーシ
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT212 実施（セキュリティ診断なし、クラッカーペンテストあり） | FT |
+| 高 | — | FT213 実施（セキュリティ診断あり、クラッカーペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
