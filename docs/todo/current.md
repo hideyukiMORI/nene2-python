@@ -1,14 +1,14 @@
 # TODO — current
 
 最終更新: 2026-05-23
-現状: **v1.8.93 安定版 / FT216（codecs）完了**
+現状: **v1.8.94 安定版 / FT217（csv）完了**
 
 ---
 
 ## 状態サマリー
 
-v1.8.93 完了済み。FT216（codecs — encode / decode / lookup / IncrementalEncoder）完了。
-セキュリティ診断・クラッカーペンテスト両方合格。Literal 型でエンコーディング名・エラーハンドラーを制約、ホワイトリスト検証でインジェクション防御。フィールドトライアルループは FT217 以降も継続中。
+v1.8.94 完了済み。FT217（csv — reader / writer / DictReader / DictWriter / Sniffer）完了。
+セキュリティ診断・クラッカーペンテストなし（217 % 3 = 1、217 % 4 = 1）。Literal 型で区切り文字を制限、max_length でテキスト・フィールド長を上限制御。フィールドトライアルループは FT218 以降も継続中。
 
 ---
 
@@ -32,6 +32,7 @@ v1.8.93 完了済み。FT216（codecs — encode / decode / lookup / Incremental
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.94 | FT217: csv — reader / writer / DictReader / DictWriter / Sniffer |
 | v1.8.93 | FT216: codecs — encode / decode / lookup / IncrementalEncoder（セキュリティ診断・クラッカーペンテスト合格）|
 | v1.8.92 | FT215: struct — pack / unpack / calcsize / Struct（フォーマット文字列ホワイトリスト検証・unpack 型変換）|
 | v1.8.91 | FT214: io — StringIO / BytesIO / TextIOWrapper / BufferedReader（tell() タイミング依存性・TextIOWrapper write_through=True）|
@@ -66,13 +67,13 @@ v1.8.93 完了済み。FT216（codecs — encode / decode / lookup / Incremental
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT216（全 216 件）
+**実施済み**: FT1〜FT217（全 217 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT217 を開始（217 % 3 = 1 → セキュリティ診断なし、217 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `csv` モジュール（reader / writer / DictReader / DictWriter / Sniffer）
+- FT218 を開始（218 % 3 = 2 → セキュリティ診断なし、218 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `configparser` モジュール（read / write / sections / interpolation）
 
 ---
 
@@ -80,7 +81,7 @@ v1.8.93 完了済み。FT216（codecs — encode / decode / lookup / Incremental
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT217 実施（セキュリティ診断なし、クラッカーペンテストなし） | FT |
+| 高 | — | FT218 実施（セキュリティ診断なし、クラッカーペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
