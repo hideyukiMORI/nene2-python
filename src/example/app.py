@@ -157,6 +157,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         ApiKeyAuthMiddleware,
         verifier=LocalTokenVerifier(machine_keys),
         include_paths=["/machine/health"],
+        header_name="X-NENE2-API-Key",
     )
     # CORS must be outermost — register last so preflight OPTIONS is handled
     # before throttle, auth, or any other middleware runs.

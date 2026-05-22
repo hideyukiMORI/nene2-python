@@ -25,7 +25,7 @@ def test_machine_health_requires_api_key() -> None:
 
 def test_machine_health_with_api_key() -> None:
     client = TestClient(create_app(AppSettings(throttle_enabled=False)))
-    r = client.get("/machine/health", headers={"X-Api-Key": _MACHINE_KEY})
+    r = client.get("/machine/health", headers={"X-NENE2-API-Key": _MACHINE_KEY})
     assert r.status_code == 200
     body = r.json()
     assert body["status"] == "ok"
