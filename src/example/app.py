@@ -149,7 +149,10 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             ApiKeyAuthMiddleware,
             verifier=LocalTokenVerifier(cfg.api_keys),
         )
-    machine_keys = cfg.api_keys if cfg.api_key_enabled and cfg.api_keys else _DEFAULT_MACHINE_API_KEYS
+    if cfg.api_key_enabled and cfg.api_keys:
+        machine_keys = cfg.api_keys
+    else:
+        machine_keys = _DEFAULT_MACHINE_API_KEYS
     app.add_middleware(
         ApiKeyAuthMiddleware,
         verifier=LocalTokenVerifier(machine_keys),
