@@ -33,9 +33,13 @@ class LocalBearerJwtVerifier:
         if header.get("alg") != "HS256":
             raise TokenVerificationException("Token algorithm must be HS256.")
         signing_input = f"{header_b64}.{payload_b64}".encode()
-        expected_sig = base64.urlsafe_b64encode(
-            hmac.new(self._secret, signing_input, hashlib.sha256).digest(),
-        ).rstrip(b"=").decode()
+        expected_sig = (
+            base64.urlsafe_b64encode(
+                hmac.new(self._secret, signing_input, hashlib.sha256).digest(),
+            )
+            .rstrip(b"=")
+            .decode()
+        )
         if not hmac.compare_digest(expected_sig, sig_b64):
             raise TokenVerificationException("Token signature is invalid.")
         claims: dict[str, object] = json.loads(_b64url_decode(payload_b64))

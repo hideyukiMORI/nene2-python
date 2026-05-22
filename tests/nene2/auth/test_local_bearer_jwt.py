@@ -15,17 +15,25 @@ _SECRET = "ft-evac-local-jwt-secret-min-32-chars!!"  # noqa: S105
 
 
 def _issue(secret: str, claims: dict[str, object]) -> str:
-    header_b64 = base64.urlsafe_b64encode(
-        json.dumps({"typ": "JWT", "alg": "HS256"}).encode(),
-    ).rstrip(b"=").decode()
+    header_b64 = (
+        base64.urlsafe_b64encode(
+            json.dumps({"typ": "JWT", "alg": "HS256"}).encode(),
+        )
+        .rstrip(b"=")
+        .decode()
+    )
     payload_b64 = base64.urlsafe_b64encode(json.dumps(claims).encode()).rstrip(b"=").decode()
-    sig_b64 = base64.urlsafe_b64encode(
-        hmac.new(
-            secret.encode(),
-            f"{header_b64}.{payload_b64}".encode(),
-            hashlib.sha256,
-        ).digest(),
-    ).rstrip(b"=").decode()
+    sig_b64 = (
+        base64.urlsafe_b64encode(
+            hmac.new(
+                secret.encode(),
+                f"{header_b64}.{payload_b64}".encode(),
+                hashlib.sha256,
+            ).digest(),
+        )
+        .rstrip(b"=")
+        .decode()
+    )
     return f"{header_b64}.{payload_b64}.{sig_b64}"
 
 
