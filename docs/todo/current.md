@@ -1,15 +1,15 @@
 # TODO — current
 
 最終更新: 2026-05-22
-現状: **v1.8.84 安定版 / FT207（collections）完了**
+現状: **v1.8.85 安定版 / FT208（itertools）完了**
 
 ---
 
 ## 状態サマリー
 
-v1.8.84 完了済み。FT207（collections — namedtuple / defaultdict / Counter / deque）完了。
-`Counter` の `-` 演算は 0 以下除去・`deque(maxlen=N)` はリングバッファ・`namedtuple` はAPI境界に使わないパターンを確認。
-セキュリティ診断合格（207 % 3 = 0）。フィールドトライアルループは FT208 以降も継続中。
+v1.8.85 完了済み。FT208（itertools — chain / islice / groupby / product / combinations）完了。
+クラッカーペンテストで `combinations_with_replacement(n=20, r=10)` が 2000 万件生成されることを発見。
+`math.comb` による事前チェックで防御（修正込みで堅牢）。フィールドトライアルループは FT209 以降も継続中。
 
 ---
 
@@ -33,6 +33,7 @@ v1.8.84 完了済み。FT207（collections — namedtuple / defaultdict / Counte
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.85 | FT208: itertools — chain / islice / groupby / product / combinations（クラッカーペンテスト: 堅牢） |
 | v1.8.84 | FT207: collections — namedtuple / defaultdict / Counter / deque（セキュリティ診断合格） |
 | v1.8.83 | FT206: pathlib — Pure パス解析・パストラバーサル防御（絶対パス注入検出） |
 | v1.8.82 | FT205: enum — StrEnum・IntEnum・IntFlag・Flag（Python 3.11+ Flag iteration 変更点） |
@@ -58,13 +59,13 @@ v1.8.84 完了済み。FT207（collections — namedtuple / defaultdict / Counte
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT207（全 207 件）
+**実施済み**: FT1〜FT208（全 208 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT208 を開始（208 % 3 = 1 → セキュリティ診断なし、208 % 4 = 0 → クラッカーペンテストあり）
-- テーマ候補: `itertools`（chain / islice / groupby / product / combinations）
+- FT209 を開始（209 % 3 = 2 → セキュリティ診断なし、209 % 4 = 1 → クラッカーペンテストなし）
+- テーマ候補: `functools`（partial / lru_cache / reduce / wraps）
 
 ---
 
@@ -72,7 +73,7 @@ v1.8.84 完了済み。FT207（collections — namedtuple / defaultdict / Counte
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT208 実施（セキュリティ診断なし、クラッカーペンテストあり） | FT |
+| 高 | — | FT209 実施（セキュリティ診断なし、クラッカーペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
