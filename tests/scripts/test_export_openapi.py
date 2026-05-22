@@ -27,7 +27,8 @@ def test_main_yaml_is_valid_openapi(
 
     content = yaml.safe_load((tmp_path / "docs" / "openapi.yaml").read_text())
     assert content["openapi"].startswith("3.")
-    assert "/notes" in content["paths"]
+    assert "/examples/notes" in content["paths"]
+    assert "/examples/ping" in content["paths"]
 
 
 def test_main_prints_output_path(

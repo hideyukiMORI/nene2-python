@@ -165,6 +165,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
     note_repo, tag_repo, comment_repo, db_executor = _build_repositories(cfg)
     app.state.db_executor = db_executor
 
+    # OpenAPI parity with NENE2 PHP: /examples/notes, /examples/tags (nene2-js client paths).
     app.include_router(
         make_note_router(
             ListNotesUseCase(note_repo),
@@ -172,7 +173,8 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             CreateNoteUseCase(note_repo),
             UpdateNoteUseCase(note_repo),
             DeleteNoteUseCase(note_repo),
-        )
+        ),
+        prefix="/examples",
     )
 
     app.include_router(
@@ -182,7 +184,8 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             CreateTagUseCase(tag_repo),
             UpdateTagUseCase(tag_repo),
             DeleteTagUseCase(tag_repo),
-        )
+        ),
+        prefix="/examples",
     )
 
     app.include_router(
@@ -192,8 +195,13 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             CreateCommentUseCase(comment_repo, note_repo),
             UpdateCommentUseCase(comment_repo),
             DeleteCommentUseCase(comment_repo),
-        )
+        ),
+        prefix="/examples",
     )
+
+    @app.get("/examples/ping", tags=["system"], summary="Example ping")
+    async def example_ping() -> JSONResponse:
+        return JSONResponse({"message": "pong", "status": "ok"})
 
     db_health = DatabaseHealthCheck(db_executor) if db_executor else None
 
