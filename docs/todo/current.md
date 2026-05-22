@@ -1,22 +1,20 @@
 # TODO — current
 
 最終更新: 2026-05-22
-現状: **v1.8.75 安定版 / フィールドトライアルループ継続中（FT202 完了）**
+現状: **v1.8.79 安定版 / PHP 版 parity 実装完了 (#555〜#561)**
 
 ---
 
 ## 状態サマリー
 
-v1.8.75 完了済み。`check_not_modified` / `check_precondition` を `nene2.http` に追加（PHP 版 ConditionalGetHelper/ConditionalWriteHelper 相当、Issue #555/#556）。
+v1.8.79 完了済み。PHP 版 NENE2 との parity Issues (#555〜#561) を全件実装・マージ。
 フィールドトライアルループは FT203 以降も継続中。
 
 ---
 
 ## オープン PR
 
-| PR | ブランチ | 内容 |
-|---|---|---|
-| (作成中) | feat/555-556-conditional-get-write | #555/#556 check_not_modified / check_precondition |
+なし（main ブランチはクリーン）
 
 ---
 
@@ -27,13 +25,6 @@ v1.8.75 完了済み。`check_not_modified` / `check_precondition` を `nene2.ht
 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model を統一して CLAUDE.md ポリシーに準拠 | 中 | enhancement |
 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的と終着点を明文化する | 中 | docs |
 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish ワークフロー） | 中 | enhancement |
-| [#555](https://github.com/hideyukiMORI/nene2-python/issues/555) | check_not_modified — If-None-Match/If-Modified-Since 304 判定 | 高 | enhancement |
-| [#556](https://github.com/hideyukiMORI/nene2-python/issues/556) | check_precondition — If-Match 楽観的ロック 412/428 判定 | 高 | enhancement |
-| [#557](https://github.com/hideyukiMORI/nene2-python/issues/557) | CompositeAuthMiddleware — 複数認証方式のパスベース切り替え | 中 | enhancement |
-| [#558](https://github.com/hideyukiMORI/nene2-python/issues/558) | RateLimitStorageProtocol — ThrottleMiddleware のストレージ抽象化 | 中 | enhancement |
-| [#559](https://github.com/hideyukiMORI/nene2-python/issues/559) | TokenIssuerProtocol / LocalTokenIssuer — 開発用トークン発行 | 中 | enhancement |
-| [#560](https://github.com/hideyukiMORI/nene2-python/issues/560) | QueryStringParser — クエリ文字列ユーティリティ関数 | 低 | enhancement |
-| [#561](https://github.com/hideyukiMORI/nene2-python/issues/561) | RequestScopedContext[T] — リクエストスコープ汎用コンテキスト | 低 | enhancement |
 
 ---
 
@@ -41,7 +32,11 @@ v1.8.75 完了済み。`check_not_modified` / `check_precondition` を `nene2.ht
 
 | バージョン | 主な内容 |
 |---|---|
-| v1.8.75 | #555/#556: check_not_modified / check_precondition — PHP版 ConditionalGetHelper/ConditionalWriteHelper 相当 |
+| v1.8.79 | #560/#561: query ヘルパー関数群・RequestScopedContext[T] |
+| v1.8.78 | #559: LocalTokenIssuer / LocalTokenIssuerVerifier — 開発用 HMAC 署名トークン |
+| v1.8.77 | #558: RateLimitStorageProtocol / InMemoryRateLimitStorage |
+| v1.8.76 | #557: CompositeAuthMiddleware — パスプレフィックスベース認証方式切り替え |
+| v1.8.75 | #555/#556: check_not_modified / check_precondition |
 | v1.8.74 | FT202: hmac — HMAC 計算・検証・timing-safe 比較 |
 | v1.8.73 | FT201: hashlib — ハッシュ計算・整合性検証・弱アルゴリズム警告（セキュリティ診断） |
 | v1.8.72 | FT200: base64 — Base64 エンコード・デコード・URL セーフ変換（クラッカーペンテスト） |
@@ -71,12 +66,7 @@ v1.8.75 完了済み。`check_not_modified` / `check_precondition` を `nene2.ht
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | [#557](https://github.com/hideyukiMORI/nene2-python/issues/557) | CompositeAuthMiddleware 実装 | enhancement |
-| 高 | [#558](https://github.com/hideyukiMORI/nene2-python/issues/558) | RateLimitStorageProtocol 実装 | enhancement |
-| 高 | [#559](https://github.com/hideyukiMORI/nene2-python/issues/559) | TokenIssuerProtocol 実装 | enhancement |
 | 高 | — | FT203 実施（診断・ペンテストなし） | FT |
-| 中 | [#560](https://github.com/hideyukiMORI/nene2-python/issues/560) | QueryStringParser 実装 | enhancement |
-| 中 | [#561](https://github.com/hideyukiMORI/nene2-python/issues/561) | RequestScopedContext[T] 実装 | enhancement |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
