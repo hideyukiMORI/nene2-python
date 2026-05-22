@@ -1,14 +1,14 @@
 # TODO — current
 
 最終更新: 2026-05-22
-現状: **v1.8.91 安定版 / FT214（io）完了**
+現状: **v1.8.92 安定版 / FT215（struct）完了**
 
 ---
 
 ## 状態サマリー
 
-v1.8.91 完了済み。FT214（io — StringIO / BytesIO / TextIOWrapper / BufferedReader）完了。
-摩擦点: StringIO.tell() のタイミング依存性（書き込み後 vs read 後で値が変わる）、TextIOWrapper の write_through=True が必要。フィールドトライアルループは FT215 以降も継続中。
+v1.8.92 完了済み。FT215（struct — pack / unpack / calcsize / Struct / byte order）完了。
+摩擦点: struct フォーマット文字列のホワイトリスト検証が必要（インジェクション防御）、struct.unpack 戻り値型は tuple[Any, ...] で型変換が必要。フィールドトライアルループは FT216 以降も継続中。
 
 ---
 
@@ -32,6 +32,7 @@ v1.8.91 完了済み。FT214（io — StringIO / BytesIO / TextIOWrapper / Buffe
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.92 | FT215: struct — pack / unpack / calcsize / Struct（フォーマット文字列ホワイトリスト検証・unpack 型変換）|
 | v1.8.91 | FT214: io — StringIO / BytesIO / TextIOWrapper / BufferedReader（tell() タイミング依存性・TextIOWrapper write_through=True）|
 | v1.8.90 | FT213: abc — ABC / abstractmethod / register / __subclasshook__（セキュリティ診断: Infinity/NaN DoS 修正・__subclasshook__ mypy 回避策）|
 | v1.8.89 | FT212: dataclasses — field / asdict / astuple / replace / __post_init__（Infinity/NaN 500 DoS 発見・修正）|
@@ -64,13 +65,13 @@ v1.8.91 完了済み。FT214（io — StringIO / BytesIO / TextIOWrapper / Buffe
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT214（全 214 件）
+**実施済み**: FT1〜FT215（全 215 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT215 を開始（215 % 3 = 2 → セキュリティ診断なし、215 % 4 = 3 → クラッカーペンテストなし）
-- テーマ候補: `struct` モジュール（pack / unpack / calcsize / Struct）
+- FT216 を開始（216 % 3 = 0 → セキュリティ診断あり、216 % 4 = 0 → クラッカーペンテストあり）
+- テーマ候補: `codecs` モジュール（encode / decode / lookup / open / IncrementalEncoder）
 
 ---
 
@@ -78,7 +79,7 @@ v1.8.91 完了済み。FT214（io — StringIO / BytesIO / TextIOWrapper / Buffe
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT215 実施（セキュリティ診断なし、クラッカーペンテストなし） | FT |
+| 高 | — | FT216 実施（セキュリティ診断あり、クラッカーペンテストあり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
