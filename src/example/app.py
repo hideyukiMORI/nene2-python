@@ -200,8 +200,12 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
     @app.get("/health", tags=["system"], summary="Health check")
     async def health() -> JSONResponse:
         status = db_health.check() if db_health else HealthStatus(status="ok")
+        api_status = "ok" if status.is_healthy else "degraded"
         code = 200 if status.is_healthy else 503
-        return JSONResponse({"status": status.status, "checks": status.checks}, status_code=code)
+        return JSONResponse(
+            {"status": api_status, "service": "NENE2", "checks": status.checks},
+            status_code=code,
+        )
 
     return app
 

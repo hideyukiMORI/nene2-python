@@ -77,4 +77,6 @@ def test_delete_nonexistent_note_returns_404(client: TestClient) -> None:
 def test_health(client: TestClient) -> None:
     r = client.get("/health")
     assert r.status_code == 200
-    assert r.json()["status"] == "ok"
+    body = r.json()
+    assert body["status"] == "ok"
+    assert body["service"] == "NENE2"
