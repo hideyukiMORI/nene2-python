@@ -230,6 +230,7 @@
 | [FT194](2026-05-field-trial-194.md) | ipaddress モジュール — IPv4/IPv6 解析・CIDR 計算・SSRF 防御パターン | | |
 | [FT195](2026-05-field-trial-195.md) | ssl モジュール — SSLContext・暗号スイート列挙・セキュリティ評価 API | 🔒 | |
 | [FT196](2026-05-field-trial-196.md) | http.client モジュール — 低レベル HTTP クライアント・接続管理・SSRF 防御 | 🔍 | |
+| [FT197](2026-05-field-trial-197.md) | urllib.parse モジュール — URL 解析・エンコード・クエリ文字列処理 | | |
 
 ---
 
@@ -245,4 +246,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196
 
 ---
 
-*最終更新: 2026-05-22 (FT196 / v1.8.68)*
+*最終更新: 2026-05-22 (FT197 / v1.8.69)*
