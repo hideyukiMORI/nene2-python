@@ -63,6 +63,8 @@ def make_note_router(
         errors: list[ValidationError] = []
         if not body.title.strip():
             errors.append(ValidationError("title", "Title must not be empty.", "required"))
+        if not body.body.strip():
+            errors.append(ValidationError("body", "Body must not be empty.", "required"))
         if errors:
             raise ValidationException(errors)
 
@@ -76,6 +78,8 @@ def make_note_router(
         errors: list[ValidationError] = []
         if not body.title.strip():
             errors.append(ValidationError("title", "Title must not be empty.", "required"))
+        if not body.body.strip():
+            errors.append(ValidationError("body", "Body must not be empty.", "required"))
         if errors:
             raise ValidationException(errors)
 
