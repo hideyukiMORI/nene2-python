@@ -1,15 +1,15 @@
 # TODO — current
 
 最終更新: 2026-05-22
-現状: **v1.8.89 安定版 / FT212（dataclasses）完了**
+現状: **v1.8.90 安定版 / FT213（abc）完了**
 
 ---
 
 ## 状態サマリー
 
-v1.8.89 完了済み。FT212（dataclasses — field / asdict / astuple / replace / __post_init__）完了。
-クラッカーペンテストで `Infinity`/`NaN` 非標準 JSON → FastAPI エラーシリアライザー 500 DoS を発見・修正（F-2 HIGH）。
-`_sanitize_value()` + カスタム `RequestValidationError` ハンドラーで 422 に修正。フィールドトライアルループは FT213 以降も継続中。
+v1.8.90 完了済み。FT213（abc — ABC / abstractmethod / register / __subclasshook__）完了。
+セキュリティ診断で FT212 と同一の `Infinity`/`NaN` 非標準 JSON → 500 DoS を発見・修正（F-2 HIGH）。
+`_sanitize_value()` + カスタム `RequestValidationError` ハンドラーで 422 に修正。フィールドトライアルループは FT214 以降も継続中。
 
 ---
 
@@ -33,6 +33,7 @@ v1.8.89 完了済み。FT212（dataclasses — field / asdict / astuple / replac
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.90 | FT213: abc — ABC / abstractmethod / register / __subclasshook__（セキュリティ診断: Infinity/NaN DoS 修正・__subclasshook__ mypy 回避策）|
 | v1.8.89 | FT212: dataclasses — field / asdict / astuple / replace / __post_init__（Infinity/NaN 500 DoS 発見・修正）|
 | v1.8.88 | FT211: typing — TypedDict / Protocol / get_type_hints / Literal（isinstance 後の型絞り込み・Literal+Pydantic で type:ignore 排除）|
 | v1.8.87 | FT210: contextlib — contextmanager / suppress / ExitStack / nullcontext（__exit__ None 型・list[str] per-item length 制約）|
@@ -63,13 +64,13 @@ v1.8.89 完了済み。FT212（dataclasses — field / asdict / astuple / replac
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT212（全 212 件）
+**実施済み**: FT1〜FT213（全 213 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT213 を開始（213 % 3 = 0 → セキュリティ診断あり、213 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `abc` モジュール（ABC / abstractmethod / register / __subclasshook__）
+- FT214 を開始（214 % 3 = 2 → セキュリティ診断なし、214 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `io` モジュール（StringIO / BytesIO / TextIOWrapper / BufferedReader）
 
 ---
 
@@ -77,7 +78,7 @@ v1.8.89 完了済み。FT212（dataclasses — field / asdict / astuple / replac
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT213 実施（セキュリティ診断あり、クラッカーペンテストなし） | FT |
+| 高 | — | FT214 実施（セキュリティ診断なし、クラッカーペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
