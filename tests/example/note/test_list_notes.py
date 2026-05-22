@@ -30,6 +30,13 @@ def test_create_note_empty_title_returns_422(client: TestClient) -> None:
     assert r.json()["errors"][0]["field"] == "title"
 
 
+def test_create_note_empty_title_and_body_returns_all_fields(client: TestClient) -> None:
+    r = client.post("/examples/notes", json={"title": "", "body": ""})
+    assert r.status_code == 422
+    fields = {e["field"] for e in r.json()["errors"]}
+    assert fields == {"title", "body"}
+
+
 def test_get_nonexistent_note_returns_404(client: TestClient) -> None:
     r = client.get("/examples/notes/9999")
     assert r.status_code == 404
