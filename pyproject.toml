@@ -1,6 +1,6 @@
 [project]
 name = "nene2-python"
-version = "1.8.80"
+version = "1.8.81"
 description = "NENE2 Python — minimal API framework following NENE2's design philosophy"
 readme = "README.md"
 license = {text = "MIT"}
@@ -130,6 +130,7 @@ select = [
     "PL",   # pylint
     "LOG",  # flake8-logging
     "G",    # flake8-logging-format
+    "DTZ",  # flake8-datetimez — datetime.now() naive 呼び出し検出
 ]
 ignore = [
     # PHP NENE2 naming convention: Exception/Error suffix (not "Error"-only)
@@ -149,7 +150,8 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 # Tests: relax annotations, allow assert, allow magic values
-"tests/**" = ["ANN", "S101", "PLR2004", "PLR0913"]
+# DTZ: tests intentionally create naive datetimes to test parse_db_datetime conversion
+"tests/**" = ["ANN", "S101", "PLR2004", "PLR0913", "DTZ"]
 
 [tool.ruff.format]
 quote-style = "double"
