@@ -1,5 +1,7 @@
 """Application factory — wires dependencies and registers routes."""
 
+import os
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,7 +9,12 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
-from nene2.auth import ApiKeyAuthMiddleware, BearerTokenMiddleware, LocalTokenVerifier
+from nene2.auth import (
+    ApiKeyAuthMiddleware,
+    BearerTokenMiddleware,
+    LocalBearerJwtVerifier,
+    LocalTokenVerifier,
+)
 from nene2.config import AppSettings
 from nene2.database import (
     DatabaseHealthCheck,
@@ -67,6 +74,7 @@ _FRAMEWORK_NAME = "NENE2"
 _FRAMEWORK_DESCRIPTION = "JSON APIs first, minimal server HTML, frontend ready, AI-readable."
 # Matches nene2-js tools/compose-ft-evac.yaml default for local evac smoke.
 _DEFAULT_MACHINE_API_KEYS = ["ft-evac-local-machine-api-key-32ch!!"]
+_DEFAULT_JWT_SECRET = "ft-evac-local-jwt-secret-min-32-chars!!"  # noqa: S105
 
 type _Repos = tuple[
     NoteRepositoryInterface,
@@ -159,6 +167,13 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         include_paths=["/machine/health"],
         header_name="X-NENE2-API-Key",
     )
+    jwt_secret = os.getenv("NENE2_LOCAL_JWT_SECRET", _DEFAULT_JWT_SECRET)
+    if len(jwt_secret) >= 32:
+        app.add_middleware(
+            BearerTokenMiddleware,
+            verifier=LocalBearerJwtVerifier(jwt_secret),
+            include_paths=["/examples/protected"],
+        )
     # CORS must be outermost — register last so preflight OPTIONS is handled
     # before throttle, auth, or any other middleware runs.
     if cfg.cors_enabled:
@@ -228,6 +243,16 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
     @app.get("/examples/ping", tags=["system"], summary="Example ping")
     async def example_ping() -> JSONResponse:
         return JSONResponse({"message": "pong", "status": "ok"})
+
+    @app.get("/examples/protected", tags=["Examples"], summary="Protected example endpoint")
+    async def examples_protected(request: Request) -> JSONResponse:
+        claims = getattr(request.state, "nene2_auth_claims", {})
+        return JSONResponse(
+            {
+                "message": "Welcome, authenticated user.",
+                "claims": claims,
+            }
+        )
 
     @app.get("/machine/health", tags=["system"], summary="Protected machine health endpoint")
     async def machine_health(request: Request) -> JSONResponse:

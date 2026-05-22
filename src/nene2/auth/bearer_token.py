@@ -91,4 +91,18 @@ class BearerTokenMiddleware(BaseHTTPMiddleware):
             )
             response.headers["WWW-Authenticate"] = _WWW_AUTH
             return response
+        decode_claims = getattr(self._verifier, "decode_claims", None)
+        if callable(decode_claims):
+            try:
+                request.state.nene2_auth_claims = decode_claims(token)
+            except TokenVerificationException:
+                response = problem_details_response(
+                    "unauthorized",
+                    "Unauthorized",
+                    401,
+                    "The provided token is invalid or expired.",
+                )
+                response.headers["WWW-Authenticate"] = _WWW_AUTH
+                return response
+        request.state.nene2_auth_credential_type = "bearer"
         return await call_next(request)
