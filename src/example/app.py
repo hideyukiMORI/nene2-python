@@ -115,6 +115,9 @@ def _build_repositories(cfg: AppSettings) -> _Repos:
 
 def create_app(settings: AppSettings | None = None) -> FastAPI:
     cfg = settings or AppSettings()
+    # Local dev / consumer FT: throttle off unless THROTTLE_ENABLED is set (nene2-python#592).
+    if cfg.app_env == "local" and os.getenv("THROTTLE_ENABLED") is None:
+        cfg = cfg.model_copy(update={"throttle_enabled": False})
     setup_logging(cfg.app_env)
 
     app = FastAPI(
