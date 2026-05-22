@@ -33,7 +33,8 @@ def test_create_and_list_comments() -> None:
     with _make_client() as client:
         note = client.post("/examples/notes", json={"title": "Test Note", "body": "body"}).json()
         note_id = note["id"]
-        create_response = client.post(f"/examples/notes/{note_id}/comments", json={"body": "first comment"})
+        comments = f"/examples/notes/{note_id}/comments"
+        create_response = client.post(comments, json={"body": "first comment"})
         assert create_response.status_code == 201
         data = create_response.json()
         assert data["note_id"] == note_id
@@ -64,7 +65,8 @@ def test_update_comment() -> None:
     with _make_client() as client:
         note = client.post("/examples/notes", json={"title": "Test Note", "body": "body"}).json()
         note_id = note["id"]
-        created = client.post(f"/examples/notes/{note_id}/comments", json={"body": "original"}).json()
+        comments = f"/examples/notes/{note_id}/comments"
+        created = client.post(comments, json={"body": "original"}).json()
         url = f"/examples/notes/{note_id}/comments/{created['id']}"
         response = client.put(url, json={"body": "updated"})
         assert response.status_code == 200
@@ -75,8 +77,9 @@ def test_delete_comment() -> None:
     with _make_client() as client:
         note = client.post("/examples/notes", json={"title": "Test Note", "body": "body"}).json()
         note_id = note["id"]
-        created = client.post(f"/examples/notes/{note_id}/comments", json={"body": "to delete"}).json()
-        delete_response = client.delete(f"/examples/notes/{note_id}/comments/{created['id']}")
+        comments = f"/examples/notes/{note_id}/comments"
+        created = client.post(comments, json={"body": "to delete"}).json()
+        delete_response = client.delete(f"{comments}/{created['id']}")
         assert delete_response.status_code == 204
         get_response = client.get(f"/examples/notes/{note_id}/comments/{created['id']}")
         assert get_response.status_code == 404
