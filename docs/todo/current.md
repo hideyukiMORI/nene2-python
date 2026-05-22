@@ -1,16 +1,15 @@
 # TODO — current
 
 最終更新: 2026-05-22
-現状: **v1.8.70 安定版 / フィールドトライアルループ継続中（FT198 完了）**
+現状: **v1.8.71 安定版 / フィールドトライアルループ継続中（FT199 完了）**
 
 ---
 
 ## 状態サマリー
 
-v1.8.70 完了済み。FT198（http.server — カスタム HTTP ハンドラー・インメモリサーバー・セキュリティ診断）まで全 198 件を実施済み。
-ネットワーク系（FT193〜198）の縦断を継続中。
+v1.8.71 完了済み。FT199（uuid — UUID v3/v4/v5 生成・構造解析・バリデーション）まで全 199 件を実施済み。
 リポジトリは main ブランチ 1 本・Issue/PR/ブランチ全ゼロのクリーンな状態。
-フィールドトライアルループは FT199 以降も継続中。
+フィールドトライアルループは FT200 以降も継続中。
 
 ---
 
@@ -34,6 +33,7 @@ v1.8.70 完了済み。FT198（http.server — カスタム HTTP ハンドラー
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.71 | FT199: uuid — UUID v3/v4/v5 生成・構造解析・バリデーション |
 | v1.8.70 | FT198: http.server — カスタム HTTP ハンドラー・インメモリサーバー（セキュリティ診断、条件付き合格） |
 | v1.8.69 | FT197: urllib.parse — URL 解析・エンコード・クエリ文字列処理 |
 | v1.8.68 | FT196: http.client — 低レベル HTTP クライアント・接続管理・SSRF 防御（クラッカーペンテスト） |
@@ -45,13 +45,13 @@ v1.8.70 完了済み。FT198（http.server — カスタム HTTP ハンドラー
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT198（全 198 件）
+**実施済み**: FT1〜FT199（全 199 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT199 を開始（199 % 3 = 1 → 診断なし、199 % 4 = 3 → ペンテストなし）
-- テーマ候補: `email.mime`（メール構成）または `xml.etree.ElementTree`（ただし defusedxml 推奨）
+- FT200 を開始（200 % 3 = 2 → 診断なし、200 % 4 = 0 → **クラッカーペンテストあり**）
+- テーマ候補: `email.mime`（メール構成）または `base64`（エンコード・デコード）
 
 ---
 
@@ -59,7 +59,7 @@ v1.8.70 完了済み。FT198（http.server — カスタム HTTP ハンドラー
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT199 実施（診断・ペンテストなし） | FT |
+| 高 | — | FT200 実施（ペンテストあり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
