@@ -1,15 +1,15 @@
 # TODO — current
 
 最終更新: 2026-05-22
-現状: **v1.8.87 安定版 / FT210（contextlib）完了**
+現状: **v1.8.88 安定版 / FT211（typing）完了**
 
 ---
 
 ## 状態サマリー
 
-v1.8.87 完了済み。FT210（contextlib — contextmanager / suppress / redirect_stdout / ExitStack / nullcontext）完了。
-`__exit__` 常時 `False` の場合は `-> None` が正しい型（mypy `exit-return`）を確認。
-`list[str]` フィールドに per-item length 制約を `Annotated[str, Field(max_length=N)]` で付与する必要性をセキュリティ診断で発見・修正。フィールドトライアルループは FT211 以降も継続中。
+v1.8.88 完了済み。FT211（typing — TypedDict / Protocol / runtime_checkable / get_type_hints / Literal / Annotated）完了。
+`isinstance` 後も mypy は Protocol 型に絞り込まない（F-1）を確認。
+Pydantic フィールドに `Literal` 型を直接使えば手動バリデーション + `type: ignore` が不要（F-2）を実証。フィールドトライアルループは FT212 以降も継続中。
 
 ---
 
@@ -33,6 +33,7 @@ v1.8.87 完了済み。FT210（contextlib — contextmanager / suppress / redire
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.88 | FT211: typing — TypedDict / Protocol / get_type_hints / Literal（isinstance 後の型絞り込み・Literal+Pydantic で type:ignore 排除）|
 | v1.8.87 | FT210: contextlib — contextmanager / suppress / ExitStack / nullcontext（__exit__ None 型・list[str] per-item length 制約）|
 | v1.8.86 | FT209: functools — partial / lru_cache / reduce / wraps（@wraps ANN401 回避・Python 3.14 type: ignore 不要化） |
 | v1.8.85 | FT208: itertools — chain / islice / groupby / product / combinations（クラッカーペンテスト: 堅牢） |
@@ -61,13 +62,13 @@ v1.8.87 完了済み。FT210（contextlib — contextmanager / suppress / redire
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT210（全 210 件）
+**実施済み**: FT1〜FT211（全 211 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT211 を開始（211 % 3 = 1 → セキュリティ診断なし、211 % 4 = 3 → クラッカーペンテストなし）
-- テーマ候補: `typing` 拡張（TypedDict / Protocol / runtime_checkable / get_type_hints）
+- FT212 を開始（212 % 3 = 2 → セキュリティ診断なし、212 % 4 = 0 → クラッカーペンテストあり）
+- テーマ候補: `dataclasses` モジュール（field / asdict / astuple / replace / post_init）
 
 ---
 
@@ -75,7 +76,7 @@ v1.8.87 完了済み。FT210（contextlib — contextmanager / suppress / redire
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT211 実施（セキュリティ診断なし、クラッカーペンテストなし） | FT |
+| 高 | — | FT212 実施（セキュリティ診断なし、クラッカーペンテストあり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
