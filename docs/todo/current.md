@@ -1,14 +1,14 @@
 # TODO — current
 
 最終更新: 2026-05-23
-現状: **v1.8.94 安定版 / FT217（csv）完了**
+現状: **v1.8.95 安定版 / FT218（configparser）完了**
 
 ---
 
 ## 状態サマリー
 
-v1.8.94 完了済み。FT217（csv — reader / writer / DictReader / DictWriter / Sniffer）完了。
-セキュリティ診断・クラッカーペンテストなし（217 % 3 = 1、217 % 4 = 1）。Literal 型で区切り文字を制限、max_length でテキスト・フィールド長を上限制御。フィールドトライアルループは FT218 以降も継続中。
+v1.8.95 完了済み。FT218（configparser — read / write / sections / interpolation）完了。
+セキュリティ診断・クラッカーペンテストなし（218 % 3 = 2、218 % 4 = 2）。DuplicateSectionError を 422 に変換、interpolation=None デフォルトで安全な設計。フィールドトライアルループは FT219 以降も継続中。
 
 ---
 
@@ -32,6 +32,7 @@ v1.8.94 完了済み。FT217（csv — reader / writer / DictReader / DictWriter
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.95 | FT218: configparser — read / write / sections / interpolation |
 | v1.8.94 | FT217: csv — reader / writer / DictReader / DictWriter / Sniffer |
 | v1.8.93 | FT216: codecs — encode / decode / lookup / IncrementalEncoder（セキュリティ診断・クラッカーペンテスト合格）|
 | v1.8.92 | FT215: struct — pack / unpack / calcsize / Struct（フォーマット文字列ホワイトリスト検証・unpack 型変換）|
@@ -67,13 +68,13 @@ v1.8.94 完了済み。FT217（csv — reader / writer / DictReader / DictWriter
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT217（全 217 件）
+**実施済み**: FT1〜FT218（全 218 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT218 を開始（218 % 3 = 2 → セキュリティ診断なし、218 % 4 = 2 → クラッカーペンテストなし）
-- テーマ候補: `configparser` モジュール（read / write / sections / interpolation）
+- FT219 を開始（219 % 3 = 0 → セキュリティ診断あり、219 % 4 = 3 → クラッカーペンテストなし）
+- テーマ候補: `argparse` モジュール（ArgumentParser / add_argument / parse_args / subcommands）
 
 ---
 
@@ -81,7 +82,7 @@ v1.8.94 完了済み。FT217（csv — reader / writer / DictReader / DictWriter
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT218 実施（セキュリティ診断なし、クラッカーペンテストなし） | FT |
+| 高 | — | FT219 実施（セキュリティ診断あり、クラッカーペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
