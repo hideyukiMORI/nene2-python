@@ -84,4 +84,5 @@ class ApiKeyAuthMiddleware(BaseHTTPMiddleware):
                 401,
                 f"A valid {self._header_name} header is required.",
             )
+        request.state.nene2_auth_credential_type = "api_key"
         return await call_next(request)

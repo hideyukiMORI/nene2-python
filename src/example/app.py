@@ -1,6 +1,6 @@
 """Application factory — wires dependencies and registers routes."""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -61,6 +61,12 @@ from .tag.use_case import (
     ListTagsUseCase,
     UpdateTagUseCase,
 )
+
+# OpenAPI / NENE2 PHP parity (FrameworkInfo in hideyukiMORI/NENE2).
+_FRAMEWORK_NAME = "NENE2"
+_FRAMEWORK_DESCRIPTION = "JSON APIs first, minimal server HTML, frontend ready, AI-readable."
+# Matches nene2-js tools/compose-ft-evac.yaml default for local evac smoke.
+_DEFAULT_MACHINE_API_KEYS = ["ft-evac-local-machine-api-key-32ch!!"]
 
 type _Repos = tuple[
     NoteRepositoryInterface,
@@ -143,6 +149,12 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             ApiKeyAuthMiddleware,
             verifier=LocalTokenVerifier(cfg.api_keys),
         )
+    machine_keys = cfg.api_keys if cfg.api_key_enabled and cfg.api_keys else _DEFAULT_MACHINE_API_KEYS
+    app.add_middleware(
+        ApiKeyAuthMiddleware,
+        verifier=LocalTokenVerifier(machine_keys),
+        include_paths=["/machine/health"],
+    )
     # CORS must be outermost — register last so preflight OPTIONS is handled
     # before throttle, auth, or any other middleware runs.
     if cfg.cors_enabled:
@@ -199,9 +211,30 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         prefix="/examples",
     )
 
+    @app.get("/", tags=["system"], summary="Framework smoke endpoint")
+    async def framework_smoke() -> JSONResponse:
+        return JSONResponse(
+            {
+                "name": _FRAMEWORK_NAME,
+                "description": _FRAMEWORK_DESCRIPTION,
+                "status": "ok",
+            }
+        )
+
     @app.get("/examples/ping", tags=["system"], summary="Example ping")
     async def example_ping() -> JSONResponse:
         return JSONResponse({"message": "pong", "status": "ok"})
+
+    @app.get("/machine/health", tags=["system"], summary="Protected machine health endpoint")
+    async def machine_health(request: Request) -> JSONResponse:
+        credential_type = getattr(request.state, "nene2_auth_credential_type", "api_key")
+        return JSONResponse(
+            {
+                "status": "ok",
+                "service": _FRAMEWORK_NAME,
+                "credential_type": credential_type,
+            }
+        )
 
     db_health = DatabaseHealthCheck(db_executor) if db_executor else None
 
