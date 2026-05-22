@@ -1,15 +1,15 @@
 # TODO — current
 
 最終更新: 2026-05-22
-現状: **v1.8.81 安定版 / FT204（datetime）完了**
+現状: **v1.8.82 安定版 / FT205（enum）完了**
 
 ---
 
 ## 状態サマリー
 
-v1.8.81 完了済み。FT204（datetime — ISO 8601 パース・タイムゾーン変換・日時演算）完了。
-セキュリティ診断・クラッカーペンテスト両方実施、全合格。ruff DTZ ルール追加。
-フィールドトライアルループは FT205 以降も継続中。
+v1.8.82 完了済み。FT205（enum — StrEnum・IntEnum・IntFlag・Flag）完了。
+Python 3.11+ の Flag iteration 変更点（`__members__` 必要）を発見・対応。
+フィールドトライアルループは FT206 以降も継続中。
 
 ---
 
@@ -33,6 +33,7 @@ v1.8.81 完了済み。FT204（datetime — ISO 8601 パース・タイムゾー
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.82 | FT205: enum — StrEnum・IntEnum・IntFlag・Flag（Python 3.11+ Flag iteration 変更点） |
 | v1.8.81 | FT204: datetime — ISO 8601 パース・タイムゾーン変換・日時演算（セキュリティ診断・クラッカーペンテスト、ruff DTZ ルール追加） |
 | v1.8.80 | FT203: secrets — セキュア乱数・トークン生成・OTP |
 | v1.8.79 | #560/#561: query ヘルパー関数群・RequestScopedContext[T] |
@@ -55,13 +56,13 @@ v1.8.81 完了済み。FT204（datetime — ISO 8601 パース・タイムゾー
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT204（全 204 件）
+**実施済み**: FT1〜FT205（全 205 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT205 を開始（205 % 3 = 1 → セキュリティ診断なし、205 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `enum`（列挙型）または `pathlib`（パス操作）
+- FT206 を開始（206 % 3 = 2 → セキュリティ診断なし、206 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `pathlib`（パス操作）または `collections`（コレクション型）
 
 ---
 
@@ -69,7 +70,7 @@ v1.8.81 完了済み。FT204（datetime — ISO 8601 パース・タイムゾー
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT205 実施（セキュリティ診断なし、クラッカーペンテストなし） | FT |
+| 高 | — | FT206 実施（セキュリティ診断なし、クラッカーペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |

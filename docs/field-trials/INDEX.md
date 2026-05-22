@@ -238,6 +238,7 @@
 | [FT202](2026-05-field-trial-202.md) | hmac モジュール — HMAC 計算・検証・timing-safe 比較 | | |
 | [FT203](2026-05-field-trial-203.md) | secrets モジュール — セキュア乱数・トークン生成・OTP | | |
 | [FT204](2026-05-field-trial-204.md) | datetime モジュール — ISO 8601 パース・タイムゾーン変換・日時演算 | 🔒🔍 | |
+| [FT205](2026-05-field-trial-205.md) | enum モジュール — StrEnum・IntEnum・IntFlag・Flag の実装と検証 | | |
 
 ---
 
@@ -253,4 +254,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204
 
 ---
 
-*最終更新: 2026-05-22 (FT204 / v1.8.81)*
+*最終更新: 2026-05-22 (FT205 / v1.8.82)*
