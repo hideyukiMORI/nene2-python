@@ -7,13 +7,15 @@ from .request_logging import RequestLoggingMiddleware
 from .request_size_limit import RequestSizeLimitMiddleware
 from .security_headers import SecurityHeadersMiddleware
 from .setup import setup_middlewares
-from .throttle import ThrottleMiddleware
+from .throttle import InMemoryRateLimitStorage, RateLimitStorageProtocol, ThrottleMiddleware
 
 __all__ = [
     "DomainExceptionHandlerProtocol",
     "SimpleDomainHandler",
     "ErrorHandlerMiddleware",
     "request_validation_error_handler",
+    "InMemoryRateLimitStorage",
+    "RateLimitStorageProtocol",
     "RequestIdMiddleware",
     "get_request_id",
     "RequestLoggingMiddleware",

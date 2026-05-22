@@ -1,9 +1,13 @@
 """Fixed-window rate limiting middleware.
 
-Tracks request counts per client IP in an in-memory dict.
-Exceeding the limit returns 429 with a Retry-After header.
+Tracks request counts per client IP via a pluggable storage backend.
+The default backend (``InMemoryRateLimitStorage``) works in a single process.
+For multi-process or multi-container deployments, supply a Redis-backed
+implementation of ``RateLimitStorageProtocol``.
+
 All responses include ``X-RateLimit-Limit``, ``X-RateLimit-Remaining``, and
 ``X-RateLimit-Reset`` headers so clients can adapt their request rate.
+Exceeding the limit returns 429 with a ``Retry-After`` header.
 
 .. warning::
     ``X-Forwarded-For`` is trusted as-is when present.  In environments
@@ -16,6 +20,7 @@ All responses include ``X-RateLimit-Limit``, ``X-RateLimit-Remaining``, and
 import threading
 import time
 from dataclasses import dataclass
+from typing import Protocol, runtime_checkable
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
@@ -25,6 +30,60 @@ from nene2.http.problem_details import problem_details_response
 
 _DEFAULT_LIMIT = 60
 _DEFAULT_WINDOW = 60  # seconds
+
+
+@runtime_checkable
+class RateLimitStorageProtocol(Protocol):
+    """Pluggable backend for ``ThrottleMiddleware``.
+
+    Implementations must atomically increment a counter and return the
+    post-increment count together with the window start timestamp.
+
+    The ``acquire`` method is called once per request and must be
+    thread-safe (or use a distributed lock for shared backends).
+    """
+
+    def acquire(self, key: str, now: float, window: float) -> tuple[int, float]:
+        """Increment the counter for *key* and return ``(count, window_start)``.
+
+        When the current window has expired (``now - window_start >= window``),
+        the counter resets to 1 and ``window_start`` is set to ``now``.
+        """
+        ...  # pragma: no cover
+
+
+class InMemoryRateLimitStorage:
+    """Thread-safe in-memory fixed-window counter.
+
+    .. warning:: **Single-process only.**
+        Each process maintains its own counters.  When running multiple
+        workers or containers the effective limit is ``limit × worker_count``.
+        Use a shared store (Redis) for multi-process deployments.
+    """
+
+    def __init__(self) -> None:
+        self._counts: dict[str, tuple[int, float]] = {}
+        self._lock = threading.Lock()
+        self._last_cleanup: float = 0.0
+
+    def acquire(self, key: str, now: float, window: float) -> tuple[int, float]:
+        with self._lock:
+            self._maybe_evict(now, window)
+            count, window_start = self._counts.get(key, (0, now))
+            if now - window_start >= window:
+                count, window_start = 0, now
+            count += 1
+            self._counts[key] = (count, window_start)
+        return (count, window_start)
+
+    def _maybe_evict(self, now: float, window: float) -> None:
+        if now - self._last_cleanup < window:
+            return
+        self._last_cleanup = now
+        cutoff = now - window
+        stale = [k for k, (_, ws) in self._counts.items() if ws < cutoff]
+        for k in stale:
+            del self._counts[k]
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,6 +101,15 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
     ``X-RateLimit-Reset`` headers to every response so clients can monitor
     their quota.  On 429, also adds ``Retry-After``.
 
+    Pass a custom ``storage`` to swap in a Redis or other shared backend::
+
+        app.add_middleware(
+            ThrottleMiddleware,
+            limit=100,
+            window=60,
+            storage=MyRedisStorage(redis_client),
+        )
+
     Use ``path_limits`` to apply stricter limits on specific paths::
 
         app.add_middleware(
@@ -55,14 +123,6 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
     Path-limited endpoints are tracked independently from the global counter
     (the key includes the path, so ``/api/expensive`` quota is separate from
     the default quota for other paths).
-
-    .. warning:: **Single-process only.**
-        Counters are stored in an in-memory dict.  When running multiple
-        uvicorn workers (e.g. ``gunicorn -w 4``) or multiple containers,
-        each process maintains its own counter, so the effective rate limit
-        is ``limit × worker_count``.  For multi-process deployments, enforce
-        rate limits at the reverse proxy (nginx, Caddy) or use a shared
-        store (Redis).
 
     .. note:: **Fixed-window burst at boundaries.**
         Fixed-window counting can pass up to ``2 × limit`` requests in a
@@ -79,15 +139,14 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
         window: int = _DEFAULT_WINDOW,
         path_limits: dict[str, int] | None = None,
         exclude_paths: list[str] | None = None,
+        storage: RateLimitStorageProtocol | None = None,
     ) -> None:
         super().__init__(app)  # type: ignore[arg-type]
         self._limit = limit
         self._window = window
         self._path_limits: dict[str, int] = path_limits or {}
         self._exclude_paths = set(exclude_paths or [])
-        self._counts: dict[str, tuple[int, float]] = {}
-        self._lock = threading.Lock()
-        self._last_cleanup: float = 0.0
+        self._storage: RateLimitStorageProtocol = storage or InMemoryRateLimitStorage()
 
     def _client_key(self, request: Request) -> str:
         forwarded = request.headers.get("X-Forwarded-For")
@@ -95,29 +154,14 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
             return forwarded.split(",")[0].strip()
         return request.client.host if request.client else "unknown"
 
-    def _evict_stale(self, now: float) -> None:
-        if now - self._last_cleanup < self._window:
-            return
-        self._last_cleanup = now
-        cutoff = now - self._window
-        stale = [k for k, (_, ws) in self._counts.items() if ws < cutoff]
-        for k in stale:
-            del self._counts[k]
-
     def _check_rate(self, key: str, limit: int) -> _RateInfo:
         now = time.monotonic()
         wall_now = int(time.time())
-        with self._lock:
-            self._evict_stale(now)
-            count, window_start = self._counts.get(key, (0, now))
-            if now - window_start >= self._window:
-                count, window_start = 0, now
-            count += 1
-            self._counts[key] = (count, window_start)
-            elapsed = int(now - window_start)
-            retry_after = max(0, self._window - elapsed)
-            reset_at = wall_now + retry_after
-            remaining = max(0, limit - count)
+        count, window_start = self._storage.acquire(key, now, self._window)
+        elapsed = int(now - window_start)
+        retry_after = max(0, self._window - elapsed)
+        reset_at = wall_now + retry_after
+        remaining = max(0, limit - count)
         return _RateInfo(
             allowed=count <= limit,
             remaining=remaining,
