@@ -1,6 +1,34 @@
 # How-To: ミドルウェアスタックの正しい設定
 
-## 結論（TL;DR）
+## 推奨: `setup_middlewares()` を使う
+
+手動で `add_middleware` を並べる代わりに、フレームワーク提供のヘルパーを使うと
+LIFO 順序ミス（500 に `X-Request-Id` が付かない等）を防げる。
+
+```python
+from nene2.middleware import setup_middlewares
+
+setup_middlewares(
+    app,
+    debug=cfg.app_debug,
+    domain_handlers=[NoteNotFoundExceptionHandler()],
+    throttle_limit=cfg.throttle_limit if cfg.throttle_enabled else None,
+    max_request_bytes=cfg.max_body_size,
+    cors_allowed_origins=cfg.cors_origins if cfg.cors_enabled else None,
+)
+```
+
+有効なスタック（外側 → 内側）:
+
+```
+CORS → RequestId → SecurityHeaders → SizeLimit → Throttle → RequestLogging → ErrorHandler
+```
+
+カスタムミドルウェアが必要な場合のみ、以下の手動登録パターンを使う。
+
+---
+
+## 手動登録（TL;DR）
 
 ```python
 # この順序で add_middleware を呼ぶ

@@ -72,6 +72,37 @@ class MyHealthCheck:
 `HealthStatus` fields: `status: str` (`"ok"` or `"error"`), `checks: dict[str, str]`.
 `is_healthy` property returns `True` when `status == "ok"`.
 
+### ETag and conditional requests
+
+```python
+from nene2.http import check_not_modified, check_precondition, generate_etag
+
+etag = generate_etag({"id": 1, "title": "Hello"})
+# Returns 304 when If-None-Match matches (GET)
+check_not_modified(request, etag)
+# Returns 412 when If-Match does not match (PUT/PATCH/DELETE)
+check_precondition(request, etag)
+```
+
+### Query parameter helpers
+
+Typed parsers for common query patterns (raise `ValidationException` on invalid input):
+
+```python
+from nene2.http import query_array, query_bool, query_comma_separated, query_int, query_string
+
+limit = query_int(request, "limit", default=20, minimum=1, maximum=100)
+tags = query_comma_separated(request, "tags", max_items=10)
+```
+
+### `RequestScopedContext[T]`
+
+Request-scoped value holder for dependency injection (see [lifespan-and-app-state](../how-to/lifespan-and-app-state.md)).
+
+### `PaginationDep`
+
+FastAPI `Depends()` alias for `PaginationQueryParser` — preferred over manual parsing.
+
 ---
 
 ## nene2.use_case
@@ -221,6 +252,38 @@ if settings.cors_enabled:
 > In Starlette's reverse order, "last registered = outermost" means CORS wraps auth,
 > so browser preflight (`OPTIONS`) requests are handled before authentication.
 
+### `setup_middlewares()`
+
+Registers the full nene2 middleware stack in the correct LIFO order (including optional CORS).
+Prefer this over manual `add_middleware` calls when you do not need custom middleware.
+
+```python
+from nene2.middleware import setup_middlewares
+
+setup_middlewares(
+    app,
+    debug=settings.app_debug,
+    domain_handlers=[NoteNotFoundExceptionHandler()],
+    throttle_limit=settings.throttle_limit if settings.throttle_enabled else None,
+    max_request_bytes=settings.max_body_size,
+    cors_allowed_origins=settings.cors_origins if settings.cors_enabled else None,
+)
+```
+
+See [middleware-stack how-to](../how-to/middleware-stack.md).
+
+### `SimpleDomainHandler`
+
+Helper to build `DomainExceptionHandlerProtocol` from an exception type and status code.
+
+### Rate limit storage
+
+| Symbol | Role |
+|---|---|
+| `RateLimitStorageProtocol` | Pluggable storage for throttle counters |
+| `InMemoryRateLimitStorage` | Default in-process implementation |
+| `ThrottleMiddleware` | Accepts optional `storage=` for custom backends |
+
 ---
 
 ## nene2.auth
@@ -245,6 +308,30 @@ Structural contracts for custom verifiers and issuers (e.g. JWT).
 
 Raise this from a verifier to signal an invalid token.
 `BearerTokenMiddleware` maps it to `401 Unauthorized`.
+
+### `CompositeAuthMiddleware`
+
+Path-prefix rules for mixed auth (e.g. Bearer on `/api/*`, API Key on `/internal/*`).
+
+```python
+from nene2.auth import CompositeAuthMiddleware, CompositeAuthRule, bearer_check, api_key_check
+
+app.add_middleware(
+    CompositeAuthMiddleware,
+    rules=[
+        CompositeAuthRule(prefix="/api", check=bearer_check(verifier)),
+        CompositeAuthRule(prefix="/internal", check=api_key_check(verifier)),
+    ],
+)
+```
+
+### `LocalTokenIssuer` / `LocalBearerJwtVerifier`
+
+Development helpers for HMAC-signed bearer tokens (see `src/example/` protected routes).
+
+### `make_require_auth()`
+
+FastAPI `Depends()` factory that returns 401 Problem Details when auth headers are missing.
 
 ---
 
@@ -458,3 +545,38 @@ from nene2.validation.exceptions import ValidationError, ValidationException
 errors = [ValidationError("body", "Body must not be empty.", "required")]
 raise ValidationException(errors)
 ```
+
+---
+
+## nene2.cache
+
+### `TtlCache[V]`
+
+Thread-safe in-memory cache with per-key TTL expiry. Use for idempotency keys, short-lived lookups, or rate-limit adjuncts.
+
+```python
+from nene2.cache import TtlCache
+
+cache: TtlCache[str] = TtlCache(ttl_seconds=60.0)
+cache.set("key", "value")
+cache.get("key")  # str | None
+```
+
+See [lifespan-and-app-state how-to](../how-to/lifespan-and-app-state.md) for `app.state` wiring.
+
+---
+
+## nene2.security
+
+### `verify_hmac_signature()`
+
+Timing-safe HMAC verification for webhook endpoints.
+
+```python
+from nene2.security import verify_hmac_signature
+
+if not verify_hmac_signature(body, signature_header, secret.get_secret_value()):
+    return problem_details_response("unauthorized", "Unauthorized", 401, "Invalid signature.")
+```
+
+See [webhook how-to](../how-to/webhook.md).

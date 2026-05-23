@@ -326,7 +326,7 @@ uv run pytest && \
 uv run mypy src/ && \
 uv run ruff check src/ tests/ && \
 uv run ruff format --check src/ tests/ && \
-uv run pip-audit
+uv run pip-audit --ignore-vuln PYSEC-2025-183
 
 # 個別
 uv run pytest
@@ -336,7 +336,7 @@ uv run mypy src/
 uv run ruff check src/ tests/
 uv run ruff check src/ tests/ --fix          # 自動修正
 uv run ruff format src/ tests/
-uv run pip-audit                             # 依存関係の脆弱性スキャン
+uv run pip-audit --ignore-vuln PYSEC-2025-183  # 依存関係の脆弱性スキャン（CI と同じ）
 
 # 開発サーバー
 uv run uvicorn src.example.app:app --reload --port 8080
@@ -352,11 +352,13 @@ docker compose up app
 ```
 src/
   nene2/              フレームワークコア
-    http/             JSON レスポンス・ページネーション・Problem Details
-    middleware/       ミドルウェアパイプライン（Error / Security / RequestId / Logging / SizeLimit / Throttle）
+    http/             JSON レスポンス・ページネーション・Problem Details・ETag・query ヘルパー
+    middleware/       ミドルウェアパイプライン + setup_middlewares()
     validation/       ValidationException / ValidationError
     config/           型付き設定オブジェクト（AppSettings）
-    auth/             TokenVerifierProtocol / BearerTokenMiddleware / ApiKeyAuthMiddleware
+    auth/             Bearer / API Key / CompositeAuth / LocalTokenIssuer
+    cache/            TtlCache[V]
+    security/         verify_hmac_signature()
     database/         SqlAlchemyQueryExecutor / SqlAlchemyTransactionManager
     mcp/              LocalMcpServer / HttpxMcpClient
     log/              structlog セットアップ
@@ -365,20 +367,24 @@ src/
     note/             Note ドメイン（entity / repository / use_case / handler / sqlalchemy_repository）
     tag/              Tag ドメイン（entity / repository / use_case / handler / sqlalchemy_repository）
     comment/          Comment ドメイン（Note に紐付く nested ドメイン）
-    app.py            アプリケーションファクトリ
+    app.py            アプリケーションファクトリ（create_app）
     mcp.py            MCP サーバー（Note / Tag / Comment 全 15 ツール）
 
-tests/                pytest テスト（src/ を鏡像）
+tests/                pytest テスト（src/ を鏡像、466 tests）
 docs/
   adr/                設計決定記録（変更理由を残す）
-  how-to/             How-to ガイド
+  how-to/             How-to ガイド（24+ 本）
   howto/              MCP セットアップガイド
-  field-trials/       フィールドトライアル記録（FT1〜FT3）
+  field-trials/       フィールドトライアル記録（FT1〜FT219+、INDEX.md 参照）
+  field-trials/INDEX.md  FT 検索索引（テーマ・診断種別・Follow-up Issue）
+  todo/current.md     現状サマリー・次タスク
+  roadmap.md          ロードマップ・PHP 版対応表
+  review/             作業日報
   tutorials/          チュートリアル
   explanation/        アーキテクチャ解説
   reference/          設定・モジュールリファレンス
   ja/                 日本語ドキュメント（上記すべての翻訳）
-.github/workflows/    CI（GitHub Actions）
+.github/workflows/    CI（GitHub Actions: Python 3.12 / 3.14）
 ```
 
 ---
@@ -483,4 +489,4 @@ Python 標準ライブラリ・サードパーティライブラリを nene2-pyt
 | `JsonResponseFactory` | `fastapi.responses.JSONResponse` |
 | `PHPStan level 8` | `mypy --strict` |
 | `PHP-CS-Fixer` | `ruff format` |
-| `composer check` | `uv run pytest && mypy && ruff check && ruff format --check && pip-audit` |
+| `composer check` | `uv run pytest && mypy && ruff check && ruff format --check && pip-audit --ignore-vuln PYSEC-2025-183` |

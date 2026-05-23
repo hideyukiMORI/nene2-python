@@ -160,14 +160,18 @@ r = client.request("DELETE", "/items/bulk", json={"ids": [1, 2]})
 
 | Scope | Target |
 |---|---|
-| Overall | ≥ 80% (CI enforced) |
-| UseCase / Domain | ≥ 90% (goal) |
+| Overall | ≥ 80% (CI enforced via `pytest --cov-fail-under=80`) |
+| UseCase / Domain | ≥ 90% (CI enforced on `example/*/use_case.py`, `entity.py`, `async_use_case.py`) |
+
+Current baseline: **466 tests**, ~93% overall coverage.
 
 ## Static analysis
 
 ```bash
 uv run mypy src/          # Type checking (strict)
-uv run ruff check src/    # Lint
+uv run ruff check src/ tests/    # Lint
 uv run ruff format --check src/ tests/  # Format check
-uv run pip-audit          # Dependency vulnerability scan
+uv run pip-audit --ignore-vuln PYSEC-2025-183  # Dependency scan (matches CI)
 ```
+
+CI runs on **Python 3.12 and 3.14** (see `.github/workflows/ci.yml`).
