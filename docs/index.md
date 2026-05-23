@@ -40,4 +40,8 @@ features:
   - icon: 📄
     title: OpenAPI auto-generated
     details: Swagger UI and ReDoc at /docs — zero config. Export a static openapi.yaml with one command. FastAPI does the work.
+
+  - icon: 🧪
+    title: 219 field trials
+    details: Every stdlib pattern validated in isolated sandbox apps with security audits. Searchable INDEX in docs/field-trials/INDEX.md.
 ---

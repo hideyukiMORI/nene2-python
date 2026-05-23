@@ -88,14 +88,16 @@ async def test_async_list_notes() -> None:
 
 ## カバレッジ要件
 
-- 全体: 80% 以上（CI で強制）
-- UseCase / Domain 層: 90% 以上を目標
+- 全体: 80% 以上（CI で強制、現在 466 tests / ~93%）
+- UseCase / Domain 層: 90% 以上（CI で `example/*/use_case.py` 等に適用）
 
 ## 静的解析
 
 ```bash
 uv run mypy src/          # 型チェック
-uv run ruff check src/    # リント
+uv run ruff check src/ tests/    # リント
 uv run ruff format --check src/ tests/  # フォーマットチェック
-uv run pip-audit          # 依存関係の脆弱性スキャン
+uv run pip-audit --ignore-vuln PYSEC-2025-183  # 依存関係スキャン（CI と同じ）
 ```
+
+CI は Python 3.12 と 3.14 で実行されます。

@@ -2,6 +2,8 @@
 
 `src/nene2/` パッケージが提供するコアモジュールの一覧です。
 
+> **v1.8.79 以降の API**（`TtlCache`、`setup_middlewares()`、`CompositeAuthMiddleware`、ETag、query ヘルパー等）の英語詳細は [英語版 framework-modules.md](../../reference/framework-modules.md) を参照してください。以下はコア API の日本語要約です。
+
 ---
 
 ## nene2.http
