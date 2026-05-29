@@ -8,10 +8,10 @@ no per-surface duplication. This page shows exactly how, in the reference app.
 ## The shared core
 
 Domain logic lives in **UseCase** classes that know nothing about FastAPI or
-SQLAlchemy ([`src/example/note/use_case.py`](../../src/example/note/use_case.py)).
+SQLAlchemy ([`src/example/note/use_case.py`](https://github.com/hideyukiMORI/nene2-python/blob/main/src/example/note/use_case.py)).
 Both surfaces construct the *same* UseCase and call `.execute()`:
 
-**HTTP** — [`src/example/note/handler.py`](../../src/example/note/handler.py):
+**HTTP** — [`src/example/note/handler.py`](https://github.com/hideyukiMORI/nene2-python/blob/main/src/example/note/handler.py):
 
 ```python
 @router.post("", status_code=201, response_model=NoteResponse, summary="Create a note")
@@ -24,7 +24,7 @@ The handler is pure *parse → use-case → response*: it carries no domain rule
 length and non-empty checks live in `CreateNoteInput` (below), so they hold no
 matter which surface called.
 
-**MCP** — [`src/example/mcp.py`](../../src/example/mcp.py):
+**MCP** — [`src/example/mcp.py`](https://github.com/hideyukiMORI/nene2-python/blob/main/src/example/mcp.py):
 
 ```python
 @server.tool("Create a new note.")
@@ -47,7 +47,7 @@ derives the OpenAPI schema from the Pydantic body and `response_model`.
 
 ## Proof (a test, not a claim)
 
-[`tests/example/test_http_mcp_parity.py`](../../tests/example/test_http_mcp_parity.py)
+[`tests/example/test_http_mcp_parity.py`](https://github.com/hideyukiMORI/nene2-python/blob/main/tests/example/test_http_mcp_parity.py)
 wires an HTTP app and an MCP server onto the **same** SQLite store and asserts the
 surfaces are interchangeable:
 

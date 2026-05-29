@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -33,6 +36,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # 手動メンテのサイドバーから漏れた Diátaxis ページ（孤立ページ）を検出する。
+      - name: Check sidebar coverage
+        run: python3 scripts/check_docs_nav.py
+
+      # dead-link 検出は config.mts で ON。壊れた内部リンクでここが落ちる。
       - name: Build VitePress site
         run: npm run docs:build
 
@@ -44,6 +52,8 @@ jobs:
   deploy:
     name: Deploy to GitHub Pages
     needs: build
+    # デプロイは main への push のみ。PR はビルド検証（リンク・ナビ）までで止める。
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
