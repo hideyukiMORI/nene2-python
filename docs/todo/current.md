@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.111 / FT233（textwrap）完了 / CI グリーン**
+現状: **v1.8.112 / FT234（ipaddress）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT233（textwrap — wrap / fill / shorten / indent）完了。診断なし（233 % 3 = 2）・ペンテストなし（233 % 4 = 1）。
-`wrap` の `break_long_words=True`（既定）で width 超過の単語も強制分割し行溢れを防止。`shorten` は空白を畳んでから width に収める点に注意。
-`indent` は空行に prefix を付けない既定挙動。width は 1〜500 に制限。全角幅は文字数ベースのため `wcwidth` 併用を補足。
-**サンドボックス 7 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT234 以降も継続中。
+FT234（ipaddress — ip_address / ip_network / is_private）完了。**セキュリティ診断あり（234 % 3 = 0）合格**・ペンテストなし（234 % 4 = 2）。
+診断で重要な発見: is_private 等のフラグ OR は CGNAT（100.64.0.0/10）を取りこぼす → SSRF 判定は `is_global` を肯定条件に変更（許可リスト的）。
+IPv4-mapped IPv6（`::ffff:127.0.0.1`）を埋め込み v4 に展開して判定し混乱攻撃を遮断。FT228（host 許可リスト）と相補。
+**サンドボックス 11 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT235 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT233（textwrap — wrap / fill / shorten / indent）完了。診断なし（23
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.112 | FT234: ipaddress — ip_address / ip_network / is_global（セキュリティ診断合格・IP ベース SSRF） |
 | v1.8.111 | FT233: textwrap — wrap / fill / shorten / indent（width 制限・長語分割） |
 | v1.8.110 | FT232: fnmatch — fnmatch / filter / translate（クラッカーペンテスト合格） |
 | v1.8.109 | FT231: shlex — split / quote / join（セキュリティ診断合格・シェルインジェクション中和） |
@@ -77,13 +78,13 @@ FT233（textwrap — wrap / fill / shorten / indent）完了。診断なし（23
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT233（全 233 件）
+**実施済み**: FT1〜FT234（全 234 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT234 を開始（234 % 3 = 0 → **セキュリティ診断あり**、234 % 4 = 2 → クラッカーペンテストなし）
-- テーマ候補: `ipaddress` モジュール（ip_address / ip_network / is_private・SSRF/プライベート範囲）
+- FT235 を開始（235 % 3 = 1 → セキュリティ診断なし、235 % 4 = 3 → クラッカーペンテストなし）
+- テーマ候補: `pprint` モジュール（pformat / pp・再帰・幅制御）
 
 ---
 
@@ -91,7 +92,7 @@ FT233（textwrap — wrap / fill / shorten / indent）完了。診断なし（23
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT234 実施（ipaddress、セキュリティ診断あり） | FT |
+| 高 | — | FT235 実施（pprint、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
