@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.156 / FT278（string）完了 / CI グリーン**
+現状: **v1.8.157 / FT279（plistlib）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT278（string — capwords / 定数）完了。診断なし（278 % 3 = 2）・ペンテストなし（278 % 4 = 1）。
-`capwords` は空白を畳む（title() の誤動作を回避）。string 定数（ascii_letters/digits/punctuation）はロケール非依存の ASCII 限定で文字種判定に適する。
-集合演算で ASCII 英数字判定。homoglyph 対策（FT246）の ASCII 限定とも整合。
-**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT279 以降も継続中。
+FT279（plistlib — plist 解析の安全性）完了。**セキュリティ診断あり（279 % 3 = 0）合格**・ペンテストなし（279 % 4 = 1）。
+plistlib は実体宣言を一切サポートせず（InvalidFileException で拒否）XXE・実体展開爆弾に構造的に安全（xml.etree とは対照的・FT180 の defusedxml 不要）。
+深さ/サイズ制限で DoS も防御。XXE・爆弾・深いネスト・不正データを全て 422。
+**サンドボックス 5 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT280 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT278（string — capwords / 定数）完了。診断なし（278 % 3 = 2）・
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.157 | FT279: plistlib — plist 解析（セキュリティ診断合格・XXE 耐性） |
 | v1.8.156 | FT278: string — capwords / 定数（ASCII 文字種判定） |
 | v1.8.155 | FT277: keyword — iskeyword / issoftkeyword（安全な識別子検証） |
 | v1.8.154 | FT276: subprocess — 安全なコマンド実行（診断＋ペンテスト合格） |
@@ -122,13 +123,13 @@ FT278（string — capwords / 定数）完了。診断なし（278 % 3 = 2）・
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT278（全 278 件）
+**実施済み**: FT1〜FT279（全 279 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT279 を開始（279 % 3 = 0 → **セキュリティ診断あり**、279 % 4 = 3 → クラッカーペンテストなし）
-- テーマ候補: `plistlib` モジュール（plist 解析の安全性・サイズ制限）
+- FT280 を開始（280 % 3 = 1 → セキュリティ診断なし、280 % 4 = 0 → **クラッカーペンテストあり**）
+- テーマ候補: `re` モジュール（ReDoS 対策・パターン/入力制限）
 
 ---
 
@@ -136,7 +137,7 @@ FT278（string — capwords / 定数）完了。診断なし（278 % 3 = 2）・
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT279 実施（plistlib、セキュリティ診断あり） | FT |
+| 高 | — | FT280 実施（re、クラッカーペンテストあり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
