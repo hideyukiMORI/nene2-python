@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.159 / FT281（math）完了 / CI グリーン**
+現状: **v1.8.160 / FT282（platform）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT281（math — isclose / gcd / factorial）完了。診断なし（281 % 3 = 2）・ペンテストなし（281 % 4 = 1）。
-`factorial` は n を 1000 に上限化し巨大整数 DoS を防止（桁数 + 文字列で返す）。float 比較は `isclose`（0 付近は abs_tol が必要）。
-`isfinite` で inf/nan を 422、tol の非負を検証。FT250/252/275 の数値ガードと一貫。
-**サンドボックス 8 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT282 以降も継続中。
+FT282（platform — システム情報を露出しない）完了。**セキュリティ診断あり（282 % 3 = 0）合格**・ペンテストなし（282 % 4 = 2）。
+詳細システム情報（hostname/python version/OS release/platform()/machine）を API レスポンスに含めず内部ログのみ。公開は `{healthy, os_family}` の非機微情報だけ。
+フィンガープリント・CVE 標的化を助ける情報漏洩を防止。スタックトレース非公開（CLAUDE.md）と同思想。
+**サンドボックス 5 tests**、フレームワーク本体 466 tests 据え置き。FT263〜FT282 の 20 本連続フィールドトライアルを完走。
 
 ---
 
@@ -34,6 +34,7 @@ FT281（math — isclose / gcd / factorial）完了。診断なし（281 % 3 = 2
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.160 | FT282: platform — システム情報を露出しない（セキュリティ診断合格・情報漏洩防止） |
 | v1.8.159 | FT281: math — isclose / gcd / factorial（巨大整数 DoS ガード） |
 | v1.8.158 | FT280: re — ReDoS 対策（クラッカーペンテスト合格） |
 | v1.8.157 | FT279: plistlib — plist 解析（セキュリティ診断合格・XXE 耐性） |
@@ -125,13 +126,13 @@ FT281（math — isclose / gcd / factorial）完了。診断なし（281 % 3 = 2
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT281（全 281 件）
+**実施済み**: FT1〜FT282（全 282 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT282 を開始（282 % 3 = 0 → **セキュリティ診断あり**、282 % 4 = 2 → クラッカーペンテストなし）
-- テーマ候補: `platform` モジュール（システム情報を API レスポンスに露出しない）
+- FT283 を開始（283 % 3 = 1 → セキュリティ診断なし、283 % 4 = 3 → クラッカーペンテストなし）
+- テーマ候補: `gettext` モジュール（メッセージカタログ・i18n）
 
 ---
 
@@ -139,7 +140,7 @@ FT281（math — isclose / gcd / factorial）完了。診断なし（281 % 3 = 2
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT282 実施（platform、セキュリティ診断あり） | FT |
+| 高 | — | FT283 実施（gettext、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
