@@ -8,6 +8,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.166] — 2026-05-29
+
+ドメイン入力不変条件を UseCase 層へ移し、HTTP と MCP の両サーフェスを真に等価に (#753)。
+
+### Fixed
+- 長さ上限（`max_length`）・非空チェックが HTTP ハンドラー（Pydantic + `_validate_*`）に
+  しか無く、**MCP ツール経由では巨大・空入力が素通り**していた問題を修正。Note/Tag/Comment
+  の不変条件を Create/Update Input DTO の `__post_init__` に移し、両サーフェスで強制。
+  HTTP の Pydantic `Field(max_length=...)` は同じ定数（`MAX_NOTE_TITLE_LENGTH` 等）を
+  参照し、上限を単一の真実の源として宣言・OpenAPI 文書化・ドメイン強制する。
+
+### Added
+- パリティテスト 2 件 — MCP 経由の巨大入力・空入力が HTTP と同じく拒否されることを表明。
+
+### Changed
+- ハンドラーから冗長な `_validate_*` ヘルパーを削除し、真に *parse → use-case → response*
+  に薄化。`one-usecase-two-surfaces.md`（EN/JA）の「共有する/しない」表を実態に更新。
+
 ## [1.8.165] — 2026-05-29
 
 差別化（MCP × HTTP）の可視化と保証 (#751)。

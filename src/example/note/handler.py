@@ -4,9 +4,10 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 
 from nene2.http import PaginationQueryParser
-from nene2.validation.exceptions import ValidationError, ValidationException
 
 from .use_case import (
+    MAX_NOTE_BODY_LENGTH,
+    MAX_NOTE_TITLE_LENGTH,
     CreateNoteInput,
     CreateNoteUseCase,
     DeleteNoteInput,
@@ -21,13 +22,13 @@ from .use_case import (
 
 
 class CreateNoteBody(BaseModel):
-    title: str = Field(max_length=500, description="Note title.")
-    body: str = Field(max_length=10_000, description="Note body.")
+    title: str = Field(max_length=MAX_NOTE_TITLE_LENGTH, description="Note title.")
+    body: str = Field(max_length=MAX_NOTE_BODY_LENGTH, description="Note body.")
 
 
 class UpdateNoteBody(BaseModel):
-    title: str = Field(max_length=500, description="Note title.")
-    body: str = Field(max_length=10_000, description="Note body.")
+    title: str = Field(max_length=MAX_NOTE_TITLE_LENGTH, description="Note title.")
+    body: str = Field(max_length=MAX_NOTE_BODY_LENGTH, description="Note body.")
 
 
 class NoteResponse(BaseModel):
@@ -41,16 +42,6 @@ class NoteListResponse(BaseModel):
     limit: int = Field(description="Page size.")
     offset: int = Field(description="Page offset.")
     total: int = Field(description="Total number of notes.")
-
-
-def _validate_note_body(title: str, body: str) -> None:
-    errors: list[ValidationError] = []
-    if not title.strip():
-        errors.append(ValidationError("title", "Title must not be empty.", "required"))
-    if not body.strip():
-        errors.append(ValidationError("body", "Body must not be empty.", "required"))
-    if errors:
-        raise ValidationException(errors)
 
 
 def make_note_router(
@@ -80,13 +71,11 @@ def make_note_router(
 
     @router.post("", status_code=201, response_model=NoteResponse, summary="Create a note")
     async def create_note(body: CreateNoteBody) -> NoteResponse:
-        _validate_note_body(body.title, body.body)
         note = create_use_case.execute(CreateNoteInput(body.title, body.body))
         return NoteResponse(id=note.id, title=note.title, body=note.body)
 
     @router.put("/{note_id}", response_model=NoteResponse, summary="Update a note")
     async def update_note(note_id: int, body: UpdateNoteBody) -> NoteResponse:
-        _validate_note_body(body.title, body.body)
         note = update_use_case.execute(UpdateNoteInput(note_id, body.title, body.body))
         return NoteResponse(id=note.id, title=note.title, body=note.body)
 

@@ -4,9 +4,9 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 
 from nene2.http import PaginationQueryParser
-from nene2.validation.exceptions import ValidationError, ValidationException
 
 from .use_case import (
+    MAX_TAG_NAME_LENGTH,
     CreateTagInput,
     CreateTagUseCase,
     DeleteTagInput,
@@ -21,11 +21,11 @@ from .use_case import (
 
 
 class CreateTagBody(BaseModel):
-    name: str = Field(max_length=200, description="Tag name.")
+    name: str = Field(max_length=MAX_TAG_NAME_LENGTH, description="Tag name.")
 
 
 class UpdateTagBody(BaseModel):
-    name: str = Field(max_length=200, description="Tag name.")
+    name: str = Field(max_length=MAX_TAG_NAME_LENGTH, description="Tag name.")
 
 
 class TagResponse(BaseModel):
@@ -38,11 +38,6 @@ class TagListResponse(BaseModel):
     limit: int = Field(description="Page size.")
     offset: int = Field(description="Page offset.")
     total: int = Field(description="Total number of tags.")
-
-
-def _validate_tag_name(name: str) -> None:
-    if not name.strip():
-        raise ValidationException([ValidationError("name", "Name must not be empty.", "required")])
 
 
 def make_tag_router(
@@ -72,13 +67,11 @@ def make_tag_router(
 
     @router.post("", status_code=201, response_model=TagResponse, summary="Create a tag")
     async def create_tag(body: CreateTagBody) -> TagResponse:
-        _validate_tag_name(body.name)
         tag = create_use_case.execute(CreateTagInput(body.name))
         return TagResponse(id=tag.id, name=tag.name)
 
     @router.put("/{tag_id}", response_model=TagResponse, summary="Update a tag")
     async def update_tag(tag_id: int, body: UpdateTagBody) -> TagResponse:
-        _validate_tag_name(body.name)
         tag = update_use_case.execute(UpdateTagInput(tag_id, body.name))
         return TagResponse(id=tag.id, name=tag.name)
 

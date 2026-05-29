@@ -4,10 +4,29 @@ from dataclasses import dataclass
 
 from example.note.exceptions import NoteNotFoundException
 from example.note.repository import NoteRepositoryInterface
+from nene2.validation.exceptions import ValidationError, ValidationException
 
 from .entity import Comment
 from .exceptions import CommentNotFoundException
 from .repository import CommentRepositoryInterface
+
+MAX_COMMENT_BODY_LENGTH = 5_000
+
+
+def _validate_comment_body(body: str) -> None:
+    """Domain invariant for a comment's body — enforced on every surface (HTTP and MCP)."""
+    if not body.strip():
+        raise ValidationException([ValidationError("body", "Body must not be empty.", "required")])
+    if len(body) > MAX_COMMENT_BODY_LENGTH:
+        raise ValidationException(
+            [
+                ValidationError(
+                    "body",
+                    f"Body must be at most {MAX_COMMENT_BODY_LENGTH} characters.",
+                    "too_long",
+                )
+            ]
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,6 +89,9 @@ class CreateCommentInput:
     note_id: int
     body: str
 
+    def __post_init__(self) -> None:
+        _validate_comment_body(self.body)
+
 
 class CreateCommentUseCase:
     def __init__(
@@ -90,6 +112,9 @@ class CreateCommentUseCase:
 class UpdateCommentInput:
     comment_id: int
     body: str
+
+    def __post_init__(self) -> None:
+        _validate_comment_body(self.body)
 
 
 class UpdateCommentUseCase:
