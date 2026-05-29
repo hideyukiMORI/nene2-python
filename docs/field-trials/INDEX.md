@@ -304,6 +304,7 @@
 | [FT268](2026-05-field-trial-268.md) | lzma モジュール — compress / decompress（解凍爆弾対策） | 🔍 | |
 | [FT269](2026-05-field-trial-269.md) | contextvars モジュール — ContextVar によるコンテキストローカル状態 |  | |
 | [FT270](2026-05-field-trial-270.md) | ssl モジュール — create_default_context の検証既定 | 🔒 | |
+| [FT271](2026-05-field-trial-271.md) | stat モジュール — モードビット解釈 / パーミッション判定 |  | |
 
 ---
 
@@ -319,4 +320,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT270 / v1.8.148)*
+*最終更新: 2026-05-29 (FT271 / v1.8.149)*
