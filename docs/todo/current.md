@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.131 / FT253（copy）完了 / CI グリーン**
+現状: **v1.8.132 / FT254（queue）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT253（copy — copy / deepcopy）完了。診断なし（253 % 3 = 1）・ペンテストなし（253 % 4 = 1）。
-浅いコピーは外側のみ複製し内側可変オブジェクトを共有（shallow_affects_original=True）、deepcopy は独立（False）。トップレベル追加は浅いコピーでも独立。
-deepcopy は循環を memo で安全処理。サイズ上限（100×100）で deepcopy DoS を防止。frozen dataclass を使えば共有しても安全。
-**サンドボックス 4 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT254 以降も継続中。
+FT254（queue — Queue / LifoQueue / PriorityQueue）完了。診断なし（254 % 3 = 2）・ペンテストなし（254 % 4 = 2）。
+PriorityQueue は `(priority, seq, value)` の安定化タプルで、同値時の item 比較（比較不能型 TypeError）と順序不定を回避。
+queue はスレッドセーフ（deque FT207 との使い分け）、リクエストパスでブロッキング get/put を避ける。
+**サンドボックス 5 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT255 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ deepcopy は循環を memo で安全処理。サイズ上限（100×100）で de
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.132 | FT254: queue — Queue / LifoQueue / PriorityQueue（安定化タプル） |
 | v1.8.131 | FT253: copy — copy / deepcopy（浅い/深いコピーの共有参照） |
 | v1.8.130 | FT252: json — loads/dumps の堅牢化（診断＋ペンテスト合格） |
 | v1.8.129 | FT251: fractions — Fraction / limit_denominator（厳密有理数・用途別分母制限） |
@@ -97,13 +98,13 @@ deepcopy は循環を memo で安全処理。サイズ上限（100×100）で de
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT253（全 253 件）
+**実施済み**: FT1〜FT254（全 254 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT254 を開始（254 % 3 = 2 → セキュリティ診断なし、254 % 4 = 2 → クラッカーペンテストなし）
-- テーマ候補: `queue` モジュール（Queue / PriorityQueue / LifoQueue・スレッドセーフ）
+- FT255 を開始（255 % 3 = 0 → **セキュリティ診断あり**、255 % 4 = 3 → クラッカーペンテストなし）
+- テーマ候補: `sqlite3` モジュール（パラメータ化クエリ vs SQL インジェクション）
 
 ---
 
@@ -111,7 +112,7 @@ deepcopy は循環を memo で安全処理。サイズ上限（100×100）で de
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT254 実施（queue、診断・ペンテストなし） | FT |
+| 高 | — | FT255 実施（sqlite3、セキュリティ診断あり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
