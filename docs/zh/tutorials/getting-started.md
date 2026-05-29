@@ -1,6 +1,6 @@
-# nene2-python 入门
+# nene2-python 入门指南
 
-本教程将帮助您在 5 分钟内使用 nene2-python 启动一个 Notes CRUD API。
+本教程将帮助您在 5 分钟内使用 nene2-python 运行一个 Note CRUD API。
 
 ## 前提条件
 
@@ -27,15 +27,15 @@ uv sync
 uv run uvicorn src.example.app:app --reload --port 8080
 ```
 
-在浏览器中打开 `http://localhost:8080/docs` 查看 Swagger UI。
+在浏览器中打开 `http://localhost:8080/docs`，Swagger UI 已就绪。
 
-## 4. 测试 API
+## 4. 调用 API
 
 ```bash
 # 创建笔记
 curl -X POST http://localhost:8080/notes \
   -H "Content-Type: application/json" \
-  -d '{"title": "我的第一条笔记", "body": "使用 nene2-python 创建"}'
+  -d '{"title": "My first note", "body": "Created with nene2-python"}'
 
 # 获取笔记列表
 curl http://localhost:8080/notes
@@ -51,4 +51,5 @@ uv run pytest
 
 ## 下一步
 
-- [配置参考](../../reference/configuration.md) — 通过环境变量配置数据库和身份验证
+- [实现新领域](first-domain.md) — 以 Tag 领域为例，逐层走通完整的架构栈
+- [配置参考](../reference/configuration.md) — 配置真实数据库或启用身份验证
