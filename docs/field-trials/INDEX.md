@@ -286,6 +286,7 @@
 | [FT250](2026-05-field-trial-250.md) | decimal モジュール — Decimal / 精度 / 丸めモード（金額計算） |  | |
 | [FT251](2026-05-field-trial-251.md) | fractions モジュール — Fraction / 有理数演算 / limit_denominator |  | |
 | [FT252](2026-05-field-trial-252.md) | json モジュール — loads/dumps の堅牢化 | 🔒🔍 | |
+| [FT253](2026-05-field-trial-253.md) | copy モジュール — copy / deepcopy / 共有参照 |  | |
 
 ---
 
@@ -301,4 +302,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT252 / v1.8.130)*
+*最終更新: 2026-05-29 (FT253 / v1.8.131)*
