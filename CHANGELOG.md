@@ -8,6 +8,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.164] — 2026-05-29
+
+実データベース（PostgreSQL / MySQL）統合テストを追加し、マルチDB対応を実測で検証 (#747)。
+
+### Fixed
+- `SqlAlchemyQueryExecutor.write()` / `_BoundQueryExecutor.write()` の INSERT 採番を
+  全方言で正しく返すよう修正。psycopg2 は `lastrowid` 非対応のため、PostgreSQL では
+  `lastval()` フォールバックを使う（従来は `rowcount` を返し、`save()` が常に `1` を
+  返す重大バグだった）。SQLite / MySQL は従来どおり `lastrowid`。
+
+### Added
+- 実DB統合テスト `tests/integration/`（PostgreSQL / MySQL）。環境変数
+  `NENE2_TEST_POSTGRES_URL` / `NENE2_TEST_MYSQL_URL` 設定時のみ実行、未設定ならスキップ。
+  スキーマは SQLAlchemy `Table` から方言非依存に生成。
+- CI に `integration-db` ジョブ（postgres:16 / mysql:8 service container）を追加。
+- how-to [`run-integration-tests.md`](docs/how-to/run-integration-tests.md)（EN/JA）を追加。
+- `pymysql` を dev 依存に追加（`mysql+pymysql://` ドライバが未導入だった）。
+
+### Changed
+- リリース手順 how-to を「公開済み」の現実に合わせて訂正（#541 の事後整合）。
+
 ## [1.8.163] — 2026-05-29
 
 v1.8.35〜v1.8.163 の集約リリース。フィールドトライアル網羅スイープの完了と、

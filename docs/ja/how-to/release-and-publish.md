@@ -5,21 +5,21 @@
 [`.github/workflows/publish.yml`](../../../.github/workflows/publish.yml) にあり、
 `v*` タグを契機に **PyPI Trusted Publishing**（OIDC・長期トークン不要）で動く。
 
-## 一度だけの設定（メンテナ作業・自動化不可）
+## 一度だけの設定（メンテナ作業・設定済み）
 
-publish ワークフローは Trusted Publishing と GitHub Environments を使う。PyPI 側と
-リポジトリ設定で一度だけ構成する必要がある:
+publish ワークフローは Trusted Publishing と GitHub Environments を使う。これは
+**既に構成済み・稼働中**で、参照・復旧用に記録する:
 
 1. **PyPI / TestPyPI の Trusted Publisher**（`nene2-python`）:
    - Owner: `hideyukiMORI`、Repository: `nene2-python`
    - Workflow: `publish.yml`
    - Environment: `pypi`（pypi.org）と `testpypi`（test.pypi.org）
-   - https://pypi.org/manage/account/publishing/ と TestPyPI の同等画面で登録。
-2. **GitHub repo → Settings → Environments**: `testpypi` と `pypi` を作成
+   - https://pypi.org/manage/account/publishing/ と TestPyPI の同等画面で登録済み。
+2. **GitHub repo → Settings → Environments**: `testpypi` と `pypi` 作成済み
    （`pypi` に必須レビュアーを設定すれば手動承認ゲートになる）。
 
-手順 1 が未了の間は `pip install nene2-python` は不可（未公開。FT サンドボックスは
-ローカル wheel / `git+` で導入している）。
+パッケージは**公開済み**で、`pip install nene2-python` で最新リリース（v1.8.163 以降）
+を PyPI から直接取得できる。
 
 ## リリース手順（毎回）
 
@@ -64,6 +64,5 @@ import 可能、配布物は `src/nene2` のみ（`example`/`tests` は
 - **CHANGELOG の粒度**: 版ごとの一行サマリーは
   [`docs/todo/current.md`](../../todo/current.md) のマイルストーン表に、
   `CHANGELOG.md` にはリリース粒度の集約エントリを記録する。
-- 本手順は **FT7 相当の「公開フロー」トライアル**（#541）に対応する。ビルドは検証済み・
-  自動化は整備済みで、残るはメンテナによる一度きりの Trusted Publishing 設定と
-  最初の `v*` タグ作成のみ。
+- 本手順は **FT7 相当の「公開フロー」トライアル**（#541）に対応する。フローは完全稼働済みで、
+  v1.8.163 を本フローで PyPI に公開済み（`pip install nene2-python` で取得可能）。
