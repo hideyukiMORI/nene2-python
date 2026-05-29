@@ -18,7 +18,7 @@ A Python reference framework implementing the [NENE2](https://github.com/hideyuk
 - **ruff** — lint and format in one tool (replaces flake8, isort, black, bandit)
 - **RFC 9457 Problem Details** — uniform error responses across all endpoints
 - **Bearer Token / API Key auth** — `LocalTokenVerifier`, `CompositeAuthMiddleware`, dev JWT helpers
-- **MCP support** — expose UseCases as AI agent tools via `LocalMcpServer`
+- **MCP support** — expose the *same* UseCases as AI agent tools via `LocalMcpServer` ([one UseCase, two surfaces](docs/explanation/one-usecase-two-surfaces.md))
 - **SQLAlchemy Core** — parameterised SQL without ORM overhead
 - **Security middleware** — CSP, rate limiting, request size limit, CORS via `setup_middlewares()`
 - **ETag / conditional requests** — `generate_etag()`, `check_not_modified()`, `check_precondition()`

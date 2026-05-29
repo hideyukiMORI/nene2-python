@@ -26,7 +26,7 @@ Security is a design constraint, not an afterthought:
 
 ### LLM Delivery Ready
 
-Because UseCases are independent of HTTP and database, they can be registered directly as MCP tools. `src/example/mcp.py` proves this — 15 tools, zero extra plumbing.
+Because UseCases are independent of HTTP and database, they can be registered directly as MCP tools. `src/example/mcp.py` proves this — 15 tools, zero extra plumbing. See [One UseCase, two surfaces (HTTP + MCP)](one-usecase-two-surfaces.md) for the side-by-side code and the parity test that guards it.
 
 ---
 

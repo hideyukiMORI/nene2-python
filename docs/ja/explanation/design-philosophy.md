@@ -26,7 +26,7 @@ HTTP Handler はビジネスロジックを持ちません。**parse → use-cas
 
 ### LLM Delivery Ready
 
-UseCase は HTTP・DB から独立しているため、MCP ツールとして直接再利用できます。`src/example/mcp.py` はその実証です。
+UseCase は HTTP・DB から独立しているため、MCP ツールとして直接再利用できます。`src/example/mcp.py` はその実証です。並べて見るコードと、それを守るパリティテストは [1 つの UseCase、2 つのサーフェス（HTTP + MCP）](one-usecase-two-surfaces.md) を参照してください。
 
 ## PHP NENE2 との対応表
 
