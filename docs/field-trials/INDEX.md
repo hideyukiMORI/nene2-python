@@ -256,6 +256,7 @@
 | [FT220](2026-05-field-trial-220.md) | logging モジュール — Logger / Handler / Formatter / Filter | 🔍 | |
 | [FT221](2026-05-field-trial-221.md) | tempfile モジュール — NamedTemporaryFile / mkstemp / TemporaryDirectory | | |
 | [FT222](2026-05-field-trial-222.md) | hashlib モジュール — sha256 / pbkdf2_hmac / blake2 / compare_digest | 🔒 | |
+| [FT223](2026-05-field-trial-223.md) | base64 モジュール — b64encode / urlsafe_b64encode / b64decode / 厳格デコード |  | |
 
 ---
 
@@ -271,4 +272,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT222 / v1.8.100)*
+*最終更新: 2026-05-29 (FT223 / v1.8.101)*
