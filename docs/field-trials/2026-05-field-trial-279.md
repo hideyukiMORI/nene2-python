@@ -63,7 +63,7 @@
 | XXE | `<!ENTITY x SYSTEM "file:///etc/passwd">` | **422**（実体宣言非サポート） |
 | 実体展開爆弾 | ネスト ENTITY | **422**（実体宣言非サポート） |
 | 深いネスト | 35 段 array | **422**（深さ上限） |
-| 不正データ | `not xml {{{` | **422**（syntax error） |
+| 不正データ | <code v-pre>not xml {{{</code> | **422**（syntax error） |
 | サイズ | 100k 超 | **422** |
 | セキュリティヘッダー | — | 付与あり |
 
