@@ -305,6 +305,7 @@
 | [FT269](2026-05-field-trial-269.md) | contextvars モジュール — ContextVar によるコンテキストローカル状態 |  | |
 | [FT270](2026-05-field-trial-270.md) | ssl モジュール — create_default_context の検証既定 | 🔒 | |
 | [FT271](2026-05-field-trial-271.md) | stat モジュール — モードビット解釈 / パーミッション判定 |  | |
+| [FT272](2026-05-field-trial-272.md) | tarfile モジュール — tar slip / tar bomb / symlink 対策 | 🔍 | |
 
 ---
 
@@ -316,8 +317,8 @@ FT3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 6
 
 ## クラッカーペンテスト実施済み一覧（🔍）
 
-FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT216, FT220, FT224, FT228, FT232, FT236, FT240, FT244, FT248, FT252, FT256, FT260, FT264, FT268
+FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT216, FT220, FT224, FT228, FT232, FT236, FT240, FT244, FT248, FT252, FT256, FT260, FT264, FT268, FT272
 
 ---
 
-*最終更新: 2026-05-29 (FT271 / v1.8.149)*
+*最終更新: 2026-05-29 (FT272 / v1.8.150)*
