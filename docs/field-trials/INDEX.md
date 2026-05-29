@@ -311,6 +311,7 @@
 | [FT275](2026-05-field-trial-275.md) | cmath モジュール — 複素数演算 / 極座標変換 |  | |
 | [FT276](2026-05-field-trial-276.md) | subprocess — 安全なコマンド実行 | 🔒🔍 | |
 | [FT277](2026-05-field-trial-277.md) | keyword モジュール — iskeyword / issoftkeyword / 識別子検証 |  | |
+| [FT278](2026-05-field-trial-278.md) | string モジュール — capwords / 定数（文字種判定） |  | |
 
 ---
 
@@ -326,4 +327,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT277 / v1.8.155)*
+*最終更新: 2026-05-29 (FT278 / v1.8.156)*
