@@ -52,6 +52,8 @@ function sidebarEn() {
         { text: 'Configure auth',                link: '/how-to/configure-auth' },
         { text: 'Set up MCP',                    link: '/howto/mcp-setup' },
         { text: 'Run tests',                     link: '/how-to/run-tests' },
+        { text: 'Run real-DB integration tests', link: '/how-to/run-integration-tests' },
+        { text: 'Release and publish to PyPI',   link: '/how-to/release-and-publish' },
       ],
     }],
     '/explanation/': [{
@@ -59,6 +61,8 @@ function sidebarEn() {
       items: [
         { text: 'Architecture',      link: '/explanation/architecture' },
         { text: 'Design philosophy', link: '/explanation/design-philosophy' },
+        { text: 'One UseCase, two surfaces (HTTP + MCP)', link: '/explanation/one-usecase-two-surfaces' },
+        { text: 'Field Trial methodology', link: '/explanation/field-trial-methodology' },
       ],
     }, {
       text: 'ADR',
@@ -110,11 +114,14 @@ function sidebarJa() {
     '/ja/how-to/': [{
       text: 'ハウツーガイド',
       items: [
+        { text: '新しいプロジェクトを始める',          link: '/ja/how-to/new-project' },
         { text: '新しいドメインを追加する',            link: '/ja/how-to/add-new-domain' },
         { text: 'SQLAlchemy リポジトリを実装する',    link: '/ja/how-to/sqlalchemy-repository' },
         { text: '認証を設定する',                     link: '/ja/how-to/configure-auth' },
         { text: 'MCP セットアップ',                   link: '/ja/howto/mcp-setup' },
         { text: 'テストを実行する',                   link: '/ja/how-to/run-tests' },
+        { text: '実DB統合テストの実行',               link: '/ja/how-to/run-integration-tests' },
+        { text: 'リリースと PyPI 公開',               link: '/ja/how-to/release-and-publish' },
       ],
     }],
     '/ja/explanation/': [{
@@ -122,6 +129,8 @@ function sidebarJa() {
       items: [
         { text: 'アーキテクチャ概要',        link: '/ja/explanation/architecture' },
         { text: '設計思想と PHP との対応',   link: '/ja/explanation/design-philosophy' },
+        { text: '1 つの UseCase、2 つのサーフェス（HTTP + MCP）', link: '/ja/explanation/one-usecase-two-surfaces' },
+        { text: 'フィールドトライアル方法論', link: '/ja/explanation/field-trial-methodology' },
       ],
     }],
     '/ja/reference/': [{
