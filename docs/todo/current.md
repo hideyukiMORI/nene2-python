@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.123 / FT245（reprlib）完了 / CI グリーン**
+現状: **v1.8.124 / FT246（unicodedata）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT245（reprlib — Repr）完了。診断なし（245 % 3 = 2）・ペンテストなし（245 % 4 = 1）。
-`reprlib.Repr` は型ごとに別の上限（maxstring/maxlist/maxdict/maxlevel）を持つ → まとめて設定し設定漏れを防ぐ。省略は `...` で表現され `truncated` 判定可能。
-pprint（FT235）は整形表示、reprlib はコンパクト要約+多軸上限でログ向き、と用途分け。
-**サンドボックス 5 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT246 以降も継続中。
+FT246（unicodedata — NFKC 正規化 / homoglyph 検出）完了。**セキュリティ診断あり（246 % 3 = 0）条件付き合格**・ペンテストなし（246 % 4 = 2）。
+ゼロ幅（Cf）・RTL override・制御文字（Cc）・記号を category 検査で遮断、識別子は NFKC 正規化 + 許可カテゴリ（L*/Nd）のみ。
+重要な限界（F-3）: NFKC + category は homoglyph（キリル аdmin 等の混在スクリプト）を防げない。unicodedata にスクリプト判定 API がないため stdlib のみでは困難 → 高セキュリティは ASCII 限定 or TR39/専用ライブラリ。
+**サンドボックス 9 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT247 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ pprint（FT235）は整形表示、reprlib はコンパクト要約+多軸上限
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.124 | FT246: unicodedata — NFKC / category（セキュリティ診断・条件付き合格・homoglyph 限界明示） |
 | v1.8.123 | FT245: reprlib — Repr（多軸上限・ログ肥大化防止） |
 | v1.8.122 | FT244: html.parser — HTMLParser（クラッカーペンテスト合格・script 除外） |
 | v1.8.121 | FT243: uuid — uuid4 / uuid1 / uuid5（セキュリティ診断合格・予測可能性） |
@@ -89,13 +90,13 @@ pprint（FT235）は整形表示、reprlib はコンパクト要約+多軸上限
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT245（全 245 件）
+**実施済み**: FT1〜FT246（全 246 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT246 を開始（246 % 3 = 0 → **セキュリティ診断あり**、246 % 4 = 2 → クラッカーペンテストなし）
-- テーマ候補: `unicodedata` モジュール（NFKC 正規化・homoglyph/confusable）
+- FT247 を開始（247 % 3 = 1 → セキュリティ診断なし、247 % 4 = 3 → クラッカーペンテストなし）
+- テーマ候補: `operator` モジュール（itemgetter / attrgetter / 演算子関数）
 
 ---
 
@@ -103,7 +104,7 @@ pprint（FT235）は整形表示、reprlib はコンパクト要約+多軸上限
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT246 実施（unicodedata、セキュリティ診断あり） | FT |
+| 高 | — | FT247 実施（operator、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
