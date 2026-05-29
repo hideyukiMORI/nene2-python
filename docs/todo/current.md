@@ -1,17 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.100 / FT222（hashlib）完了 / CI グリーン**
+現状: **v1.8.101 / FT223（base64）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT222（hashlib — sha256 / pbkdf2_hmac / blake2 / compare_digest）完了。
-**セキュリティ診断あり（222 % 3 = 0）合格**、クラッカーペンテストなし（222 % 4 = 2）。
-パスワードは `pbkdf2_hmac` + `secrets` ソルト + 600,000 反復（OWASP 2023）、照合は `hmac.compare_digest`（タイミング攻撃対策）。
-アルゴリズムはホワイトリスト制（md5/sha1 遮断）、iterations は Pydantic `le=600000` で過大値 DoS を防止。診断 9 項目全合格。
-**サンドボックス 11 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT223 以降も継続中。
+FT223（base64 — 符号化・厳格復号）完了。診断なし（223 % 3 = 1）・ペンテストなし（223 % 4 = 3）。
+`b64decode` のデフォルトが不正文字（改行・空白・記号）を黙殺する点を発見 → `validate=True` で厳格化。
+URL セーフ variant は `validate` 引数を持たないため `str.translate` で `-_`→`+/` 変換後に `b64decode(validate=True)`。デコード後は UTF-8 検証も実施。
+**サンドボックス 8 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT224 以降も継続中。
 
 ---
 
@@ -35,6 +34,7 @@ FT222（hashlib — sha256 / pbkdf2_hmac / blake2 / compare_digest）完了。
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.101 | FT223: base64 — b64encode / urlsafe_b64encode / b64decode（厳格デコード） |
 | v1.8.100 | FT222: hashlib — sha256 / pbkdf2_hmac / blake2 / compare_digest（セキュリティ診断合格）|
 | v1.8.99 | FT221: tempfile — NamedTemporaryFile / mkstemp / TemporaryDirectory（affix 検証・0o600）|
 | v1.8.98 | FT220: logging — Logger / Handler / Formatter / Filter（クラッカーペンテスト合格）|
@@ -67,13 +67,13 @@ FT222（hashlib — sha256 / pbkdf2_hmac / blake2 / compare_digest）完了。
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT222（全 222 件）
+**実施済み**: FT1〜FT223（全 223 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT223 を開始（223 % 3 = 1 → セキュリティ診断なし、223 % 4 = 3 → クラッカーペンテストなし）
-- テーマ候補: `base64` モジュール（b64encode / urlsafe_b64encode / b64decode / validate・パディング）
+- FT224 を開始（224 % 3 = 2 → セキュリティ診断なし、224 % 4 = 0 → **クラッカーペンテストあり**）
+- テーマ候補: `binascii` モジュール（hexlify / unhexlify / b2a_base64 / crc32）
 
 ---
 
@@ -81,7 +81,7 @@ FT222（hashlib — sha256 / pbkdf2_hmac / blake2 / compare_digest）完了。
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT223 実施（base64、診断・ペンテストなし） | FT |
+| 高 | — | FT224 実施（binascii、クラッカーペンテストあり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
