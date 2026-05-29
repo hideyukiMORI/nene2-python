@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.151 / FT273（marshal）完了 / CI グリーン**
+現状: **v1.8.152 / FT274（colorsys）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT273（marshal — 信頼できないデータに使わない）完了。**セキュリティ診断あり（273 % 3 = 0）合格**・ペンテストなし（273 % 4 = 1）。
-marshal.loads は細工バイトでインタプリタをクラッシュさせ得る（公式警告）→ ユーザー入力に一切使わず json + Pydantic で安全に往復。
-ソース監査で marshal.loads が存在しないことを確認（防御は「使わない」こと）。FT240(pickle)/FT264(eval) と並ぶ危険プリミティブ回避シリーズ。
-**サンドボックス 4 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT274 以降も継続中。
+FT274（colorsys — RGB / HSV / HLS 変換）完了。診断なし（274 % 3 = 1）・ペンテストなし（274 % 4 = 2）。
+colorsys は 0.0〜1.0 を扱うため 0-255 RGB を /255 正規化・*255 復元。HSV 4 桁丸め、RGB 四捨五入で往復精度を担保。
+範囲検証（RGB 0-255 / HSV 0-1）で範囲外を 422。
+**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT275 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ marshal.loads は細工バイトでインタプリタをクラッシュさせ得
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.152 | FT274: colorsys — RGB / HSV 変換（0-1 正規化・範囲検証） |
 | v1.8.151 | FT273: marshal — 信頼できないデータに使わない（セキュリティ診断合格・json 代替） |
 | v1.8.150 | FT272: tarfile — tar slip / tar bomb / symlink 対策（クラッカーペンテスト合格） |
 | v1.8.149 | FT271: stat — モードビット解釈（world-writable/setuid 検出） |
@@ -117,13 +118,13 @@ marshal.loads は細工バイトでインタプリタをクラッシュさせ得
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT273（全 273 件）
+**実施済み**: FT1〜FT274（全 274 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT274 を開始（274 % 3 = 1 → セキュリティ診断なし、274 % 4 = 2 → クラッカーペンテストなし）
-- テーマ候補: `colorsys` モジュール（RGB/HSV/HLS 変換）
+- FT275 を開始（275 % 3 = 2 → セキュリティ診断なし、275 % 4 = 3 → クラッカーペンテストなし）
+- テーマ候補: `cmath` モジュール（複素数演算・極座標変換）
 
 ---
 
@@ -131,7 +132,7 @@ marshal.loads は細工バイトでインタプリタをクラッシュさせ得
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT274 実施（colorsys、診断・ペンテストなし） | FT |
+| 高 | — | FT275 実施（cmath、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
