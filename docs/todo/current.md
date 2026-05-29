@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.102 / FT224（binascii）完了 / CI グリーン**
+現状: **v1.8.103 / FT225（zlib）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT224（binascii — hexlify / unhexlify / crc32）完了。診断なし（224 % 3 = 2）・**クラッカーペンテストあり（224 % 4 = 0）合格**。
-`unhexlify` の厳格性（奇数長・非 hex は `binascii.Error`）を活用。`crc32` は `& 0xFFFFFFFF` で符号なし正規化。復号後 UTF-8 検証。
-ペンテスト 16 攻撃すべて防御（null バイト `00` は UTF-8 として正当に通過＝仕様通り、下流の C 文字列文脈に注意）。
-**サンドボックス 7 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT225 以降も継続中。
+FT225（zlib — compress / decompress / crc32）完了。**セキュリティ診断あり（225 % 3 = 0）合格**・ペンテストなし（225 % 4 = 1）。
+ワンショット `zlib.decompress` は無制限展開で解凍爆弾の温床 → `decompressobj` + `max_length`（1MB 上限）+ `unconsumed_tail` 検出で対策。
+実測で 50MB 相当の爆弾を **8ms** で拒否（メモリ・時間ともに有界）。診断 6 項目全合格。
+**サンドボックス 7 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT226 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT224（binascii — hexlify / unhexlify / crc32）完了。診断なし（224 %
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.103 | FT225: zlib — compress / decompress / crc32（セキュリティ診断合格・解凍爆弾対策） |
 | v1.8.102 | FT224: binascii — hexlify / unhexlify / crc32（クラッカーペンテスト合格） |
 | v1.8.101 | FT223: base64 — b64encode / urlsafe_b64encode / b64decode（厳格デコード） |
 | v1.8.100 | FT222: hashlib — sha256 / pbkdf2_hmac / blake2 / compare_digest（セキュリティ診断合格）|
@@ -68,13 +69,13 @@ FT224（binascii — hexlify / unhexlify / crc32）完了。診断なし（224 %
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT224（全 224 件）
+**実施済み**: FT1〜FT225（全 225 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT225 を開始（225 % 3 = 0 → **セキュリティ診断あり**、225 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `zlib` モジュール（compress / decompress / crc32・解凍爆弾対策）
+- FT226 を開始（226 % 3 = 1 → セキュリティ診断なし、226 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `gzip` モジュール（compress / decompress / GzipFile・解凍上限）
 
 ---
 
@@ -82,7 +83,7 @@ FT224（binascii — hexlify / unhexlify / crc32）完了。診断なし（224 %
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT225 実施（zlib、セキュリティ診断あり） | FT |
+| 高 | — | FT226 実施（gzip、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
