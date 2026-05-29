@@ -292,6 +292,7 @@
 | [FT256](2026-05-field-trial-256.md) | email.message — ヘッダーインジェクション対策 | 🔍 | |
 | [FT257](2026-05-field-trial-257.md) | array モジュール — typecode / tobytes / 数値配列 |  | |
 | [FT258](2026-05-field-trial-258.md) | random モジュール — 暗号用途に使わない / secrets を使う | 🔒 | |
+| [FT259](2026-05-field-trial-259.md) | weakref モジュール — WeakValueDictionary / ref / キャッシュ |  | |
 
 ---
 
@@ -307,4 +308,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT258 / v1.8.136)*
+*最終更新: 2026-05-29 (FT259 / v1.8.137)*
