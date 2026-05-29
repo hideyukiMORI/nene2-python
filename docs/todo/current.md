@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.147 / FT269（contextvars）完了 / CI グリーン**
+現状: **v1.8.148 / FT270（ssl）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT269（contextvars — ContextVar）完了。診断なし（269 % 3 = 2）・ペンテストなし（269 % 4 = 1）。
-ContextVar はスレッド/async タスクごとに独立。default を与えて LookupError を回避、set の Token で finally reset し値漏れを防止。
-リクエストスコープ伝播（相関 ID 等）の基盤（nene2 の RequestScopedContext と一貫）。
-**サンドボックス 3 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT270 以降も継続中。
+FT270（ssl — create_default_context の検証既定）完了。**セキュリティ診断あり（270 % 3 = 0）合格**・ペンテストなし（270 % 4 = 2）。
+セキュア既定（check_hostname=True / CERT_REQUIRED / 最低 TLS1.2）を維持し、証明書検証の無効化（MITM を許す）を 422 で拒否。
+ネットワーク接続せずコンテキスト設定値を検証。verify=False/CERT_NONE/check_hostname=False を作れない設計。
+**サンドボックス 4 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT271 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ ContextVar はスレッド/async タスクごとに独立。default を与えて
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.148 | FT270: ssl — create_default_context（セキュリティ診断合格・TLS 検証既定） |
 | v1.8.147 | FT269: contextvars — ContextVar（コンテキストローカル状態・Token reset） |
 | v1.8.146 | FT268: lzma — compress / decompress（クラッカーペンテスト合格・解凍爆弾対策） |
 | v1.8.145 | FT267: glob — パターンマッチ（セキュリティ診断合格・パストラバーサル防御） |
@@ -113,13 +114,13 @@ ContextVar はスレッド/async タスクごとに独立。default を与えて
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT269（全 269 件）
+**実施済み**: FT1〜FT270（全 270 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT270 を開始（270 % 3 = 0 → **セキュリティ診断あり**、270 % 4 = 2 → クラッカーペンテストなし）
-- テーマ候補: `ssl` モジュール（create_default_context の検証既定）
+- FT271 を開始（271 % 3 = 1 → セキュリティ診断なし、271 % 4 = 3 → クラッカーペンテストなし）
+- テーマ候補: `stat` モジュール（モードビット解釈・パーミッション判定）
 
 ---
 
@@ -127,7 +128,7 @@ ContextVar はスレッド/async タスクごとに独立。default を与えて
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT270 実施（ssl、セキュリティ診断あり） | FT |
+| 高 | — | FT271 実施（stat、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
