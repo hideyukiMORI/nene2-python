@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.138 / FT260（zipfile）完了 / CI グリーン**
+現状: **v1.8.139 / FT261（mimetypes）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT260（zipfile — zip slip / zip bomb 対策）完了。診断なし（260 % 3 = 2）・**クラッカーペンテストあり（260 % 4 = 0）合格**。
-各エントリを `resolve()` + `is_relative_to()` で base 配下に封じ込め、宣言サイズ合計 + 実展開の二重上限で zip bomb を遮断（10MB を 30ms で 422）。
-重要な発見（F-2）: `..\..\evil.txt` は Linux では見逃すが Windows で traversal → `\` を OS 非依存に拒否する修正を追加。FT225/226/227 の統合応用。
-**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT261 以降も継続中。
+FT261（mimetypes — guess_type / アップロード検証）完了。**セキュリティ診断あり（261 % 3 = 0）合格**・ペンテストなし（261 % 4 = 1）。
+クライアント申告 Content-Type は信頼せず、拡張子許可リスト + 申告型一致で検証。最終拡張子で二重拡張子（evil.png.php→.php）を評価。
+危険拡張子・型偽装・拡張子なしを遮断。限界（F-3）: 拡張子も Content-Type も内容を保証しない → マジックバイト検査 + no-exec 運用を併用推奨。
+**サンドボックス 7 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT262 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT260（zipfile — zip slip / zip bomb 対策）完了。診断なし（260 % 3
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.139 | FT261: mimetypes — guess_type / アップロード検証（セキュリティ診断合格・Content-Type 非信頼） |
 | v1.8.138 | FT260: zipfile — zip slip / zip bomb 対策（クラッカーペンテスト合格） |
 | v1.8.137 | FT259: weakref — WeakValueDictionary（弱参照キャッシュの自動退避） |
 | v1.8.136 | FT258: random — 非暗号性の実証（セキュリティ診断合格・secrets 推奨） |
@@ -104,13 +105,13 @@ FT260（zipfile — zip slip / zip bomb 対策）完了。診断なし（260 % 3
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT260（全 260 件）
+**実施済み**: FT1〜FT261（全 261 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT261 を開始（261 % 3 = 0 → **セキュリティ診断あり**、261 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `mimetypes` モジュール（guess_type・クライアント Content-Type を信頼しない・アップロード検証）
+- FT262 を開始（262 % 3 = 1 → セキュリティ診断なし、262 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `graphlib` モジュール（TopologicalSorter・循環検出）
 
 ---
 
@@ -118,7 +119,7 @@ FT260（zipfile — zip slip / zip bomb 対策）完了。診断なし（260 % 3
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT261 実施（mimetypes、セキュリティ診断あり） | FT |
+| 高 | — | FT262 実施（graphlib、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
