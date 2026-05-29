@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.106 / FT228（urllib.parse）完了 / CI グリーン**
+現状: **v1.8.107 / FT229（html）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT228（urllib.parse — urlparse / urlencode / quote）完了。**セキュリティ診断あり（228 % 3 = 0）＋クラッカーペンテストあり（228 % 4 = 0）両方合格**。
-SSRF 対策の核心: ホスト判定は `netloc` ではなく `parsed.hostname`（userinfo/port 除外・小文字化）に**完全一致**許可リスト。
-userinfo 混乱（`api.example.com@evil.com`）・サフィックス偽装・scheme（file/gopher）・メタデータ IP・制御文字注入の 17 攻撃すべて遮断、正規 3 件のみ許可。
-**サンドボックス 9 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT229 以降も継続中。
+FT229（html — escape / unescape）完了。診断なし（229 % 3 = 1）・ペンテストなし（229 % 4 = 1）。
+`html.escape(quote=True)`（デフォルト）で `"` `'` もエスケープし属性コンテキストを安全化。`quote=False` だと属性脱出 XSS が通る点に注意。
+`html.escape` はコンテキスト依存で HTML テキスト/属性のみ守る（JS=json / URL=quote / CSS=許可リスト は別途）。`&` 先頭エスケープで二重エスケープを回避。
+**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT230 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ userinfo 混乱（`api.example.com@evil.com`）・サフィックス偽装・sch
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.107 | FT229: html — escape / unescape（quote=True 属性コンテキスト安全） |
 | v1.8.106 | FT228: urllib.parse — urlparse / urlencode / quote（診断＋ペンテスト合格・SSRF 対策） |
 | v1.8.105 | FT227: shutil — copy / move / rmtree（resolve + is_relative_to 封じ込め） |
 | v1.8.104 | FT226: gzip — compress / decompress / GzipFile（mtime=0・解凍上限） |
@@ -72,13 +73,13 @@ userinfo 混乱（`api.example.com@evil.com`）・サフィックス偽装・sch
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT228（全 228 件）
+**実施済み**: FT1〜FT229（全 229 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT229 を開始（229 % 3 = 1 → セキュリティ診断なし、229 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `html` モジュール（escape / unescape・XSS 対策）
+- FT230 を開始（230 % 3 = 2 → セキュリティ診断なし、230 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `difflib` モジュール（unified_diff / SequenceMatcher / get_close_matches）
 
 ---
 
@@ -86,7 +87,7 @@ userinfo 混乱（`api.example.com@evil.com`）・サフィックス偽装・sch
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT229 実施（html、診断・ペンテストなし） | FT |
+| 高 | — | FT230 実施（difflib、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
