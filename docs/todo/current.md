@@ -1,26 +1,24 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.163 / #541（PyPI 公開フロー）検証 / CI グリーン**
+現状: **v1.8.163 PyPI 公開済み / オープン Issue なし / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-#541 に対応（v1.8.163）。公開フロー（`publish.yml`: build→TestPyPI→PyPI→GitHub Release・
-Trusted Publishing）は既存。本対応で**ビルドの公開準備を検証**し連携を確立した:
-- `uv build` の sdist/wheel が `twine check` PASSED、クリーン venv で import 可能、配布物は
-  `src/nene2` のみ（example/tests は混入しない）を確認
-- CI に `package-build` ジョブを追加（PR ごとに build + twine check + クリーン import を検証）
-- `CHANGELOG.md` が [1.8.34] で止まりリリースノートが空になる問題を、集約エントリ [1.8.163]
-  追加で解消（github-release ステップの抽出が動くことを確認）
-- リリース手順 how-to [`how-to/release-and-publish.md`](../how-to/release-and-publish.md)（EN/JA）を追加
-- **残: 実 PyPI 公開は不可逆でメンテナ作業** — PyPI/TestPyPI の Trusted Publisher 設定 +
-  GitHub Environments（testpypi/pypi）作成 + 最初の `v*` タグ。手順は how-to に記載。
+#541 を解消（v1.8.163）。調査の結果、公開フロー（`publish.yml`: build→TestPyPI→PyPI→
+GitHub Release・Trusted Publishing）は既に**完全稼働**しており（Environments 設定済み・
+v1.8.64〜66 で公開実績あり、PyPI にも公開済みだった）、**v1.8.163 を新規リリース**した:
+- `v1.8.163` タグ push → publish.yml が build/TestPyPI/PyPI/GitHub Release すべて success
+- クリーン venv で **`pip install nene2-python==1.8.163` が PyPI から成功**を確認・GitHub Release 作成
+- 整備（PR #745）: CI `package-build` ジョブ追加、CHANGELOG 集約エントリ [1.8.163]
+  （github-release のノート抽出が空になる問題を解消）、リリース手順 how-to（EN/JA）
 
 直前の対応: #540（FT ループ目的・終着点明文化・v1.8.162）、#539（response_model 統一・
 v1.8.161）、#553（#578 で実装済みを確認し close）、ハウスキーピング（サンドボックス
-5.1G→79M 整理・orphan ブランチ 8 本削除）。**フレームワーク本体 466 tests 据え置き**。
+5.1G→79M 整理・orphan ブランチ 8 本削除）。**フレームワーク本体 466 tests 据え置き。
+オープン Issue ゼロ。**
 
 ---
 
@@ -32,11 +30,8 @@ v1.8.161）、#553（#578 で実装済みを確認し close）、ハウスキー
 
 ## オープン Issue
 
-| # | タイトル | 優先度 | 種別 |
-|---|---|---|---|
-| [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model を統一して CLAUDE.md ポリシーに準拠 | 中 | enhancement |
-| [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的と終着点を明文化する | 中 | docs |
-| [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish ワークフロー） | 中 | enhancement |
+なし（#539 / #540 / #541 / #553 はすべて 2026-05-29 に解消・close）。
+提案 PR #545（nene-style governance）のみ未マージで残置。
 
 ---
 
@@ -153,8 +148,8 @@ v1.8.161）、#553（#578 で実装済みを確認し close）、ハウスキー
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 低 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | 実 PyPI 公開（Trusted Publisher 設定 + v* タグ）— メンテナ作業 | enhancement |
 | — | — | FT は保守 + オンデマンド（4 トリガー時のみ。[方法論](../explanation/field-trial-methodology.md)） | FT |
+| — | — | リリース時は `v*` タグ push → publish.yml が自動公開（[手順](../how-to/release-and-publish.md)） | infra |
 | 低 | — | PostgreSQL / MySQL 実 DB 統合テスト | infra |
 | 低 | — | PyJWT 推移的 CVE（PYSEC-2025-183）— mcp 修正待ち | 保留 |
 
@@ -166,7 +161,7 @@ v1.8.161）、#553（#578 で実装済みを確認し close）、ハウスキー
 |---|---|---|---|
 | ~~handler response_model 未使用~~ | — | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | ✅ 2026-05-29 解消（v1.8.161）。Note/Tag/Comment 全ハンドラーに `XxxResponse`/`XxxListResponse` を定義し `response_model` 明示。OpenAPI に 6 レスポンススキーマが出力されることを確認。466 tests 据え置き |
 | ~~FT ループ目的の明文化~~ | — | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | ✅ 2026-05-29 解消（v1.8.162）。explanation/field-trial-methodology.md（EN/JA）に目的・3 フェーズ・終着点（網羅スイープ完了→保守+オンデマンド）を明文化。INDEX/roadmap からリンク |
-| PyPI 公開フロー検証 | — | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | ✅ 2026-05-29 検証（v1.8.163）。build/twine check/クリーン import 確認、CI に package-build ジョブ追加、CHANGELOG 連携・how-to 整備。実公開はメンテナの Trusted Publisher 設定 + v* タグ待ち |
+| ~~PyPI 公開フロー検証~~ | — | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | ✅ 2026-05-29 解消（v1.8.163）。公開フローは既に稼働中で **v1.8.163 を PyPI へ公開**（pip install で取得可能）。CI package-build ジョブ・CHANGELOG 連携・how-to 整備 |
 | ~~古い FT サンドボックス肥大化~~ | — | — | ✅ 2026-05-29 整理（5.1G→79M）。`ft-status.sh --clean-sandbox` を追加（.venv/キャッシュ削除・ソース保持・uv sync で再生可）。`--clean` は dist/ のみで誤記だった |
 | ~~マージ済み orphan リモートブランチ~~ | — | — | ✅ 2026-05-29 削除（merged 8 本）。未マージの提案 PR #545 のブランチのみ残置 |
 | ログ秘匿 Filter は形式依存の best-effort | 低 | — | FT220 D3。主防御は `SecretStr`。how-to に「秘匿は多層防御の保険」を明記予定 |
