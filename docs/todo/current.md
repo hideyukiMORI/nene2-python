@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.153 / FT275（cmath）完了 / CI グリーン**
+現状: **v1.8.154 / FT276（subprocess）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT275（cmath — 複素数演算 / 極座標変換）完了。診断なし（275 % 3 = 2）・ペンテストなし（275 % 4 = 3）。
-`cmath.sqrt(-1)=1j`（math.sqrt は例外）、複素数は real/imag に分離して JSON 化。
-生 JSON の Infinity トークン（json.loads が受理）を math.isfinite で 422。絶対値上限・6 桁丸め。FT252(json) の NaN/Infinity 拒否と一貫。
-**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT276 以降も継続中。
+FT276（subprocess — 安全なコマンド実行）完了。**セキュリティ診断あり（276 % 3 = 0）＋クラッカーペンテストあり（276 % 4 = 0）両方合格**。
+shell=False + 引数リスト + 実行ファイル許可リスト + timeout の 3 点防御。CLAUDE.md の shell=True 禁止を実証。
+ペンテスト: シェルメタ文字 5 種はリテラル argv（実行なし）、任意バイナリ 7 種は許可リストで 422、slow(sleep10) は timeout で 2.0s で 422。
+**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT277 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT275（cmath — 複素数演算 / 極座標変換）完了。診断なし（27
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.154 | FT276: subprocess — 安全なコマンド実行（診断＋ペンテスト合格） |
 | v1.8.153 | FT275: cmath — 複素数演算 / 極座標（isfinite ガード・real/imag 分離） |
 | v1.8.152 | FT274: colorsys — RGB / HSV 変換（0-1 正規化・範囲検証） |
 | v1.8.151 | FT273: marshal — 信頼できないデータに使わない（セキュリティ診断合格・json 代替） |
@@ -119,13 +120,13 @@ FT275（cmath — 複素数演算 / 極座標変換）完了。診断なし（27
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT275（全 275 件）
+**実施済み**: FT1〜FT276（全 276 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT276 を開始（276 % 3 = 0 → **セキュリティ診断あり**、276 % 4 = 0 → **クラッカーペンテストあり**）
-- テーマ候補: `subprocess`（shell=False + 引数リスト + 許可リスト + timeout で安全実行）
+- FT277 を開始（277 % 3 = 1 → セキュリティ診断なし、277 % 4 = 1 → クラッカーペンテストなし）
+- テーマ候補: `keyword` モジュール（iskeyword / issoftkeyword・識別子検証）
 
 ---
 
@@ -133,7 +134,7 @@ FT275（cmath — 複素数演算 / 極座標変換）完了。診断なし（27
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT276 実施（subprocess、診断＋ペンテスト両方） | FT |
+| 高 | — | FT277 実施（keyword、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
