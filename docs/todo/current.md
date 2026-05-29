@@ -1,7 +1,7 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.164 / 実DB統合テスト導入・マルチDB対応を実測検証 / CI グリーン**
+現状: **v1.8.165 / 差別化（MCP×HTTP）を可視化・パリティテストで保証 / CI グリーン**
 
 ---
 
@@ -44,6 +44,7 @@ v1.8.161）、#553（#578 で実装済みを確認し close）、ハウスキー
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.165 | docs/test: 差別化（MCP×HTTP）可視化（#751）— 同一ストアでの HTTP↔MCP パリティテスト + explanation「one UseCase, two surfaces」（EN/JA）。共有する物（UseCase+永続化）/しない物（薄いHTTP層）を明記 |
 | v1.8.164 | feat: 実DB統合テスト（#747）— PostgreSQL/MySQL を CI service container で検証。psycopg2 lastrowid 非対応による INSERT 採番バグ（`save()` が常に id=1）を発見・修正。pymysql 追加 |
 | v1.8.163 | feat: PyPI 公開フロー検証（#541）— ビルド検証・CI package-build ジョブ・CHANGELOG 連携・リリース how-to |
 | v1.8.162 | docs: FT ループの目的・終着点を明文化（#540）— field-trial-methodology.md（EN/JA） |

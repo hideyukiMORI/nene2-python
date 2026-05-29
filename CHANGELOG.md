@@ -8,6 +8,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.8.165] — 2026-05-29
+
+差別化（MCP × HTTP）の可視化と保証 (#751)。
+
+### Added
+- 実行可能なパリティテスト `tests/example/test_http_mcp_parity.py` — HTTP アプリと
+  MCP サーバーを同一 SQLite ストアに配線し、MCP で作成したノートが HTTP で読める／
+  その逆、を表明。同じ UseCase が両サーフェスを支えることをリグレッションで守る。
+- explanation ドキュメント [`one-usecase-two-surfaces.md`](docs/explanation/one-usecase-two-surfaces.md)（EN/JA）—
+  HTTP ハンドラーと MCP ツールが同じ `CreateNoteUseCase` を呼ぶ並列コードと、
+  **あえて共有しないもの**（薄い HTTP 層: Pydantic 検証・認証・ページネーション）を明記。
+- design-philosophy（EN/JA）・README からクロスリンク。
+
 ## [1.8.164] — 2026-05-29
 
 実データベース（PostgreSQL / MySQL）統合テストを追加し、マルチDB対応を実測で検証 (#747)。
