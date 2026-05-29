@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.125 / FT247（operator）完了 / CI グリーン**
+現状: **v1.8.126 / FT248（string.Formatter）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT247（operator — itemgetter / 演算子関数）完了。診断なし（247 % 3 = 1）・ペンテストなし（247 % 4 = 1）。
-演算子名は `getattr(operator, name)` ではなく辞書許可リスト（add/sub/mul/truediv/mod）でディスパッチ。`attrgetter` はユーザー入力に使わず（内部属性露出）`itemgetter`（dict キー）に限定。
-ソートキーは全行存在を検証し、型混在の TypeError を 422 に変換。
-**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT248 以降も継続中。
+FT248（string.Formatter — format string 攻撃の防御）完了。診断なし（248 % 3 = 2）・**クラッカーペンテストあり（248 % 4 = 0）合格**。
+`.format` にユーザー制御テンプレートを渡すと `{x.__class__.__init__.__globals__}` で内部・globals に到達（情報漏洩/RCE 足がかり）。
+`_SafeFormatter` で `get_field` を識別子のみ許可（属性/添字/位置を拒否）、`format_field` で幅・精度を 1000 上限化（パディング爆弾を 4ms で遮断）。FT236（Template）と相補。
+**サンドボックス 8 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT249 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT247（operator — itemgetter / 演算子関数）完了。診断なし（247 
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.126 | FT248: string.Formatter — format string 攻撃の防御（クラッカーペンテスト合格） |
 | v1.8.125 | FT247: operator — itemgetter / 演算子関数（許可リストディスパッチ） |
 | v1.8.124 | FT246: unicodedata — NFKC / category（セキュリティ診断・条件付き合格・homoglyph 限界明示） |
 | v1.8.123 | FT245: reprlib — Repr（多軸上限・ログ肥大化防止） |
@@ -91,13 +92,13 @@ FT247（operator — itemgetter / 演算子関数）完了。診断なし（247 
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT247（全 247 件）
+**実施済み**: FT1〜FT248（全 248 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT248 を開始（248 % 3 = 2 → セキュリティ診断なし、248 % 4 = 0 → **クラッカーペンテストあり**）
-- テーマ候補: `string.Formatter` モジュール（format string 攻撃の検証）
+- FT249 を開始（249 % 3 = 0 → **セキュリティ診断あり**、249 % 4 = 1 → クラッカーペンテストなし）
+- テーマ候補: `hmac` モジュール（new / compare_digest・署名検証・タイミング攻撃）
 
 ---
 
@@ -105,7 +106,7 @@ FT247（operator — itemgetter / 演算子関数）完了。診断なし（247 
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT248 実施（string.Formatter、クラッカーペンテストあり） | FT |
+| 高 | — | FT249 実施（hmac、セキュリティ診断あり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
