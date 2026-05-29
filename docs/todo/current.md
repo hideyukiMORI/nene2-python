@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.118 / FT240（安全なデシリアライズ）完了 / CI グリーン**
+現状: **v1.8.119 / FT241（bisect）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT240（安全なデシリアライズ — pickle 不使用 / json + Pydantic）完了。**セキュリティ診断あり（240 % 3 = 0）＋クラッカーペンテストあり（240 % 4 = 0）両方合格**。
-RCE 経路（pickle.loads/eval/exec/yaml.load）をコードから排除（grep 監査でドキュメントのみヒット）、json + Pydantic で安全にデシリアライズ。
-`extra="forbid"` で Mass Assignment 遮断、型/範囲/ロール許可リスト、反復走査でネスト DoS（深さ 20 上限）を防止。pickle ペイロードは不活性なデータとして扱う。観察: Pydantic v2 の lax 強制（`"30"`→30）は strict=True で厳密化可。
-**サンドボックス 7 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT241 以降も継続中。
+FT241（bisect — bisect_left / insort / 範囲検索）完了。診断なし（241 % 3 = 1）・ペンテストなし（241 % 4 = 1）。
+`bisect` はソート済みが前提で未ソートだと silent に誤結果 → `_require_sorted` で明示検証し 422。
+`bisect_left`（重複の前）/`bisect_right`（重複の後）の違いを併記、範囲カウントは `bisect_right(hi)-bisect_left(lo)` で O(log n)。
+**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT242 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ RCE 経路（pickle.loads/eval/exec/yaml.load）をコードから排除（grep 
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.119 | FT241: bisect — bisect_left / insort / 範囲検索（ソート前提検証・left/right） |
 | v1.8.118 | FT240: 安全なデシリアライズ — pickle 不使用 / json + Pydantic 検証（診断＋ペンテスト合格） |
 | v1.8.117 | FT239: statistics — mean / median / stdev / quantiles（StatisticsError 処理・点数上限） |
 | v1.8.116 | FT238: calendar — monthrange / weekday / isleap（0=月曜・うるう年規則） |
@@ -84,13 +85,13 @@ RCE 経路（pickle.loads/eval/exec/yaml.load）をコードから排除（grep 
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT240（全 240 件）
+**実施済み**: FT1〜FT241（全 241 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT241 を開始（241 % 3 = 1 → セキュリティ診断なし、241 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `bisect` モジュール（bisect_left / insort / 範囲検索）
+- FT242 を開始（242 % 3 = 2 → セキュリティ診断なし、242 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `heapq` モジュール（heappush / heappop / nlargest / merge）
 
 ---
 
@@ -98,7 +99,7 @@ RCE 経路（pickle.loads/eval/exec/yaml.load）をコードから排除（grep 
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT241 実施（bisect、診断・ペンテストなし） | FT |
+| 高 | — | FT242 実施（heapq、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
