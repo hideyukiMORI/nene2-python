@@ -298,6 +298,7 @@
 | [FT262](2026-05-field-trial-262.md) | graphlib モジュール — TopologicalSorter / 循環検出 |  | |
 | [FT263](2026-05-field-trial-263.md) | tomllib モジュール — TOML 読み込み・安全な設定パース |  | |
 | [FT264](2026-05-field-trial-264.md) | ast.literal_eval — eval の安全な代替 | 🔒🔍 | |
+| [FT265](2026-05-field-trial-265.md) | zoneinfo モジュール — IANA タイムゾーン変換 / ZoneInfo |  | |
 
 ---
 
@@ -313,4 +314,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT264 / v1.8.142)*
+*最終更新: 2026-05-29 (FT265 / v1.8.143)*
