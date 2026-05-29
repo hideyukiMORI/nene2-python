@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.115 / FT237（http.cookies）完了 / CI グリーン**
+現状: **v1.8.116 / FT238（calendar）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT237（http.cookies — SimpleCookie / Morsel）完了。**セキュリティ診断あり（237 % 3 = 0）合格**・ペンテストなし（237 % 4 = 1）。
-name/value を RFC 6265 token/octet で検証しクッキー・CRLF ヘッダーインジェクションを全遮断。HttpOnly/Secure/SameSite=Lax/Path=/ を既定付与。
-`SimpleCookie.load` は CRLF 混入で fail-closed（全破棄）。診断の全カテゴリ合格。
-**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT238 以降も継続中。
+FT238（calendar — monthrange / weekday / isleap）完了。診断なし（238 % 3 = 1）・ペンテストなし（238 % 4 = 2）。
+`weekday` は 0=月曜（JS の 0=日曜と異なる）→ 番号と名前を併記して誤解防止。`monthrange` の日数で day を検証し存在しない日付（2023-02-29）を遮断。
+うるう年は 100/400 年ルールを `isleap` に委譲（1900 は非うるう年）。
+**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT239 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ name/value を RFC 6265 token/octet で検証しクッキー・CRLF ヘッダー
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.116 | FT238: calendar — monthrange / weekday / isleap（0=月曜・うるう年規則） |
 | v1.8.115 | FT237: http.cookies — SimpleCookie / Morsel（セキュリティ診断合格・セキュア既定） |
 | v1.8.114 | FT236: string.Template — substitute / safe_substitute（クラッカーペンテスト合格・SSTI 安全） |
 | v1.8.113 | FT235: pprint — pformat / pp（width/depth 制限・JsonValue 型安全） |
@@ -81,13 +82,13 @@ name/value を RFC 6265 token/octet で検証しクッキー・CRLF ヘッダー
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT237（全 237 件）
+**実施済み**: FT1〜FT238（全 238 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT238 を開始（238 % 3 = 1 → セキュリティ診断なし、238 % 4 = 2 → クラッカーペンテストなし）
-- テーマ候補: `calendar` モジュール（monthrange / weekday / isleap / Calendar）
+- FT239 を開始（239 % 3 = 2 → セキュリティ診断なし、239 % 4 = 3 → クラッカーペンテストなし）
+- テーマ候補: `statistics` モジュール（mean / median / stdev / quantiles）
 
 ---
 
@@ -95,7 +96,7 @@ name/value を RFC 6265 token/octet で検証しクッキー・CRLF ヘッダー
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT238 実施（calendar、診断・ペンテストなし） | FT |
+| 高 | — | FT239 実施（statistics、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |

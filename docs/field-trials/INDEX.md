@@ -271,6 +271,7 @@
 | [FT235](2026-05-field-trial-235.md) | pprint モジュール — pformat / pp（再帰・幅・深さ制御） |  | |
 | [FT236](2026-05-field-trial-236.md) | string.Template — substitute / safe_substitute（SSTI 安全） | 🔍 | |
 | [FT237](2026-05-field-trial-237.md) | http.cookies モジュール — SimpleCookie / Morsel（クッキーインジェクション対策） | 🔒 | |
+| [FT238](2026-05-field-trial-238.md) | calendar モジュール — monthrange / weekday / isleap / Calendar |  | |
 
 ---
 
@@ -286,4 +287,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT237 / v1.8.115)*
+*最終更新: 2026-05-29 (FT238 / v1.8.116)*
