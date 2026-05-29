@@ -96,6 +96,42 @@ In maintenance mode the recurring obligations are the monthly
 
 ---
 
+## Classifying friction and decisions
+
+When an on-demand FT does run, record each friction point (F-1, F-2, …) with a
+**kind** and a **decision**, so findings stay consistent and analyzable across
+trials rather than as free-form prose.
+
+**Friction kinds**
+
+| Kind | Meaning |
+|---|---|
+| `docs-gap` | The framework behaves correctly, but the docs/examples didn't make it discoverable. |
+| `feature-gap` | A genuinely missing capability the implementer expected. |
+| `design-trade-off` | The friction is an accepted consequence of a deliberate design choice. |
+| `process-gap` | Tooling/workflow friction (CI, checks, scaffolding), not the API itself. |
+| `python-idiomatic-trade-off` | Python-specific friction (Pydantic v2 coercion, async/await, `uv lock`, mypy strict) with no single "right" answer. |
+
+The last kind replaces NeNe's renovation-specific `legacy-preserved`, which does
+not apply to a greenfield Python framework.
+
+**Decision kinds** — each friction resolves to exactly one:
+
+| Decision | Action |
+|---|---|
+| `fix-in-framework` | Change framework/example code in the same FT PR. |
+| `document` | Behaviour is correct; add or clarify docs / CLAUDE.md. |
+| `keep` | Accept as-is and record the rationale. |
+| `defer` | Track as a follow-up Issue with a stated reason — the only case where an Issue outlives the FT PR (CLAUDE.md §12). |
+
+This taxonomy was distilled from the sister-repo governance proposal (#545). The
+rest of that proposal (bootstrap script, a dedicated ADR, a separate FT README)
+was already covered by CLAUDE.md §12, the existing
+[report template](../templates/field-trial-report.md), and this document — or made
+low-value by the loop reaching its terminus.
+
+---
+
 ## Summary
 
 | Phase | Range | Purpose | Status |
