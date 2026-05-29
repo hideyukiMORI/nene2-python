@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.120 / FT242（heapq）完了 / CI グリーン**
+現状: **v1.8.121 / FT243（uuid）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT242（heapq — heappush / heappop / nlargest / merge）完了。診断なし（242 % 3 = 2）・ペンテストなし（242 % 4 = 2）。
-`heapq` は min-heap のみ → 最大優先は `nlargest`/符号反転で対応。`merge` は各入力ソート済み前提で未ソートだと silent に誤結果 → 明示検証し 422。
-k・データ点数・リスト数を上限化し DoS を防止。
-**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。20 本連続（FT223〜FT242）のフィールドトライアルを完走。
+FT243（uuid — uuid4 / uuid1 / uuid5）完了。**セキュリティ診断あり（243 % 3 = 0）合格**・ペンテストなし（243 % 4 = 3）。
+uuid1 は時刻+MAC ベースで予測・追跡可能 → トークン/秘密 ID は uuid4（乱数）または `secrets`（FT203）を使う。
+受信 UUID は version を検証し `is_random_v4` で用途制限。注入文字列は `uuid.UUID` の ValueError で 422。
+**サンドボックス 7 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT244 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ k・データ点数・リスト数を上限化し DoS を防止。
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.121 | FT243: uuid — uuid4 / uuid1 / uuid5（セキュリティ診断合格・予測可能性） |
 | v1.8.120 | FT242: heapq — heappush / heappop / nlargest / merge（min-heap・merge ソート前提） |
 | v1.8.119 | FT241: bisect — bisect_left / insort / 範囲検索（ソート前提検証・left/right） |
 | v1.8.118 | FT240: 安全なデシリアライズ — pickle 不使用 / json + Pydantic 検証（診断＋ペンテスト合格） |
@@ -86,13 +87,13 @@ k・データ点数・リスト数を上限化し DoS を防止。
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT242（全 242 件）
+**実施済み**: FT1〜FT243（全 243 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT243 を開始（243 % 3 = 0 → **セキュリティ診断あり**、243 % 4 = 3 → クラッカーペンテストなし）
-- テーマ候補: `uuid` モジュール（uuid4 / uuid1・予測可能性・トークン用途の安全性）
+- FT244 を開始（244 % 3 = 1 → セキュリティ診断なし、244 % 4 = 0 → **クラッカーペンテストあり**）
+- テーマ候補: `html.parser` モジュール（HTMLParser で信頼できない HTML を解析）
 
 ---
 
@@ -100,7 +101,7 @@ k・データ点数・リスト数を上限化し DoS を防止。
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT243 実施（uuid、セキュリティ診断あり） | FT |
+| 高 | — | FT244 実施（html.parser、クラッカーペンテストあり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
