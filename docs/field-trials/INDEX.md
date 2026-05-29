@@ -310,6 +310,7 @@
 | [FT274](2026-05-field-trial-274.md) | colorsys モジュール — RGB / HSV / HLS 変換 |  | |
 | [FT275](2026-05-field-trial-275.md) | cmath モジュール — 複素数演算 / 極座標変換 |  | |
 | [FT276](2026-05-field-trial-276.md) | subprocess — 安全なコマンド実行 | 🔒🔍 | |
+| [FT277](2026-05-field-trial-277.md) | keyword モジュール — iskeyword / issoftkeyword / 識別子検証 |  | |
 
 ---
 
@@ -325,4 +326,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT276 / v1.8.154)*
+*最終更新: 2026-05-29 (FT277 / v1.8.155)*
