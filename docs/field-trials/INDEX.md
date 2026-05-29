@@ -278,6 +278,7 @@
 | [FT242](2026-05-field-trial-242.md) | heapq モジュール — heappush / heappop / nlargest / merge |  | |
 | [FT243](2026-05-field-trial-243.md) | uuid モジュール — uuid4 / uuid1 / uuid5（予測可能性とトークン用途） | 🔒 | |
 | [FT244](2026-05-field-trial-244.md) | html.parser モジュール — HTMLParser で信頼できない HTML を解析 | 🔍 | |
+| [FT245](2026-05-field-trial-245.md) | reprlib モジュール — Repr による長さ・深さ制限付き repr |  | |
 
 ---
 
@@ -293,4 +294,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT244 / v1.8.122)*
+*最終更新: 2026-05-29 (FT245 / v1.8.123)*

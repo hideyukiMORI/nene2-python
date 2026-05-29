@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.122 / FT244（html.parser）完了 / CI グリーン**
+現状: **v1.8.123 / FT245（reprlib）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT244（html.parser — HTMLParser）完了。診断なし（244 % 3 = 1）・**クラッカーペンテストあり（244 % 4 = 0）合格**。
-テキスト抽出で `script`/`style` の内容を `_skip_depth` で除外（大文字・ネストも）。html.parser は解析専用でサニタイザではない（出力安全化は nh3/bleach）。
-ペンテスト: script/style 漏洩 5 種・不正 HTML・DoS すべて防御。属性 XSS（onerror）はテキストに出ない。
-**サンドボックス 7 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT245 以降も継続中。
+FT245（reprlib — Repr）完了。診断なし（245 % 3 = 2）・ペンテストなし（245 % 4 = 1）。
+`reprlib.Repr` は型ごとに別の上限（maxstring/maxlist/maxdict/maxlevel）を持つ → まとめて設定し設定漏れを防ぐ。省略は `...` で表現され `truncated` 判定可能。
+pprint（FT235）は整形表示、reprlib はコンパクト要約+多軸上限でログ向き、と用途分け。
+**サンドボックス 5 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT246 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT244（html.parser — HTMLParser）完了。診断なし（244 % 3 = 1）・**
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.123 | FT245: reprlib — Repr（多軸上限・ログ肥大化防止） |
 | v1.8.122 | FT244: html.parser — HTMLParser（クラッカーペンテスト合格・script 除外） |
 | v1.8.121 | FT243: uuid — uuid4 / uuid1 / uuid5（セキュリティ診断合格・予測可能性） |
 | v1.8.120 | FT242: heapq — heappush / heappop / nlargest / merge（min-heap・merge ソート前提） |
@@ -88,13 +89,13 @@ FT244（html.parser — HTMLParser）完了。診断なし（244 % 3 = 1）・**
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT244（全 244 件）
+**実施済み**: FT1〜FT245（全 245 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT245 を開始（245 % 3 = 2 → セキュリティ診断なし、245 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `reprlib` モジュール（Repr による長さ・深さ制限付き repr）
+- FT246 を開始（246 % 3 = 0 → **セキュリティ診断あり**、246 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `unicodedata` モジュール（NFKC 正規化・homoglyph/confusable）
 
 ---
 
@@ -102,7 +103,7 @@ FT244（html.parser — HTMLParser）完了。診断なし（244 % 3 = 1）・**
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT245 実施（reprlib、診断・ペンテストなし） | FT |
+| 高 | — | FT246 実施（unicodedata、セキュリティ診断あり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
