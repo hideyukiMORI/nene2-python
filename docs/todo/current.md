@@ -1,16 +1,18 @@
 # TODO — current
 
-最終更新: 2026-05-23
-現状: **v1.8.97 安定版 / FT219（argparse）完了 / CI グリーン（starlette 1.0.1）**
+最終更新: 2026-05-29
+現状: **v1.8.98 / FT220（logging）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-v1.8.96 完了済み。FT219（argparse — ArgumentParser / add_argument / parse_args / subcommands）完了。
-セキュリティ診断あり（219 % 3 = 0）、クラッカーペンテストなし（219 % 4 = 3）。
-`_SilentParser` で `sys.exit()` を `ValueError` に変換、`NoReturn` 型注釈で mypy strict 通過。セキュリティ診断 11 件全合格。
-**466 tests**、カバレッジ 93%+。フィールドトライアルループは FT220 以降も継続中。
+FT220（logging — Logger / Handler / Formatter / Filter）完了。
+セキュリティ診断なし（220 % 3 = 1）、**クラッカーペンテストあり（220 % 4 = 0）**。
+フォーマット文字列インジェクション（`logger.info(user_input)` の罠）・CRLF ログ偽造・機密秘匿 Filter を検証。
+ペンテスト 18 攻撃中 17 防御、D3（JSON 埋め込み秘匿漏れ）のみ LOW として記録（redaction は多層防御の補助、主防御は `SecretStr`）。
+ruff `LOG001` を契機に「`getLogger` + リクエストごと Handler attach/detach（contextmanager + try/finally）」パターンを確立。
+**サンドボックス 11 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT221 以降も継続中。
 
 ---
 
@@ -34,6 +36,7 @@ v1.8.96 完了済み。FT219（argparse — ArgumentParser / add_argument / pars
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.98 | FT220: logging — Logger / Handler / Formatter / Filter（クラッカーペンテスト合格）|
 | v1.8.97 | docs: README / roadmap / reference を v1.8.96 現状に同期、starlette CVE 解消反映 |
 | v1.8.96 | FT219: argparse — ArgumentParser / add_argument / parse_args / subcommands（セキュリティ診断合格）|
 | v1.8.95 | FT218: configparser — read / write / sections / interpolation |
@@ -63,13 +66,13 @@ v1.8.96 完了済み。FT219（argparse — ArgumentParser / add_argument / pars
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT219（全 219 件）
+**実施済み**: FT1〜FT220（全 220 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT220 を開始（220 % 3 = 1 → セキュリティ診断なし、220 % 4 = 0 → **クラッカーペンテストあり**）
-- テーマ候補: `logging` モジュール（Logger / Handler / Formatter / Filter）
+- FT221 を開始（221 % 3 = 2 → セキュリティ診断なし、221 % 4 = 1 → クラッカーペンテストなし）
+- テーマ候補: `tempfile` モジュール（NamedTemporaryFile / mkstemp / TemporaryDirectory / セキュアなパーミッション）
 
 ---
 
@@ -77,7 +80,7 @@ v1.8.96 完了済み。FT219（argparse — ArgumentParser / add_argument / pars
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT220 実施（logging、クラッカーペンテストあり） | FT |
+| 高 | — | FT221 実施（tempfile、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
@@ -95,6 +98,7 @@ v1.8.96 完了済み。FT219（argparse — ArgumentParser / add_argument / pars
 | FT ループ目的の明文化 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | フェーズ変化の記録 |
 | PyPI 未公開 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | uv publish フロー検証が必要 |
 | 古い FT サンドボックス肥大化 | 中 | — | 210+ ディレクトリ。定期クリーンアップ |
+| ログ秘匿 Filter は形式依存の best-effort | 低 | — | FT220 D3。主防御は `SecretStr`。how-to に「秘匿は多層防御の保険」を明記予定 |
 | http.server Content-Length 上限なし | 低 | — | FT198 診断。デモスコープでは許容 |
 | http.client DNS リバインディング未防御 | 中 | — | FT196。本番化時の追加実装 |
 | parse_qs vs parse_qsl how-to | 低 | — | FT197。クエリ文字列 how-to に追記予定 |

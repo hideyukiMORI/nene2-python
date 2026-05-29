@@ -253,6 +253,7 @@
 | [FT217](2026-05-field-trial-217.md) | csv モジュール — reader / writer / DictReader / DictWriter / Sniffer | | |
 | [FT218](2026-05-field-trial-218.md) | configparser モジュール — read / write / sections / interpolation | | |
 | [FT219](2026-05-field-trial-219.md) | argparse モジュール — ArgumentParser / add_argument / parse_args / subcommands | 🔒 | |
+| [FT220](2026-05-field-trial-220.md) | logging モジュール — Logger / Handler / Formatter / Filter | 🔍 | |
 
 ---
 
@@ -264,8 +265,8 @@ FT3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 6
 
 ## クラッカーペンテスト実施済み一覧（🔍）
 
-FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT216
+FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT216, FT220
 
 ---
 
-*最終更新: 2026-05-23 (FT219 / v1.8.96)*
+*最終更新: 2026-05-29 (FT220 / v1.8.98)*
