@@ -6,8 +6,9 @@ delivered over both surfaces. These tests wire an HTTP app and an MCP server ont
 the *same* SQLite database and assert the surfaces are interchangeable: write
 through one, read through the other.
 
-What is intentionally *not* shared is the HTTP boundary (Pydantic body validation,
-auth, pagination parsing) — that lives in the thin HTTP layer, not the UseCase.
+Domain invariants (length limits, non-empty) live in the UseCase Input DTOs, so
+they are enforced on *both* surfaces. Only HTTP-boundary mechanics (request
+parsing, auth, pagination) live in the thin HTTP layer.
 See docs/explanation/one-usecase-two-surfaces.md.
 """
 
@@ -19,9 +20,11 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from mcp.server.fastmcp.exceptions import ToolError
 
 from example.app import create_app
 from example.mcp import create_mcp_server
+from example.note.use_case import MAX_NOTE_TITLE_LENGTH
 from nene2.config import AppSettings
 from nene2.mcp import LocalMcpServer
 
@@ -75,3 +78,16 @@ def test_both_surfaces_share_one_store(http: TestClient, mcp: LocalMcpServer) ->
     http.post("/examples/notes", json={"title": "b", "body": "b"})
     listed = _mcp_blocks(mcp, "list_notes", {})
     assert len(listed) == 2
+
+
+def test_oversized_title_rejected_on_both_surfaces(http: TestClient, mcp: LocalMcpServer) -> None:
+    oversized = "x" * (MAX_NOTE_TITLE_LENGTH + 1)
+    assert http.post("/examples/notes", json={"title": oversized, "body": "b"}).status_code == 422
+    with pytest.raises(ToolError, match="create_note"):
+        _mcp_one(mcp, "create_note", {"title": oversized, "body": "b"})
+
+
+def test_empty_body_rejected_on_both_surfaces(http: TestClient, mcp: LocalMcpServer) -> None:
+    assert http.post("/examples/notes", json={"title": "t", "body": "   "}).status_code == 422
+    with pytest.raises(ToolError, match="create_note"):
+        _mcp_one(mcp, "create_note", {"title": "t", "body": "   "})

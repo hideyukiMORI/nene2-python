@@ -2,9 +2,27 @@
 
 from dataclasses import dataclass
 
+from nene2.validation.exceptions import ValidationError, ValidationException
+
 from .entity import Tag
 from .exceptions import TagNotFoundException
 from .repository import TagRepositoryInterface
+
+MAX_TAG_NAME_LENGTH = 200
+
+
+def _validate_tag_name(name: str) -> None:
+    """Domain invariant for a tag's name — enforced on every surface (HTTP and MCP)."""
+    if not name.strip():
+        raise ValidationException([ValidationError("name", "Name must not be empty.", "required")])
+    if len(name) > MAX_TAG_NAME_LENGTH:
+        raise ValidationException(
+            [
+                ValidationError(
+                    "name", f"Name must be at most {MAX_TAG_NAME_LENGTH} characters.", "too_long"
+                )
+            ]
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +74,9 @@ class GetTagUseCase:
 class CreateTagInput:
     name: str
 
+    def __post_init__(self) -> None:
+        _validate_tag_name(self.name)
+
 
 class CreateTagUseCase:
     def __init__(self, repository: TagRepositoryInterface) -> None:
@@ -69,6 +90,9 @@ class CreateTagUseCase:
 class UpdateTagInput:
     tag_id: int
     name: str
+
+    def __post_init__(self) -> None:
+        _validate_tag_name(self.name)
 
 
 class UpdateTagUseCase:

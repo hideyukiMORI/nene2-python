@@ -16,10 +16,13 @@ Both surfaces construct the *same* UseCase and call `.execute()`:
 ```python
 @router.post("", status_code=201, response_model=NoteResponse, summary="Create a note")
 async def create_note(body: CreateNoteBody) -> NoteResponse:
-    _validate_note_body(body.title, body.body)               # HTTP-boundary concern
-    note = create_use_case.execute(CreateNoteInput(title=body.title, body=body.body))
+    note = create_use_case.execute(CreateNoteInput(body.title, body.body))
     return NoteResponse(id=note.id, title=note.title, body=note.body)
 ```
+
+The handler is pure *parse → use-case → response*: it carries no domain rules. The
+length and non-empty checks live in `CreateNoteInput` (below), so they hold no
+matter which surface called.
 
 **MCP** — [`src/example/mcp.py`](../../src/example/mcp.py):
 
@@ -55,25 +58,31 @@ surfaces are interchangeable:
 This guards the differentiator as a regression test — if the two surfaces ever
 drift apart, CI fails.
 
-## What is deliberately *not* shared
+## What is shared, and what is not
 
-The **thin HTTP layer** keeps surface-specific concerns at the edge, out of the
-UseCase:
+The dividing line is **domain rule vs. transport mechanic**. Anything that must be
+true of a note regardless of how it arrived lives in the UseCase Input DTO and is
+therefore enforced on both surfaces; protocol plumbing stays at the edge.
 
 | Concern | Where it lives | Shared with MCP? |
 |---|---|---|
-| Pydantic body validation, `max_length` | `CreateNoteBody` in `handler.py` | No |
-| Empty-field rejection | `_validate_note_body` in `handler.py` | No |
+| Length limits (`max_length`), non-empty | `CreateNoteInput.__post_init__` in `use_case.py` | **Yes** |
+| Create / read / update / delete logic, not-found semantics | UseCase + entity | **Yes** |
+| Request parsing, argument shape/types | Pydantic body (HTTP) / FastMCP signature (MCP) | Each surface's own |
 | Authentication, CORS, throttling | middleware in `app.py` | No |
-| Pagination parsing, RFC 9457 errors | HTTP layer | No |
-| **Create / read / update / delete logic, not-found semantics** | **UseCase + entity** | **Yes** |
+| Pagination parsing, RFC 9457 error formatting | HTTP layer | No |
+
+The HTTP `CreateNoteBody` mirrors `max_length` via the same
+`MAX_NOTE_TITLE_LENGTH` constant — so the limit is declared once, documented in
+OpenAPI, *and* enforced in the domain for the MCP path.
 
 This is the **API-first / thin-HTTP-layer** principle in action: the edge adapts
 each protocol, the center holds the domain. The practical rule for implementers:
 
 > If a rule must hold for **both** surfaces, put it in the UseCase or the entity —
-> not in the handler. Validation placed in the HTTP handler does **not** protect
-> the MCP tool.
+> not in the handler. A check that lives only in the HTTP handler does **not**
+> protect the MCP tool. (This is exactly why the length and non-empty checks were
+> moved into the Input DTOs — see the parity tests.)
 
 ## See also
 
