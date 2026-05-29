@@ -284,6 +284,7 @@
 | [FT248](2026-05-field-trial-248.md) | string.Formatter — format string 攻撃の防御（hardened Formatter） | 🔍 | |
 | [FT249](2026-05-field-trial-249.md) | hmac モジュール — new / compare_digest（署名検証・タイミング攻撃対策） | 🔒 | |
 | [FT250](2026-05-field-trial-250.md) | decimal モジュール — Decimal / 精度 / 丸めモード（金額計算） |  | |
+| [FT251](2026-05-field-trial-251.md) | fractions モジュール — Fraction / 有理数演算 / limit_denominator |  | |
 
 ---
 
@@ -299,4 +300,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT250 / v1.8.128)*
+*最終更新: 2026-05-29 (FT251 / v1.8.129)*
