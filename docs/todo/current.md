@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.145 / FT267（glob）完了 / CI グリーン**
+現状: **v1.8.146 / FT268（lzma）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT267（glob — パターンマッチ / パストラバーサル防御）完了。**セキュリティ診断あり（267 % 3 = 0）合格**・ペンテストなし（267 % 4 = 3）。
-パターンの絶対/`..`/`\` を拒否し、`Path.glob`（glob.glob より安全・PTH207 準拠）+ resolve + is_relative_to で base 配下に封じ込め。
-`../*`・`/etc/*`・`sub/../../*`・`**/../*` 等のトラバーサルを全遮断。FT227/FT260 と同系統。
-**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT268 以降も継続中。
+FT268（lzma — compress / decompress）完了。診断なし（268 % 3 = 1）・**クラッカーペンテストあり（268 % 4 = 0）合格**。
+lzma は超高圧縮ゆえ解凍爆弾の威力が大きい（200MB→hex 58KB）→ LZMADecompressor + max_length で上限化。
+ペンテスト: 200MB 爆弾を 6ms で 422（メモリ・時間有界）、境界・不正・入力長 DoS も遮断。FT225/226/260 の展開系上限ポリシー継続。
+**サンドボックス 5 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT269 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT267（glob — パターンマッチ / パストラバーサル防御）完了
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.146 | FT268: lzma — compress / decompress（クラッカーペンテスト合格・解凍爆弾対策） |
 | v1.8.145 | FT267: glob — パターンマッチ（セキュリティ診断合格・パストラバーサル防御） |
 | v1.8.144 | FT266: types — MappingProxyType（読み取り専用ビュー・ライブビュー） |
 | v1.8.143 | FT265: zoneinfo — ZoneInfo（IANA タイムゾーン変換・DST 自動） |
@@ -111,13 +112,13 @@ FT267（glob — パターンマッチ / パストラバーサル防御）完了
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT267（全 267 件）
+**実施済み**: FT1〜FT268（全 268 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT268 を開始（268 % 3 = 1 → セキュリティ診断なし、268 % 4 = 0 → **クラッカーペンテストあり**）
-- テーマ候補: `lzma` モジュール（compress / decompress・解凍爆弾対策）
+- FT269 を開始（269 % 3 = 2 → セキュリティ診断なし、269 % 4 = 1 → クラッカーペンテストなし）
+- テーマ候補: `contextvars` モジュール（ContextVar によるコンテキストローカル状態）
 
 ---
 
@@ -125,7 +126,7 @@ FT267（glob — パターンマッチ / パストラバーサル防御）完了
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT268 実施（lzma、クラッカーペンテストあり） | FT |
+| 高 | — | FT269 実施（contextvars、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
