@@ -268,6 +268,7 @@
 | [FT232](2026-05-field-trial-232.md) | fnmatch モジュール — fnmatch / filter / translate | 🔍 | |
 | [FT233](2026-05-field-trial-233.md) | textwrap モジュール — wrap / fill / shorten / indent |  | |
 | [FT234](2026-05-field-trial-234.md) | ipaddress モジュール — ip_address / ip_network / is_private（SSRF 対策） | 🔒 | |
+| [FT235](2026-05-field-trial-235.md) | pprint モジュール — pformat / pp（再帰・幅・深さ制御） |  | |
 
 ---
 
@@ -283,4 +284,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT234 / v1.8.112)*
+*最終更新: 2026-05-29 (FT235 / v1.8.113)*
