@@ -16,3 +16,4 @@ docs/openapi.yaml
 node_modules/
 .vitepress/cache/
 .vitepress/dist/
+.claude/worktrees/
