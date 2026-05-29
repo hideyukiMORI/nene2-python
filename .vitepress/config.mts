@@ -211,7 +211,8 @@ function sidebarJa() {
 export default defineConfig({
   title: 'NENE2 Python',
   description: 'FastAPI + Clean Architecture + MCP. Python 3.12+. AI-ready from day one.',
-  base: process.env.GITHUB_ACTIONS ? '/nene2-python/' : '/',
+  // Served at the root of the custom domain docs.nene2-python.dev (see docs/public/CNAME).
+  base: '/',
   srcDir: './docs',
   outDir: './.vitepress/dist',
   cleanUrls: true,
