@@ -1,6 +1,6 @@
 # Erste Schritte mit nene2-python
 
-Dieses Tutorial ermöglicht es Ihnen, in 5 Minuten eine Notes-CRUD-API mit nene2-python zu starten.
+In diesem Tutorial starten Sie in weniger als 5 Minuten eine Notes-CRUD-API.
 
 ## Voraussetzungen
 
@@ -27,15 +27,15 @@ uv sync
 uv run uvicorn src.example.app:app --reload --port 8080
 ```
 
-Öffnen Sie `http://localhost:8080/docs` im Browser für die Swagger UI.
+Öffnen Sie `http://localhost:8080/docs` im Browser — die Swagger-Oberfläche ist bereit.
 
-## 4. API testen
+## 4. API ausprobieren
 
 ```bash
 # Notiz erstellen
 curl -X POST http://localhost:8080/notes \
   -H "Content-Type: application/json" \
-  -d '{"title": "Meine erste Notiz", "body": "Erstellt mit nene2-python"}'
+  -d '{"title": "My first note", "body": "Created with nene2-python"}'
 
 # Notizen auflisten
 curl http://localhost:8080/notes
@@ -47,8 +47,9 @@ curl http://localhost:8080/notes
 uv run pytest
 ```
 
-Mehr als 167 Tests sollten erfolgreich sein.
+Alle 167+ Tests sollten erfolgreich sein.
 
 ## Nächste Schritte
 
-- [Konfigurationsreferenz](../../reference/configuration.md) — Datenbank und Authentifizierung über Umgebungsvariablen konfigurieren
+- [Eine neue Domain implementieren](first-domain.md) — vollständiger Schritt-für-Schritt-Durchlauf des Layer-Stacks anhand der Tag-Domain
+- [Konfigurationsreferenz](../reference/configuration.md) — echte Datenbank konfigurieren oder Authentifizierung aktivieren
