@@ -144,7 +144,6 @@ FT282（platform — システム情報を露出しない）完了。**セキュ
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
-| 中 | — | 古い FT サンドボックスを整理（`ft-status.sh --clean`） | infra |
 | 低 | — | PostgreSQL / MySQL 実 DB 統合テスト | infra |
 | 低 | — | PyJWT 推移的 CVE（PYSEC-2025-183）— mcp 修正待ち | 保留 |
 
@@ -157,7 +156,8 @@ FT282（platform — システム情報を露出しない）完了。**セキュ
 | handler response_model 未使用 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | CLAUDE.md ポリシー違反 |
 | FT ループ目的の明文化 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | フェーズ変化の記録 |
 | PyPI 未公開 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | uv publish フロー検証が必要 |
-| 古い FT サンドボックス肥大化 | 中 | — | 210+ ディレクトリ。定期クリーンアップ |
+| ~~古い FT サンドボックス肥大化~~ | — | — | ✅ 2026-05-29 整理（5.1G→79M）。`ft-status.sh --clean-sandbox` を追加（.venv/キャッシュ削除・ソース保持・uv sync で再生可）。`--clean` は dist/ のみで誤記だった |
+| ~~マージ済み orphan リモートブランチ~~ | — | — | ✅ 2026-05-29 削除（merged 8 本）。未マージの提案 PR #545 のブランチのみ残置 |
 | ログ秘匿 Filter は形式依存の best-effort | 低 | — | FT220 D3。主防御は `SecretStr`。how-to に「秘匿は多層防御の保険」を明記予定 |
 | http.server Content-Length 上限なし | 低 | — | FT198 診断。デモスコープでは許容 |
 | http.client DNS リバインディング未防御 | 中 | — | FT196。本番化時の追加実装 |
