@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.110 / FT232（fnmatch）完了 / CI グリーン**
+現状: **v1.8.111 / FT233（textwrap）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT232（fnmatch — fnmatch / filter / translate）完了。診断なし（232 % 3 = 1）・**クラッカーペンテストあり（232 % 4 = 0）合格**。
-`fnmatch` は OS により大小区別が変わるため `fnmatchcase` で決定化。ワイルドカード数を 20 に上限化。
-ペンテスト: 上限内でも最悪 6ms（ReDoS なし）、`translate` は glob 以外の正規表現メタ文字をエスケープし regex 注入不可。全攻撃防御。
-**サンドボックス 7 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT233 以降も継続中。
+FT233（textwrap — wrap / fill / shorten / indent）完了。診断なし（233 % 3 = 2）・ペンテストなし（233 % 4 = 1）。
+`wrap` の `break_long_words=True`（既定）で width 超過の単語も強制分割し行溢れを防止。`shorten` は空白を畳んでから width に収める点に注意。
+`indent` は空行に prefix を付けない既定挙動。width は 1〜500 に制限。全角幅は文字数ベースのため `wcwidth` 併用を補足。
+**サンドボックス 7 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT234 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT232（fnmatch — fnmatch / filter / translate）完了。診断なし（232 %
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.111 | FT233: textwrap — wrap / fill / shorten / indent（width 制限・長語分割） |
 | v1.8.110 | FT232: fnmatch — fnmatch / filter / translate（クラッカーペンテスト合格） |
 | v1.8.109 | FT231: shlex — split / quote / join（セキュリティ診断合格・シェルインジェクション中和） |
 | v1.8.108 | FT230: difflib — unified_diff / SequenceMatcher / get_close_matches（O(n^2) 入力制限） |
@@ -76,13 +77,13 @@ FT232（fnmatch — fnmatch / filter / translate）完了。診断なし（232 %
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT232（全 232 件）
+**実施済み**: FT1〜FT233（全 233 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT233 を開始（233 % 3 = 2 → セキュリティ診断なし、233 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `textwrap` モジュール（wrap / fill / shorten / indent）
+- FT234 を開始（234 % 3 = 0 → **セキュリティ診断あり**、234 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `ipaddress` モジュール（ip_address / ip_network / is_private・SSRF/プライベート範囲）
 
 ---
 
@@ -90,7 +91,7 @@ FT232（fnmatch — fnmatch / filter / translate）完了。診断なし（232 %
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT233 実施（textwrap、診断・ペンテストなし） | FT |
+| 高 | — | FT234 実施（ipaddress、セキュリティ診断あり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
