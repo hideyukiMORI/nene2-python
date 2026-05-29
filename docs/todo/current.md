@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.117 / FT239（statistics）完了 / CI グリーン**
+現状: **v1.8.118 / FT240（安全なデシリアライズ）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT239（statistics — mean / median / stdev / quantiles）完了。診断なし（239 % 3 = 2）・ペンテストなし（239 % 4 = 3）。
-`stdev` は n>=2 必須・空は StatisticsError → 空を事前 422、stdev は n<2 で None を返す（`float | None`）。
-データ点数を 10,000 に上限化し DoS を防止。結果は 6 桁丸め。標本/母標準偏差の区別に注意。
-**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT240 以降も継続中。
+FT240（安全なデシリアライズ — pickle 不使用 / json + Pydantic）完了。**セキュリティ診断あり（240 % 3 = 0）＋クラッカーペンテストあり（240 % 4 = 0）両方合格**。
+RCE 経路（pickle.loads/eval/exec/yaml.load）をコードから排除（grep 監査でドキュメントのみヒット）、json + Pydantic で安全にデシリアライズ。
+`extra="forbid"` で Mass Assignment 遮断、型/範囲/ロール許可リスト、反復走査でネスト DoS（深さ 20 上限）を防止。pickle ペイロードは不活性なデータとして扱う。観察: Pydantic v2 の lax 強制（`"30"`→30）は strict=True で厳密化可。
+**サンドボックス 7 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT241 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT239（statistics — mean / median / stdev / quantiles）完了。診断なし
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.118 | FT240: 安全なデシリアライズ — pickle 不使用 / json + Pydantic 検証（診断＋ペンテスト合格） |
 | v1.8.117 | FT239: statistics — mean / median / stdev / quantiles（StatisticsError 処理・点数上限） |
 | v1.8.116 | FT238: calendar — monthrange / weekday / isleap（0=月曜・うるう年規則） |
 | v1.8.115 | FT237: http.cookies — SimpleCookie / Morsel（セキュリティ診断合格・セキュア既定） |
@@ -83,13 +84,13 @@ FT239（statistics — mean / median / stdev / quantiles）完了。診断なし
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT239（全 239 件）
+**実施済み**: FT1〜FT240（全 240 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT240 を開始（240 % 3 = 0 → **セキュリティ診断あり**、240 % 4 = 0 → **クラッカーペンテストあり**）
-- テーマ候補: 安全なデシリアライズ（pickle 不使用 / json + TypedDict 検証）
+- FT241 を開始（241 % 3 = 1 → セキュリティ診断なし、241 % 4 = 1 → クラッカーペンテストなし）
+- テーマ候補: `bisect` モジュール（bisect_left / insort / 範囲検索）
 
 ---
 
@@ -97,7 +98,7 @@ FT239（statistics — mean / median / stdev / quantiles）完了。診断なし
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT240 実施（安全なデシリアライズ、診断＋ペンテスト両方） | FT |
+| 高 | — | FT241 実施（bisect、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
