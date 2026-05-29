@@ -308,6 +308,7 @@
 | [FT272](2026-05-field-trial-272.md) | tarfile モジュール — tar slip / tar bomb / symlink 対策 | 🔍 | |
 | [FT273](2026-05-field-trial-273.md) | marshal — 信頼できないデータに使わない / json 代替 | 🔒 | |
 | [FT274](2026-05-field-trial-274.md) | colorsys モジュール — RGB / HSV / HLS 変換 |  | |
+| [FT275](2026-05-field-trial-275.md) | cmath モジュール — 複素数演算 / 極座標変換 |  | |
 
 ---
 
@@ -323,4 +324,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT274 / v1.8.152)*
+*最終更新: 2026-05-29 (FT275 / v1.8.153)*
