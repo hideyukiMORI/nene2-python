@@ -3,6 +3,36 @@
 All notable changes to nene2-python are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+> 詳細な版ごとの一行サマリーは [`docs/todo/current.md`](docs/todo/current.md) の
+> マイルストーン表を参照。本ファイルにはリリース粒度の集約エントリを記録する。
+
+---
+
+## [1.8.163] — 2026-05-29
+
+v1.8.35〜v1.8.163 の集約リリース。フィールドトライアル網羅スイープの完了と、
+公開準備・ポリシー整合・ハウスキーピングを含む。
+
+### Added
+- フィールドトライアル **FT203〜FT282**（標準ライブラリ検証 + セキュリティ深掘り）。
+  セキュリティ診断（`%3==0`）・クラッカーペンテスト（`%4==0`）・6 ペルソナ DX レビューを各 FT で実施。
+  危険プリミティブ回避シリーズ（pickle/marshal/eval、subprocess、SSRF、ReDoS、zip/tar slip、解凍爆弾、SSTI、XXE 等）を含む。
+- FT ループ方法論ドキュメント [`docs/explanation/field-trial-methodology.md`](docs/explanation/field-trial-methodology.md)（EN/JA）— 目的・3 フェーズ・終着点を明文化 (#540)
+- ETag / 条件付きリクエスト、`CompositeAuthMiddleware`、`InMemoryRateLimitStorage`、query ヘルパー、`LocalTokenIssuer`、`RequestScopedContext`
+- リリース手順 how-to [`docs/how-to/release-and-publish.md`](docs/how-to/release-and-publish.md)、CI に配布物ビルド検証ジョブ (#541)
+
+### Changed
+- example の全ハンドラー（Note/Tag/Comment）に `response_model` を付与し OpenAPI にレスポンス型を出力 (#539)
+- starlette 1.0.1 へ更新（PYSEC-2026-161 解消、#611）
+
+### Fixed
+- example の 422 レスポンスで全フィールドのエラーを返すように修正 (#588)
+- `APP_ENV=local` で throttle を既定無効化 (#592)
+
+### Housekeeping
+- FT サンドボックスを 5.1G→79M に整理（`ft-status.sh --clean-sandbox` 追加）、マージ済み orphan ブランチを削除
+- #553（`/examples/ping`・`/examples/notes`）は #578 で実装済みを確認し close
+
 ---
 
 ## [1.8.34] — 2026-05-20
