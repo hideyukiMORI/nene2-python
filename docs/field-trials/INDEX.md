@@ -314,6 +314,7 @@
 | [FT278](2026-05-field-trial-278.md) | string モジュール — capwords / 定数（文字種判定） |  | |
 | [FT279](2026-05-field-trial-279.md) | plistlib モジュール — plist 解析の安全性（XXE 耐性） | 🔒 | |
 | [FT280](2026-05-field-trial-280.md) | re モジュール — ReDoS 対策 / パターン・入力制限 | 🔍 | |
+| [FT281](2026-05-field-trial-281.md) | math モジュール — isclose / gcd / factorial（過大入力ガード） |  | |
 
 ---
 
@@ -329,4 +330,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT280 / v1.8.158)*
+*最終更新: 2026-05-29 (FT281 / v1.8.159)*
