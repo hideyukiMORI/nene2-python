@@ -1,17 +1,22 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.161 / #539（response_model 統一）解消 / CI グリーン**
+現状: **v1.8.162 / #540（FT ループ目的・終着点）明文化 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-#539 を解消（v1.8.161）。Note/Tag/Comment の全ハンドラーが `JSONResponse` 直返しで `response_model` を使っておらず CLAUDE.md ポリシー（「レスポンスモデルを response_model で明示」）に違反していた問題を修正。
-各ドメインに `XxxResponse` / `XxxListResponse`（Pydantic）を定義し `@router.xxx(..., response_model=...)` と戻り値型を明示。OpenAPI に 6 レスポンススキーマ（Note/Tag/Comment × 単体/一覧）が出力され、各ルートが `$ref` で参照することを確認。
-ハンドラーは「parse → use-case → response」の薄さを維持（バリデーションは `_validate_*` に抽出）。**フレームワーク本体 466 tests 据え置き・カバレッジ 93.5%**。
-ハウスキーピング: FT サンドボックスを 5.1G→79M に整理、マージ済み orphan ブランチ 8 本を削除。
-FT ループは FT283（gettext）以降も継続可能。
+#540 を解消（v1.8.162）。FT ループの**目的・フェーズ・終着点**を
+[explanation/field-trial-methodology.md](../explanation/field-trial-methodology.md)
+（日本語版も）に明文化した。フェーズ0（FT1–6 フレームワーク FB）/フェーズ1（FT7–約202
+標準ライブラリ検証）/フェーズ2（FT203– セキュリティ深掘り）と整理し、
+**網羅スイープは完了**・以後は「4 トリガー（新機能・新依存採用・未カバーのセキュリティ
+カテゴリ・明示依頼）でのみ FT を回す保守 + オンデマンドモード」へ移行することを定義。
+INDEX/roadmap からリンク、roadmap の FT 行を現状（282 件・スイープ完了）に更新。
+
+直前の対応: #539（response_model 統一・v1.8.161）解消、ハウスキーピング（サンドボックス
+5.1G→79M 整理・orphan ブランチ 8 本削除）。**フレームワーク本体 466 tests 据え置き**。
 
 ---
 
@@ -35,6 +40,7 @@ FT ループは FT283（gettext）以降も継続可能。
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.162 | docs: FT ループの目的・終着点を明文化（#540）— field-trial-methodology.md（EN/JA） |
 | v1.8.161 | fix: handler の response_model 統一（#539）— Note/Tag/Comment に Response モデル定義・OpenAPI スキーマ出力 |
 | v1.8.160 | FT282: platform — システム情報を露出しない（セキュリティ診断合格・情報漏洩防止） |
 | v1.8.159 | FT281: math — isclose / gcd / factorial（巨大整数 DoS ガード） |
@@ -142,9 +148,9 @@ FT ループは FT283（gettext）以降も継続可能。
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT283 実施（gettext、診断・ペンテストなし） | FT |
-| 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
+| 中 | [#553](https://github.com/hideyukiMORI/nene2-python/issues/553) | example app に /examples/ping・/examples/notes 追加（parity） | enhancement |
+| — | — | FT は保守 + オンデマンド（4 トリガー時のみ。[方法論](../explanation/field-trial-methodology.md)） | FT |
 | 低 | — | PostgreSQL / MySQL 実 DB 統合テスト | infra |
 | 低 | — | PyJWT 推移的 CVE（PYSEC-2025-183）— mcp 修正待ち | 保留 |
 
@@ -155,7 +161,7 @@ FT ループは FT283（gettext）以降も継続可能。
 | 課題 | 優先度 | Issue | 備考 |
 |---|---|---|---|
 | ~~handler response_model 未使用~~ | — | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | ✅ 2026-05-29 解消（v1.8.161）。Note/Tag/Comment 全ハンドラーに `XxxResponse`/`XxxListResponse` を定義し `response_model` 明示。OpenAPI に 6 レスポンススキーマが出力されることを確認。466 tests 据え置き |
-| FT ループ目的の明文化 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | フェーズ変化の記録 |
+| ~~FT ループ目的の明文化~~ | — | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | ✅ 2026-05-29 解消（v1.8.162）。explanation/field-trial-methodology.md（EN/JA）に目的・3 フェーズ・終着点（網羅スイープ完了→保守+オンデマンド）を明文化。INDEX/roadmap からリンク |
 | PyPI 未公開 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | uv publish フロー検証が必要 |
 | ~~古い FT サンドボックス肥大化~~ | — | — | ✅ 2026-05-29 整理（5.1G→79M）。`ft-status.sh --clean-sandbox` を追加（.venv/キャッシュ削除・ソース保持・uv sync で再生可）。`--clean` は dist/ のみで誤記だった |
 | ~~マージ済み orphan リモートブランチ~~ | — | — | ✅ 2026-05-29 削除（merged 8 本）。未マージの提案 PR #545 のブランチのみ残置 |
