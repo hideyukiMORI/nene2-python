@@ -260,6 +260,7 @@
 | [FT224](2026-05-field-trial-224.md) | binascii モジュール — hexlify / unhexlify / crc32 | 🔍 | |
 | [FT225](2026-05-field-trial-225.md) | zlib モジュール — compress / decompress / crc32（解凍爆弾対策） | 🔒 | |
 | [FT226](2026-05-field-trial-226.md) | gzip モジュール — compress / decompress / GzipFile（解凍上限） |  | |
+| [FT227](2026-05-field-trial-227.md) | shutil モジュール — copy / move / rmtree（パストラバーサル防御） |  | |
 
 ---
 
@@ -275,4 +276,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT226 / v1.8.104)*
+*最終更新: 2026-05-29 (FT227 / v1.8.105)*

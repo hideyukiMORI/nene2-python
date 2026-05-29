@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.104 / FT226（gzip）完了 / CI グリーン**
+現状: **v1.8.105 / FT227（shutil）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT226（gzip — compress / decompress / GzipFile）完了。診断なし（226 % 3 = 1）・ペンテストなし（226 % 4 = 2）。
-`gzip.compress` のデフォルト mtime が現在時刻を埋め込み出力が非決定的になる点を発見 → `mtime=0` で決定化。
-FT225 の解凍上限を gzip に適用（`GzipFile.read(上限+1)` で有界化、2MB 爆弾を拒否）。不正データの例外型は OSError/EOFError（zlib と異なる）。
-**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT227 以降も継続中。
+FT227（shutil — copy / move / rmtree）完了。診断なし（227 % 3 = 2）・ペンテストなし（227 % 4 = 3）。
+全操作を per-request TemporaryDirectory に閉じ込め、`pathlib` の `/` が絶対パスを吸収する点（`base / "/etc/passwd"`）に注意。
+`_safe_path` で名前検証 + `resolve()` + `is_relative_to()` の二重封じ込め。`rmtree` の破壊性に配慮。
+**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT228 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT225 の解凍上限を gzip に適用（`GzipFile.read(上限+1)` で有界化
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.105 | FT227: shutil — copy / move / rmtree（resolve + is_relative_to 封じ込め） |
 | v1.8.104 | FT226: gzip — compress / decompress / GzipFile（mtime=0・解凍上限） |
 | v1.8.103 | FT225: zlib — compress / decompress / crc32（セキュリティ診断合格・解凍爆弾対策） |
 | v1.8.102 | FT224: binascii — hexlify / unhexlify / crc32（クラッカーペンテスト合格） |
@@ -70,13 +71,13 @@ FT225 の解凍上限を gzip に適用（`GzipFile.read(上限+1)` で有界化
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT226（全 226 件）
+**実施済み**: FT1〜FT227（全 227 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT227 を開始（227 % 3 = 2 → セキュリティ診断なし、227 % 4 = 3 → クラッカーペンテストなし）
-- テーマ候補: `shutil` モジュール（copy / move / rmtree・パストラバーサル防御）
+- FT228 を開始（228 % 3 = 0 → **セキュリティ診断あり**、228 % 4 = 0 → **クラッカーペンテストあり**）
+- テーマ候補: `urllib.parse` モジュール（urlparse / urlencode / quote・SSRF/URL 混乱）
 
 ---
 
@@ -84,7 +85,7 @@ FT225 の解凍上限を gzip に適用（`GzipFile.read(上限+1)` で有界化
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT227 実施（shutil、診断・ペンテストなし） | FT |
+| 高 | — | FT228 実施（urllib.parse、診断＋ペンテスト両方） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
