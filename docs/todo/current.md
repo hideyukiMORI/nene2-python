@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.136 / FT258（random）完了 / CI グリーン**
+現状: **v1.8.137 / FT259（weakref）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT258（random — 暗号用途に使わない / secrets を使う）完了。**セキュリティ診断あり（258 % 3 = 0）合格**・ペンテストなし（258 % 4 = 2）。
-random（Mersenne Twister）はシード既知で完全再現＝予測可能（同 seed で同列を実証）。トークン/秘密は secrets（100 トークン全ユニーク・再現不可）。
-ruff S311 で random 使用を検出し CLAUDE.md ポリシーを自動強制。random はシミュレーション等の非セキュリティ用途のみ（理由付き noqa）。
-**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT259 以降も継続中。
+FT259（weakref — WeakValueDictionary / ref）完了。診断なし（259 % 3 = 1）・ペンテストなし（259 % 4 = 1）。
+WeakValueDictionary は強参照のないオブジェクトを自動退避（keep 個だけ生存、残りは auto_evicted）。
+int/str/tuple は弱参照不可（`__weakref__` スロット付きクラスが必要）、強参照を握り続けるとリーク（ループ変数の罠を発見し del で解放）。
+**サンドボックス 4 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT260 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ ruff S311 で random 使用を検出し CLAUDE.md ポリシーを自動強制。
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.137 | FT259: weakref — WeakValueDictionary（弱参照キャッシュの自動退避） |
 | v1.8.136 | FT258: random — 非暗号性の実証（セキュリティ診断合格・secrets 推奨） |
 | v1.8.135 | FT257: array — typecode / tobytes（typecode 許可リスト・オーバーフロー処理） |
 | v1.8.134 | FT256: email.message — ヘッダーインジェクション対策（クラッカーペンテスト合格） |
@@ -102,13 +103,13 @@ ruff S311 で random 使用を検出し CLAUDE.md ポリシーを自動強制。
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT258（全 258 件）
+**実施済み**: FT1〜FT259（全 259 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT259 を開始（259 % 3 = 1 → セキュリティ診断なし、259 % 4 = 3 → クラッカーペンテストなし）
-- テーマ候補: `weakref` モジュール（WeakValueDictionary / ref・キャッシュ）
+- FT260 を開始（260 % 3 = 2 → セキュリティ診断なし、260 % 4 = 0 → **クラッカーペンテストあり**）
+- テーマ候補: `zipfile` モジュール（zip slip パストラバーサル / zip bomb 対策）
 
 ---
 
@@ -116,7 +117,7 @@ ruff S311 で random 使用を検出し CLAUDE.md ポリシーを自動強制。
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT259 実施（weakref、診断・ペンテストなし） | FT |
+| 高 | — | FT260 実施（zipfile、クラッカーペンテストあり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
