@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.134 / FT256（email.message）完了 / CI グリーン**
+現状: **v1.8.135 / FT257（array）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT256（email.message — ヘッダーインジェクション対策）完了。診断なし（256 % 3 = 1）・**クラッカーペンテストあり（256 % 4 = 0）合格**。
-件名・宛先のヘッダー値から CR/LF/制御文字を遮断し、Bcc 等の追加ヘッダー注入を防止（本文の改行は許可）。
-ペンテスト: CRLF/LF/CR/null/tab の 6 注入をすべて 422。Python の email ポリシーも CRLF を拒否（多層防御）。F-3 限界: 簡易アドレス検証は permissive（厳密検証は email-validator）。
-**サンドボックス 5 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT257 以降も継続中。
+FT257（array — typecode / tobytes / 数値配列）完了。診断なし（257 % 3 = 2）・ペンテストなし（257 % 4 = 1）。
+typecode を整数のみの許可リスト（b/B/h/H/i/I/l/L/q/Q）で検証し、範囲外の値は OverflowError を捕捉して 422。
+`tobytes()` はネイティブエンディアン依存のため、クロスプラットフォーム交換は struct（FT215）で明示。
+**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT258 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT256（email.message — ヘッダーインジェクション対策）完了。
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.135 | FT257: array — typecode / tobytes（typecode 許可リスト・オーバーフロー処理） |
 | v1.8.134 | FT256: email.message — ヘッダーインジェクション対策（クラッカーペンテスト合格） |
 | v1.8.133 | FT255: sqlite3 — パラメータ化クエリ（セキュリティ診断合格・SQL インジェクション防御） |
 | v1.8.132 | FT254: queue — Queue / LifoQueue / PriorityQueue（安定化タプル） |
@@ -100,13 +101,13 @@ FT256（email.message — ヘッダーインジェクション対策）完了。
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT256（全 256 件）
+**実施済み**: FT1〜FT257（全 257 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT257 を開始（257 % 3 = 2 → セキュリティ診断なし、257 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `array` モジュール（typecode / buffer / tobytes）
+- FT258 を開始（258 % 3 = 0 → **セキュリティ診断あり**、258 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `random` モジュール（暗号用途に使わない・secrets を使う・予測可能性）
 
 ---
 
@@ -114,7 +115,7 @@ FT256（email.message — ヘッダーインジェクション対策）完了。
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT257 実施（array、診断・ペンテストなし） | FT |
+| 高 | — | FT258 実施（random、セキュリティ診断あり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |

@@ -290,6 +290,7 @@
 | [FT254](2026-05-field-trial-254.md) | queue モジュール — Queue / LifoQueue / PriorityQueue |  | |
 | [FT255](2026-05-field-trial-255.md) | sqlite3 モジュール — パラメータ化クエリ vs SQL インジェクション | 🔒 | |
 | [FT256](2026-05-field-trial-256.md) | email.message — ヘッダーインジェクション対策 | 🔍 | |
+| [FT257](2026-05-field-trial-257.md) | array モジュール — typecode / tobytes / 数値配列 |  | |
 
 ---
 
@@ -305,4 +306,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT256 / v1.8.134)*
+*最終更新: 2026-05-29 (FT257 / v1.8.135)*
