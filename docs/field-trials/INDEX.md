@@ -280,6 +280,7 @@
 | [FT244](2026-05-field-trial-244.md) | html.parser モジュール — HTMLParser で信頼できない HTML を解析 | 🔍 | |
 | [FT245](2026-05-field-trial-245.md) | reprlib モジュール — Repr による長さ・深さ制限付き repr |  | |
 | [FT246](2026-05-field-trial-246.md) | unicodedata モジュール — NFKC 正規化 / homoglyph / 制御文字検出 | 🔒 | |
+| [FT247](2026-05-field-trial-247.md) | operator モジュール — itemgetter / 演算子関数の安全なディスパッチ |  | |
 
 ---
 
@@ -295,4 +296,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT246 / v1.8.124)*
+*最終更新: 2026-05-29 (FT247 / v1.8.125)*
