@@ -257,6 +257,7 @@
 | [FT221](2026-05-field-trial-221.md) | tempfile モジュール — NamedTemporaryFile / mkstemp / TemporaryDirectory | | |
 | [FT222](2026-05-field-trial-222.md) | hashlib モジュール — sha256 / pbkdf2_hmac / blake2 / compare_digest | 🔒 | |
 | [FT223](2026-05-field-trial-223.md) | base64 モジュール — b64encode / urlsafe_b64encode / b64decode / 厳格デコード |  | |
+| [FT224](2026-05-field-trial-224.md) | binascii モジュール — hexlify / unhexlify / crc32 | 🔍 | |
 
 ---
 
@@ -268,8 +269,8 @@ FT3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 6
 
 ## クラッカーペンテスト実施済み一覧（🔍）
 
-FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT216, FT220
+FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT216, FT220, FT224
 
 ---
 
-*最終更新: 2026-05-29 (FT223 / v1.8.101)*
+*最終更新: 2026-05-29 (FT224 / v1.8.102)*
