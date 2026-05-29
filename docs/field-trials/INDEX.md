@@ -254,6 +254,7 @@
 | [FT218](2026-05-field-trial-218.md) | configparser モジュール — read / write / sections / interpolation | | |
 | [FT219](2026-05-field-trial-219.md) | argparse モジュール — ArgumentParser / add_argument / parse_args / subcommands | 🔒 | |
 | [FT220](2026-05-field-trial-220.md) | logging モジュール — Logger / Handler / Formatter / Filter | 🔍 | |
+| [FT221](2026-05-field-trial-221.md) | tempfile モジュール — NamedTemporaryFile / mkstemp / TemporaryDirectory | | |
 
 ---
 
@@ -269,4 +270,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT220 / v1.8.98)*
+*最終更新: 2026-05-29 (FT221 / v1.8.99)*

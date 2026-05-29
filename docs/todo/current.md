@@ -1,18 +1,17 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.98 / FT220（logging）完了 / CI グリーン**
+現状: **v1.8.99 / FT221（tempfile）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT220（logging — Logger / Handler / Formatter / Filter）完了。
-セキュリティ診断なし（220 % 3 = 1）、**クラッカーペンテストあり（220 % 4 = 0）**。
-フォーマット文字列インジェクション（`logger.info(user_input)` の罠）・CRLF ログ偽造・機密秘匿 Filter を検証。
-ペンテスト 18 攻撃中 17 防御、D3（JSON 埋め込み秘匿漏れ）のみ LOW として記録（redaction は多層防御の補助、主防御は `SecretStr`）。
-ruff `LOG001` を契機に「`getLogger` + リクエストごと Handler attach/detach（contextmanager + try/finally）」パターンを確立。
-**サンドボックス 11 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT221 以降も継続中。
+FT221（tempfile — NamedTemporaryFile / mkstemp / TemporaryDirectory）完了。
+セキュリティ診断なし（221 % 3 = 2）、クラッカーペンテストなし（221 % 4 = 1）。
+`mkstemp` が prefix/suffix をサニタイズせず生成パスに直連結する点（パストラバーサル）を発見 → `_validate_affix` で `os.sep`/`..`/null バイトを遮断。
+`mkstemp` の fd は `os.fdopen` + `with`、パスは `try/finally` で `unlink`。安全な API は `0o600` で生成されることをテスト回帰化。
+**サンドボックス 10 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT222 以降も継続中。
 
 ---
 
@@ -36,6 +35,7 @@ ruff `LOG001` を契機に「`getLogger` + リクエストごと Handler attach/
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.99 | FT221: tempfile — NamedTemporaryFile / mkstemp / TemporaryDirectory（affix 検証・0o600）|
 | v1.8.98 | FT220: logging — Logger / Handler / Formatter / Filter（クラッカーペンテスト合格）|
 | v1.8.97 | docs: README / roadmap / reference を v1.8.96 現状に同期、starlette CVE 解消反映 |
 | v1.8.96 | FT219: argparse — ArgumentParser / add_argument / parse_args / subcommands（セキュリティ診断合格）|
@@ -66,13 +66,13 @@ ruff `LOG001` を契機に「`getLogger` + リクエストごと Handler attach/
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT220（全 220 件）
+**実施済み**: FT1〜FT221（全 221 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT221 を開始（221 % 3 = 2 → セキュリティ診断なし、221 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `tempfile` モジュール（NamedTemporaryFile / mkstemp / TemporaryDirectory / セキュアなパーミッション）
+- FT222 を開始（222 % 3 = 0 → **セキュリティ診断あり**、222 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `hashlib` モジュール（sha256 / pbkdf2_hmac / blake2 / パスワードハッシュ・タイミング攻撃）
 
 ---
 
@@ -80,7 +80,7 @@ ruff `LOG001` を契機に「`getLogger` + リクエストごと Handler attach/
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT221 実施（tempfile、診断・ペンテストなし） | FT |
+| 高 | — | FT222 実施（hashlib、セキュリティ診断あり） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
