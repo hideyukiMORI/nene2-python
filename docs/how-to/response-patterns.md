@@ -2,28 +2,39 @@
 
 FastAPI + nene2 でのレスポンス返却パターンをまとめる。
 
+**既定は「レスポンスモデルのインスタンスを返す」**（§1）。`JSONResponse` を手で返すのは
+カスタム status / ヘッダー / ストリーミング / 成功とエラーの混在など特別な場合に限る（§3 以降）。
+リファレンス実装 `src/example/*/handler.py` はすべて前者に統一されている。
+
 ---
 
-## 1. JSONResponse + response_model の正しい組み合わせ
+## 1. 既定パターン: レスポンスモデルのインスタンスを返す
 
-`response_model` を指定したエンドポイントで `JSONResponse` を直接返すと、FastAPI はその内容を **バリデーションしない**。`response_model` は OpenAPI スキーマ生成にのみ使われる。
+ハンドラーは `response_model` を指定し、**その型のインスタンスを返す**。FastAPI が内容を
+検証し、宣言したスキーマどおりに直列化する（OpenAPI とレスポンス本体が一致する）。
 
 ```python
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from fastapi import APIRouter
+from pydantic import BaseModel, Field
+
+router = APIRouter()
+
 
 class NoteResponse(BaseModel):
-    note_id: int
-    title: str
+    note_id: int = Field(description="ノート ID")
+    title: str = Field(description="タイトル")
 
-# ✅ response_model はスキーマのみ。JSONResponse の内容は直接送られる
-@app.get("/notes/{note_id}", response_model=NoteResponse)
-def get_note(note_id: int) -> JSONResponse:
-    return JSONResponse({"note_id": note_id, "title": "Hello"})
+
+# ✅ 既定: モデルインスタンスを返す → FastAPI が検証 + 直列化
+@router.get("/notes/{note_id}", response_model=NoteResponse)
+async def get_note(note_id: int) -> NoteResponse:
+    return NoteResponse(note_id=note_id, title="Hello")
 ```
 
-`response_model` を指定しない場合は `dict | list` を返せるが、OpenAPI スキーマが `{}` になる。スキーマを正確に出力したい場合は常に `response_model` を指定する。
+> ⚠️ `response_model` を指定しても **`JSONResponse` を直接返すと内容は検証されない**
+> （`response_model` は OpenAPI スキーマ生成にのみ使われ、本体はそのまま送られる）。
+> 通常ルートでは検証を効かせるためモデルインスタンスを返すこと。`JSONResponse` は
+> §3 以降の特別な用途に限る。CLAUDE.md も「`response_model` 明示・`Any` 返却禁止」を定める。
 
 ---
 
@@ -46,16 +57,13 @@ class NoteResponse(BaseModel):
 
 **なぜ二重になるか**: `dataclass` はドメインの不変条件を表す値オブジェクト、`Pydantic BaseModel` は HTTP 境界のシリアライズ/スキーマ定義。両者は責務が異なる。
 
-変換は手動で行う:
+変換はハンドラーで明示的に行い、**モデルインスタンスを返す**（§1 の既定パターン）:
 
 ```python
-def _note_to_dict(note: Note) -> dict[str, object]:
-    return {"note_id": note.note_id, "title": note.title}
-
-@app.get("/notes/{note_id}", response_model=NoteResponse)
-def get_note(note_id: int) -> JSONResponse:
-    note = repository.find(note_id)
-    return JSONResponse(_note_to_dict(note))
+@router.get("/notes/{note_id}", response_model=NoteResponse)
+async def get_note(note_id: int) -> NoteResponse:
+    note = get_use_case.execute(GetNoteInput(note_id))
+    return NoteResponse(note_id=note.note_id, title=note.title)
 ```
 
 ---

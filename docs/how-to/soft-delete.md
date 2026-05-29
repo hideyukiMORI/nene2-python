@@ -62,11 +62,12 @@ def _active_articles() -> list[Article]:
 def list_articles() -> list[ArticleResponse]:
     return [ArticleResponse.from_domain(a) for a in _active_articles()]
 
-@app.get("/articles/{article_id}")
-def get_article(article_id: int) -> JSONResponse:
+@app.get("/articles/{article_id}", response_model=ArticleResponse)
+def get_article(article_id: int) -> ArticleResponse | JSONResponse:
     article = _store.get(article_id)
     if article is None or article.is_deleted:
-        return problem_details_response("not-found", "Not Found", 404, ...)
+        return problem_details_response("not-found", "Not Found", 404, "Article not found.")
+    return ArticleResponse.from_domain(article)  # 成功時はモデルを返す（既定パターン）
 ```
 
 ---
