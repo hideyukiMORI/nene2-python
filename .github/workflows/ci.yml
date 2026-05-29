@@ -50,3 +50,31 @@ jobs:
         # PYSEC-2025-183: pyjwt weak-key-length — disputed by supplier, no fix version available.
         # Transitive via mcp>=1.0. Re-evaluate when pyjwt releases a fix. (#280)
         run: uv run pip-audit --ignore-vuln PYSEC-2025-183
+
+  package-build:
+    name: Package build verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      # publish.yml と同じ uv build を PR ごとに走らせ、配布物の壊れを早期検出する（#541）。
+      - name: Build sdist + wheel
+        run: uv build
+
+      - name: Validate distribution metadata (twine check)
+        run: uvx twine check dist/*
+
+      - name: Verify clean install + import (no example/tests leakage)
+        run: |
+          uv venv /tmp/verify
+          uv pip install --python /tmp/verify/bin/python dist/*.whl
+          /tmp/verify/bin/python -c "import nene2; from nene2.http import PaginationResponse; print('import OK')"
+          # フレームワーク以外（example/tests）が配布物に混入していないことを保証
+          if /tmp/verify/bin/python -c "import example" 2>/dev/null; then
+            echo "ERROR: example package leaked into wheel"; exit 1
+          fi
