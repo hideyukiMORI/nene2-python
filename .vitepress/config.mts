@@ -44,13 +44,45 @@ function sidebarEn() {
       ],
     }],
     '/how-to/': [{
-      text: 'How-to guides',
+      text: 'Getting things done',
       items: [
         { text: 'Start a new project',           link: '/how-to/new-project' },
         { text: 'Add a new domain',              link: '/how-to/add-new-domain' },
         { text: 'Implement a SQLAlchemy repository', link: '/how-to/sqlalchemy-repository' },
         { text: 'Configure auth',                link: '/how-to/configure-auth' },
+        { text: 'Custom auth middleware',        link: '/how-to/custom-auth-middleware' },
         { text: 'Set up MCP',                    link: '/howto/mcp-setup' },
+      ],
+    }, {
+      text: 'Patterns',
+      items: [
+        { text: 'Response patterns',             link: '/how-to/response-patterns' },
+        { text: 'Handle validation errors',      link: '/how-to/validation' },
+        { text: 'RFC 9457 Problem Details',      link: '/how-to/problem-details' },
+        { text: 'Dependency injection (Depends)', link: '/how-to/dependency-injection' },
+        { text: 'Middleware stack ordering',     link: '/how-to/middleware-stack' },
+        { text: 'Lifespan & app.state',          link: '/how-to/lifespan-and-app-state' },
+        { text: 'Async use cases',               link: '/how-to/async-use-case' },
+        { text: 'Concurrency patterns',          link: '/how-to/concurrency-patterns' },
+        { text: 'Background tasks',              link: '/how-to/background-tasks' },
+        { text: 'Domain events',                 link: '/how-to/domain-events' },
+        { text: 'Soft delete',                   link: '/how-to/soft-delete' },
+        { text: 'API versioning',                link: '/how-to/api-versioning' },
+        { text: 'CORS',                          link: '/how-to/cors' },
+      ],
+    }, {
+      text: 'I/O, data & input',
+      items: [
+        { text: 'File upload',                   link: '/how-to/file-upload' },
+        { text: 'Streaming responses',           link: '/how-to/streaming' },
+        { text: 'Structured logging',            link: '/how-to/structured-logging' },
+        { text: 'Webhook & HMAC verification',   link: '/how-to/webhook' },
+        { text: 'Decimal & Unicode input',       link: '/how-to/decimal-unicode-input' },
+        { text: 'Parse email addresses',         link: '/how-to/email-address-parsing' },
+      ],
+    }, {
+      text: 'Testing & release',
+      items: [
         { text: 'Run tests',                     link: '/how-to/run-tests' },
         { text: 'Run real-DB integration tests', link: '/how-to/run-integration-tests' },
         { text: 'Release and publish to PyPI',   link: '/how-to/release-and-publish' },
@@ -151,7 +183,11 @@ export default defineConfig({
   srcDir: './docs',
   outDir: './.vitepress/dist',
   cleanUrls: true,
-  ignoreDeadLinks: true,
+  // Dead-link detection is ON so the build (docs.yml) fails on broken internal links.
+  // Only exception: links to docs/field-trials/INDEX.md — the file exists and is reachable
+  // (verified 200 on the live site), but VitePress lowercases the path for matching and
+  // reports a false positive against the uppercase filename.
+  ignoreDeadLinks: [/\/field-trials\/index/i],
 
   head: [
     ['meta', { name: 'theme-color', content: '#ffd43b' }],
