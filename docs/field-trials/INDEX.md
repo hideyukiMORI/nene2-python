@@ -274,6 +274,7 @@
 | [FT238](2026-05-field-trial-238.md) | calendar モジュール — monthrange / weekday / isleap / Calendar |  | |
 | [FT239](2026-05-field-trial-239.md) | statistics モジュール — mean / median / stdev / quantiles |  | |
 | [FT240](2026-05-field-trial-240.md) | 安全なデシリアライズ — pickle 不使用 / json + Pydantic 型検証 | 🔒🔍 | |
+| [FT241](2026-05-field-trial-241.md) | bisect モジュール — bisect_left / insort / 範囲検索 |  | |
 
 ---
 
@@ -289,4 +290,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT240 / v1.8.118)*
+*最終更新: 2026-05-29 (FT241 / v1.8.119)*
