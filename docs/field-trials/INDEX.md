@@ -277,6 +277,7 @@
 | [FT241](2026-05-field-trial-241.md) | bisect モジュール — bisect_left / insort / 範囲検索 |  | |
 | [FT242](2026-05-field-trial-242.md) | heapq モジュール — heappush / heappop / nlargest / merge |  | |
 | [FT243](2026-05-field-trial-243.md) | uuid モジュール — uuid4 / uuid1 / uuid5（予測可能性とトークン用途） | 🔒 | |
+| [FT244](2026-05-field-trial-244.md) | html.parser モジュール — HTMLParser で信頼できない HTML を解析 | 🔍 | |
 
 ---
 
@@ -288,8 +289,8 @@ FT3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 6
 
 ## クラッカーペンテスト実施済み一覧（🔍）
 
-FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT216, FT220, FT224, FT228, FT232, FT236, FT240
+FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT216, FT220, FT224, FT228, FT232, FT236, FT240, FT244
 
 ---
 
-*最終更新: 2026-05-29 (FT243 / v1.8.121)*
+*最終更新: 2026-05-29 (FT244 / v1.8.122)*
