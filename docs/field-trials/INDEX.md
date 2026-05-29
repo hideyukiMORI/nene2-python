@@ -263,6 +263,7 @@
 | [FT227](2026-05-field-trial-227.md) | shutil モジュール — copy / move / rmtree（パストラバーサル防御） |  | |
 | [FT228](2026-05-field-trial-228.md) | urllib.parse モジュール — urlparse / urlencode / quote（SSRF 対策） | 🔒🔍 | |
 | [FT229](2026-05-field-trial-229.md) | html モジュール — escape / unescape（XSS 対策） |  | |
+| [FT230](2026-05-field-trial-230.md) | difflib モジュール — unified_diff / SequenceMatcher / get_close_matches |  | |
 
 ---
 
@@ -278,4 +279,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT229 / v1.8.107)*
+*最終更新: 2026-05-29 (FT230 / v1.8.108)*
