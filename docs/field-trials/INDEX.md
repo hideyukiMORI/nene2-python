@@ -293,6 +293,7 @@
 | [FT257](2026-05-field-trial-257.md) | array モジュール — typecode / tobytes / 数値配列 |  | |
 | [FT258](2026-05-field-trial-258.md) | random モジュール — 暗号用途に使わない / secrets を使う | 🔒 | |
 | [FT259](2026-05-field-trial-259.md) | weakref モジュール — WeakValueDictionary / ref / キャッシュ |  | |
+| [FT260](2026-05-field-trial-260.md) | zipfile モジュール — zip slip / zip bomb 対策 | 🔍 | |
 
 ---
 
@@ -304,8 +305,8 @@ FT3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 6
 
 ## クラッカーペンテスト実施済み一覧（🔍）
 
-FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT216, FT220, FT224, FT228, FT232, FT236, FT240, FT244, FT248, FT252, FT256
+FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT216, FT220, FT224, FT228, FT232, FT236, FT240, FT244, FT248, FT252, FT256, FT260
 
 ---
 
-*最終更新: 2026-05-29 (FT259 / v1.8.137)*
+*最終更新: 2026-05-29 (FT260 / v1.8.138)*
