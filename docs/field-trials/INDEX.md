@@ -2,6 +2,10 @@
 
 フィールドトライアル一覧。テーマ・カテゴリ・診断種別から検索する用途を想定。
 
+> FT ループの**目的・フェーズ・終着点**は
+> [explanation/field-trial-methodology.md](../explanation/field-trial-methodology.md)
+> （[日本語](../ja/explanation/field-trial-methodology.md)）を参照。手順は CLAUDE.md §12。
+
 **凡例**:
 - 🔒 セキュリティ診断実施（FT番号 % 3 = 0）
 - 🔍 クラッカーペンテスト実施（FT172, 176, 180…）
