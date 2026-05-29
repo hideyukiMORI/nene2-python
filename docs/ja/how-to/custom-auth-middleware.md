@@ -1,13 +1,12 @@
-# How-to: custom auth middleware and request.state
+# How-to: カスタム認証ミドルウェアと request.state
 
-A pattern for storing authentication/authorization info on `request.state` from a
-custom middleware and retrieving it in handlers via `Depends()`.
+カスタムミドルウェアで認証・認可情報を `request.state` に格納し、ハンドラーで `Depends()` を通じて取得するパターンを説明する。
 
 ---
 
-## 1. Define an AuthUser dataclass
+## 1. AuthUser dataclass の定義
 
-Define an immutable dataclass representing the authenticated user.
+認証済みユーザー情報を表す immutable dataclass を定義する。
 
 ```python
 from dataclasses import dataclass
@@ -20,10 +19,9 @@ class AuthUser:
 
 ---
 
-## 2. Store on request.state in a JWT middleware
+## 2. JWT ミドルウェアで request.state に格納
 
-Subclass `BaseHTTPMiddleware` to implement custom JWT verification and store an
-`AuthUser` on `request.state.user`.
+`BaseHTTPMiddleware` を継承してカスタム JWT 検証を実装し、`request.state.user` に `AuthUser` を格納する。
 
 ```python
 import jwt
@@ -68,27 +66,25 @@ app.add_middleware(JwtAuthMiddleware, secret=SECRET)
 
 ---
 
-## 3. Retrieve AuthUser with a Depends factory
+## 3. Depends ファクトリで AuthUser を取得
 
-Define a Depends factory that reads the `AuthUser` from `request.state.user`.
+`request.state.user` から `AuthUser` を取得する Depends ファクトリを定義する。
 
 ```python
 from fastapi import Request
 
 def get_current_user(request: Request) -> AuthUser:
-    user: AuthUser = request.state.user  # type: ignore[attr-defined]  # reason: always set by JwtAuthMiddleware
+    user: AuthUser = request.state.user  # type: ignore[attr-defined]  # reason: JwtAuthMiddleware で確実に設定
     return user
 ```
 
-Why `type: ignore[attr-defined]` is needed: `request.state` is a
-`starlette.datastructures.State` with dynamic attributes, so mypy can't see the
-`user` attribute. It's safe because the middleware guarantees it is set.
+`type: ignore[attr-defined]` が必要な理由: `request.state` は `starlette.datastructures.State` で動的属性を持つため、mypy は `user` 属性を認識できない。ミドルウェアで設定済みであることが保証されているため安全。
 
 ---
 
-## 4. Role-based access control
+## 4. ロールベースアクセス制御
 
-Define a role-checking Depends such as `require_admin()` and apply it to endpoints.
+`require_admin()` のようなロール確認 Depends を定義して、エンドポイントに適用する。
 
 ```python
 from typing import Annotated
@@ -108,24 +104,24 @@ def admin_list_users(
 
 ---
 
-## 5. When to use this vs. BearerTokenMiddleware
+## 5. BearerTokenMiddleware との使い分け
 
-| Pattern | How it's used | Stores on `request.state` |
+| パターン | 使い方 | `request.state` へ格納 |
 |---|---|---|
-| `BearerTokenMiddleware` + `make_require_auth()` | Verify/obtain the token string | No (via Depends) |
-| Custom `JwtAuthMiddleware` | Verify the JWT payload, build AuthUser | Yes (`request.state.user`) |
+| `BearerTokenMiddleware` + `make_require_auth()` | トークン文字列の検証・取得 | しない（Depends 経由） |
+| カスタム `JwtAuthMiddleware` | JWT ペイロード検証・AuthUser 構築 | する（`request.state.user`） |
 
-**When a custom middleware fits**:
-- you want the JWT payload (roles, claims) in handlers
-- you want to share the auth result across the whole request scope
+**カスタムミドルウェアが向いているケース**:
+- JWT のペイロード（ロール・クレーム）をハンドラーで使いたい
+- 認証結果をリクエストスコープ全体で共有したい
 
-**When `BearerTokenMiddleware` fits**:
-- you only want to check token validity
-- you want to swap the verification logic via `TokenVerifierProtocol`
+**`BearerTokenMiddleware` が向いているケース**:
+- トークンの有効性チェックだけしたい
+- `TokenVerifierProtocol` で検証ロジックを差し替えたい
 
 ---
 
-## 6. Test pattern
+## 6. テストパターン
 
 ```python
 import jwt

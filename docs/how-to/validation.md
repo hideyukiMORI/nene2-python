@@ -1,13 +1,14 @@
-# How-to: バリデーションエラーを扱う
+# How-to: handling validation errors
 
-`nene2.validation` の `ValidationException` と `ValidationError` を使って、
-ドメインバリデーションエラーをクライアントに返す方法を説明する。
+How to return domain validation errors to the client using `ValidationException`
+and `ValidationError` from `nene2.validation`.
 
 ---
 
-## 1. ValidationCode を StrEnum で定義する
+## 1. Define ValidationCode as a StrEnum
 
-フレームワークは標準エラーコードを定義しない。プロジェクトごとに `StrEnum` で定義する。
+The framework does not define standard error codes. Define them per project with a
+`StrEnum`.
 
 ```python
 from enum import StrEnum
@@ -21,16 +22,16 @@ class ValidationCode(StrEnum):
     OUT_OF_RANGE = "out_of_range"
 ```
 
-`StrEnum` を使うと:
-- `ValidationError` コンストラクタに直接渡せる（型安全）
-- JSON シリアライズ時に文字列値として出力される
-- IDE の補完・静的解析が効く
+Using a `StrEnum`:
+- can be passed directly to the `ValidationError` constructor (type-safe)
+- serializes to its string value in JSON
+- gets IDE completion and static analysis
 
 ---
 
-## 2. 複数フィールドのバリデーション
+## 2. Validating multiple fields
 
-リストにエラーを積み上げて `ValidationException` をまとめて raise する。
+Accumulate errors in a list and raise a single `ValidationException`.
 
 ```python
 from nene2.validation import ValidationError, ValidationException
@@ -39,17 +40,17 @@ def validate_registration(username: str, email: str, age: int) -> None:
     errors: list[ValidationError] = []
 
     if len(username) < 3:
-        errors.append(ValidationError("username", "3文字以上必要です", ValidationCode.TOO_SHORT))
+        errors.append(ValidationError("username", "At least 3 characters required", ValidationCode.TOO_SHORT))
     if "@" not in email:
-        errors.append(ValidationError("email", "有効なメールアドレスを入力してください", ValidationCode.INVALID_FORMAT))
+        errors.append(ValidationError("email", "Enter a valid email address", ValidationCode.INVALID_FORMAT))
     if age < 0 or age > 150:
-        errors.append(ValidationError("age", "年齢は 0〜150 の範囲で入力してください", ValidationCode.OUT_OF_RANGE))
+        errors.append(ValidationError("age", "Age must be between 0 and 150", ValidationCode.OUT_OF_RANGE))
 
     if errors:
         raise ValidationException(errors)
 ```
 
-レスポンス例 (422):
+Example response (422):
 
 ```json
 {
@@ -57,40 +58,43 @@ def validate_registration(username: str, email: str, age: int) -> None:
   "title": "Validation Failed",
   "status": 422,
   "errors": [
-    {"field": "username", "message": "3文字以上必要です", "code": "too_short"},
-    {"field": "email",    "message": "有効なメールアドレスを入力してください", "code": "invalid_format"}
+    {"field": "username", "message": "At least 3 characters required", "code": "too_short"},
+    {"field": "email",    "message": "Enter a valid email address", "code": "invalid_format"}
   ]
 }
 ```
 
 ---
 
-## 3. 単一フィールドのバリデーション
+## 3. Validating a single field
 
-`ValidationException.single()` で 1 行で raise できる。
+`ValidationException.single()` raises in one line.
 
 ```python
 from nene2.validation import ValidationException
 
-raise ValidationException.single("email", "メールアドレスは必須です", ValidationCode.REQUIRED)
+raise ValidationException.single("email", "Email is required", ValidationCode.REQUIRED)
 ```
 
 ---
 
-## 4. ネストフィールドのパス
+## 4. Paths for nested fields
 
-ネストしたフィールドのパスはドット区切りの文字列で渡す（正規化ヘルパーはない）。
+Pass the path of a nested field as a dot-separated string (there is no
+normalization helper).
 
 ```python
-ValidationError("address.city", "必須です", ValidationCode.REQUIRED)
-ValidationError("items.0.quantity", "1 以上を入力してください", ValidationCode.OUT_OF_RANGE)
+ValidationError("address.city", "Required", ValidationCode.REQUIRED)
+ValidationError("items.0.quantity", "Enter 1 or more", ValidationCode.OUT_OF_RANGE)
 ```
 
 ---
 
-## 5. @model_validator エラーの field は "request" になる
+## 5. A @model_validator error has field "request"
 
-Pydantic の `@model_validator(mode="after")` で `raise ValueError(...)` すると、`loc` が空タプルになる。nene2 の `ValidationException` 変換ではこれを `field: "request"` に変換する。
+When you `raise ValueError(...)` in a Pydantic `@model_validator(mode="after")`,
+`loc` is an empty tuple. nene2's `ValidationException` conversion maps this to
+`field: "request"`.
 
 ```python
 class RegisterBody(BaseModel):
@@ -104,7 +108,7 @@ class RegisterBody(BaseModel):
         return self
 ```
 
-レスポンス例（422）:
+Example response (422):
 
 ```json
 {
@@ -118,14 +122,15 @@ class RegisterBody(BaseModel):
 }
 ```
 
-フロントエンドでは `field: "request"` をフォーム全体に対するエラーとして扱い、エラーメッセージに関係するフィールド名を文言に含める。
+On the frontend, treat `field: "request"` as an error for the whole form, and
+include the relevant field name in the error message text.
 
 ---
 
-## 6. ErrorHandlerMiddleware との連携
+## 6. Integration with ErrorHandlerMiddleware
 
-`nene2.middleware.ErrorHandlerMiddleware` をアプリに追加すると、
-`ValidationException` が自動で 422 Problem Details レスポンスに変換される。
+Adding `nene2.middleware.ErrorHandlerMiddleware` to the app converts a
+`ValidationException` into a 422 Problem Details response automatically.
 
 ```python
 from nene2.middleware import ErrorHandlerMiddleware
@@ -136,11 +141,12 @@ app.add_middleware(ErrorHandlerMiddleware)
 
 ---
 
-## 7. 外部入力のデコード失敗を 400 で返す
+## 7. Return 400 for failures decoding external input
 
-Pydantic の `Query()` / `Body()` では型変換に失敗すると 422 になるが、
-カーソル (Base64) やトークンなど「文字列として受け取ってから自前でデコードする」場合、
-デコード失敗の例外を捕捉しないと `ErrorHandlerMiddleware` が 500 として返す。
+With Pydantic's `Query()` / `Body()`, a type-conversion failure becomes a 422. But
+for things you "receive as a string and decode yourself" — cursors (Base64),
+tokens, etc. — if you don't catch the decode exception, `ErrorHandlerMiddleware`
+returns it as a 500.
 
 ```python
 from fastapi.responses import JSONResponse
@@ -149,11 +155,12 @@ from fastapi.responses import JSONResponse
 def list_posts(after: str | None = Query(None)) -> JSONResponse:
     if after is not None:
         try:
-            cursor_id = _decode_cursor(after)  # base64.urlsafe_b64decode など
+            cursor_id = _decode_cursor(after)  # e.g. base64.urlsafe_b64decode
         except Exception:
             return JSONResponse({"detail": "Invalid cursor"}, status_code=400)
-        # 以降は cursor_id を使って処理
+        # continue using cursor_id
 ```
 
-`binascii.Error` などのデコード失敗は `ValueError` / `Exception` でまとめて捕捉し、
-`400 Bad Request` を返すのが適切（ユーザー入力ミスであり、サーバーエラーではない）。
+Catch decode failures such as `binascii.Error` together via `ValueError` /
+`Exception` and return `400 Bad Request` — this is user input error, not a server
+error.

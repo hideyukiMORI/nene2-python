@@ -1,26 +1,27 @@
-# How-to: 並行処理パターンの選び方
+# How-to: choosing a concurrency pattern
 
-FT188（threading）〜 FT192（asyncio）の知見をまとめたガイド。
-nene2-python では **UseCase 層は HTTP に依存しない**ため、並行処理の選択は UseCase または HTTP ハンドラー層で行う。
+A guide consolidating the findings of FT188 (threading) through FT192 (asyncio).
+In nene2-python the **UseCase layer is HTTP-independent**, so the choice of
+concurrency is made in the UseCase or the HTTP handler layer.
 
 ---
 
-## クイック選択表
+## Quick selection table
 
-| 用途 | 推奨 | FT |
+| Use case | Recommended | FT |
 |---|---|---|
-| FastAPI ハンドラー内の I/O 待ち | `async def` + `await` | FT192 |
-| 同期 UseCase を非ブロッキング実行 | `AsyncUseCaseProtocol` | FT6, FT14 |
-| CPU バウンドをスレッドに逃がす | `asyncio.to_thread()` または `ThreadPoolExecutor` | FT188, FT191 |
-| CPU バウンドをプロセスに逃がす | `ProcessPoolExecutor` / `multiprocessing` | FT190, FT191 |
-| バックグラウンドで外部コマンド | `subprocess`（`shell=False` + allowlist） | FT189 |
-| 共有 in-memory キャッシュ | `TtlCache[V]`（スレッドセーフ） | FT119, FT171 |
+| Waiting on I/O inside a FastAPI handler | `async def` + `await` | FT192 |
+| Run a sync UseCase non-blockingly | `AsyncUseCaseProtocol` | FT6, FT14 |
+| Offload CPU-bound work to a thread | `asyncio.to_thread()` or `ThreadPoolExecutor` | FT188, FT191 |
+| Offload CPU-bound work to a process | `ProcessPoolExecutor` / `multiprocessing` | FT190, FT191 |
+| External command in the background | `subprocess` (`shell=False` + allowlist) | FT189 |
+| Shared in-memory cache | `TtlCache[V]` (thread-safe) | FT119, FT171 |
 
 ---
 
-## asyncio（FT192）
+## asyncio (FT192)
 
-FastAPI ルートは `async def` が基本。複数 I/O を並列化する場合:
+FastAPI routes are `async def` by default. To parallelize multiple I/O operations:
 
 ```python
 import asyncio
@@ -32,37 +33,39 @@ async def execute(self, input_: ListNotesInput) -> ListNotesOutput:
     return ListNotesOutput(items=items, total=total, ...)
 ```
 
-**注意**: Pydantic v2 は `float` を `int` に切り捨て変換する。数値境界は `Field(ge=..., le=...)` で明示する。
+**Note**: Pydantic v2 truncates `float` to `int`. Make numeric bounds explicit with
+`Field(ge=..., le=...)`.
 
 ---
 
-## threading（FT188）
+## threading (FT188)
 
-GIL 下では CPU 並列化には不向きだが、**ブロッキング I/O を async 化しないレガシー API** との橋渡しに有効。
+Under the GIL this is unsuited to CPU parallelism, but it is useful as a bridge to
+**legacy APIs whose blocking I/O hasn't been made async**.
 
-- `threading.Lock` / `asyncio.Lock` — 共有状態の保護
-- `ThreadPoolExecutor` — 同期関数のオフロード（FT191 と組み合わせ）
-
----
-
-## subprocess（FT189）
-
-**必須ルール**（CLAUDE.md / FT189 セキュリティ診断）:
-
-1. `shell=False` のみ
-2. コマンド名を allowlist で検証
-3. タイムアウトと stdout サイズ上限
-4. ruff S603 は allowlist 検証後に `# noqa: S603`（理由を docstring に記載）
+- `threading.Lock` / `asyncio.Lock` — protect shared state
+- `ThreadPoolExecutor` — offload sync functions (combine with FT191)
 
 ---
 
-## nene2 との整合
+## subprocess (FT189)
 
-| 層 | 並行処理 |
+**Mandatory rules** (CLAUDE.md / FT189 security diagnosis):
+
+1. `shell=False` only
+2. Validate the command name against an allowlist
+3. Set a timeout and an stdout size limit
+4. `# noqa: S603` for ruff only after the allowlist check (state the reason in the docstring)
+
+---
+
+## Alignment with nene2
+
+| Layer | Concurrency |
 |---|---|
-| UseCase | `AsyncUseCaseProtocol` または純粋同期（InMemory テスト可能） |
-| HTTP | `async def` ハンドラー、`BackgroundTasks`（[background-tasks.md](background-tasks.md)） |
-| Middleware | 同期 ASGI；ブロッキング処理をミドルウェア内に置かない |
-| MCP | UseCase をそのままツール化 — 並行は UseCase 内で完結 |
+| UseCase | `AsyncUseCaseProtocol` or pure-sync (InMemory testable) |
+| HTTP | `async def` handlers, `BackgroundTasks` ([background-tasks.md](background-tasks.md)) |
+| Middleware | sync ASGI; don't put blocking work inside middleware |
+| MCP | expose the UseCase as a tool directly — concurrency stays inside the UseCase |
 
-詳細レポート: [FT188](../field-trials/2026-05-field-trial-188.md) · [FT189](../field-trials/2026-05-field-trial-189.md) · [FT190](../field-trials/2026-05-field-trial-190.md) · [FT191](../field-trials/2026-05-field-trial-191.md) · [FT192](../field-trials/2026-05-field-trial-192.md)
+Detailed reports: [FT188](../field-trials/2026-05-field-trial-188.md) · [FT189](../field-trials/2026-05-field-trial-189.md) · [FT190](../field-trials/2026-05-field-trial-190.md) · [FT191](../field-trials/2026-05-field-trial-191.md) · [FT192](../field-trials/2026-05-field-trial-192.md)

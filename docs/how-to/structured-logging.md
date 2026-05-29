@@ -1,13 +1,13 @@
-# How-to: 構造化ログ（structlog）
+# How-to: structured logging (structlog)
 
-`nene2.log` と `RequestLoggingMiddleware` を使った structlog の設定と、
-リクエストコンテキストの伝播パターンを説明する。
+How to configure structlog with `nene2.log` and `RequestLoggingMiddleware`, and
+the pattern for propagating request context.
 
 ---
 
-## 1. アプリ起動時にログを設定する
+## 1. Configure logging at app startup
 
-`setup_logging()` を `create_app()` の先頭で呼ぶ。
+Call `setup_logging()` at the top of `create_app()`.
 
 ```python
 from nene2.log import setup_logging
@@ -21,11 +21,11 @@ app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RequestIdMiddleware)
 ```
 
-`app_env="local"` のときは色付きコンソール出力、それ以外は JSON ログになる。
+With `app_env="local"` you get colored console output; otherwise JSON logs.
 
 ---
 
-## 2. エンドポイント内でログを発行する
+## 2. Emit logs inside an endpoint
 
 ```python
 import structlog
@@ -35,24 +35,24 @@ logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 @app.post("/orders")
 def create_order(body: OrderRequest) -> JSONResponse:
     logger.info("order.creating", item_id=body.item_id)
-    # request_id, method, path は RequestLoggingMiddleware が自動付与
+    # request_id, method, path are added automatically by RequestLoggingMiddleware
     ...
 ```
 
-`RequestLoggingMiddleware` がリクエスト開始時に `request_id`, `method`, `path` を
-`structlog.contextvars.bind_contextvars()` でバインドするため、
-エンドポイント内の全ログにこれらが自動付与される。
+`RequestLoggingMiddleware` binds `request_id`, `method`, and `path` at the start
+of the request via `structlog.contextvars.bind_contextvars()`, so every log inside
+the endpoint carries them automatically.
 
 ---
 
-## 3. pytest で structlog ログをキャプチャする
+## 3. Capture structlog logs in pytest
 
-`configure_for_testing()` を test ファイルまたは `conftest.py` の先頭で呼ぶ。
+Call `configure_for_testing()` at the top of the test file or `conftest.py`.
 
 ```python
 from nene2.log import configure_for_testing
 
-configure_for_testing()  # structlog を stdlib logging ブリッジ経由に切り替え
+configure_for_testing()  # route structlog through the stdlib logging bridge
 
 def test_order_logs(caplog: pytest.LogCaptureFixture) -> None:
     import logging
@@ -63,19 +63,20 @@ def test_order_logs(caplog: pytest.LogCaptureFixture) -> None:
 
 ---
 
-## 4. X-Request-Id は UUID v4 形式のみ転送される
+## 4. X-Request-Id is only forwarded in UUID v4 form
 
-`RequestIdMiddleware` はクライアント提供の `X-Request-Id` を UUID v4 形式のみ受け付ける。
-非 UUID 値（`"test-id-001"` など）は黙って新規 UUID に置き換えられる。
+`RequestIdMiddleware` only accepts a client-supplied `X-Request-Id` in UUID v4
+form. A non-UUID value (such as `"test-id-001"`) is silently replaced with a new
+UUID.
 
 ```python
-# ❌ 非 UUID 形式 → 新規 UUID が生成される
+# ❌ non-UUID form → a new UUID is generated
 headers = {"X-Request-Id": "test-req-001"}
 
-# ✅ UUID v4 形式 → そのまま転送される
+# ✅ UUID v4 form → forwarded as-is
 headers = {"X-Request-Id": "550e8400-e29b-41d4-a716-446655440000"}
 ```
 
-テストでリクエスト ID を固定したい場合は `uuid.uuid4()` で生成するか、
-固定の UUID v4 文字列（第 3 グループが `4xxx`、第 4 グループが `[89ab]xxx`）を使う。
-この設計はログインジェクション対策のために意図的に行われている。
+To pin a request ID in tests, generate one with `uuid.uuid4()` or use a fixed
+UUID v4 string (third group `4xxx`, fourth group `[89ab]xxx`). This design is
+intentional, as a defense against log injection.

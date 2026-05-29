@@ -1,10 +1,10 @@
-# How-to: CORS 設定
+# How-to: CORS configuration
 
-`setup_middlewares()` の `cors_allowed_origins` パラメーターで CORS を有効化する方法を説明する。
+How to enable CORS via the `cors_allowed_origins` parameter of `setup_middlewares()`.
 
 ---
 
-## 1. 基本: 単一オリジンを許可
+## 1. Basics: allow a single origin
 
 ```python
 from nene2.middleware import setup_middlewares
@@ -13,11 +13,11 @@ app = FastAPI()
 setup_middlewares(app, cors_allowed_origins=["https://example.com"])
 ```
 
-`cors_allowed_origins` を指定しない（デフォルト `None`）と CORS ミドルウェアは追加されない。
+If `cors_allowed_origins` is omitted (default `None`), the CORS middleware is not added.
 
 ---
 
-## 2. 複数オリジンを許可
+## 2. Allow multiple origins
 
 ```python
 setup_middlewares(app, cors_allowed_origins=[
@@ -28,7 +28,7 @@ setup_middlewares(app, cors_allowed_origins=[
 
 ---
 
-## 3. 開発環境: localhost を許可
+## 3. Development: allow localhost
 
 ```python
 import os
@@ -40,19 +40,21 @@ if os.getenv("APP_ENV") == "local":
 setup_middlewares(app, cors_allowed_origins=origins)
 ```
 
-**`allow_origins=["*"]` は禁止**。CLAUDE.md のセキュリティポリシーにより、ワイルドカードオリジンは開発環境でも使用不可。
+**`allow_origins=["*"]` is forbidden.** Per the CLAUDE.md security policy, a
+wildcard origin must not be used — not even in development.
 
 ---
 
-## 4. credentials（Cookie・Authorization ヘッダー）を許可
+## 4. Allow credentials (cookies, Authorization header)
 
-`setup_middlewares()` は内部で `allow_credentials=True` を設定しない。credentials が必要な場合は `CORSMiddleware` を直接追加する。
+`setup_middlewares()` does not set `allow_credentials=True` internally. If you need
+credentials, add `CORSMiddleware` directly.
 
 ```python
 from starlette.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-setup_middlewares(app)  # 他のミドルウェア（RequestId 等）は通常通り設定
+setup_middlewares(app)  # other middleware (RequestId, etc.) as usual
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://app.example.com"],
@@ -62,17 +64,19 @@ app.add_middleware(
 )
 ```
 
-**注意**: `add_middleware` は LIFO のため、`CORSMiddleware` を後から追加すると最外側に配置される。`setup_middlewares()` の後に呼ぶことで、CORS が最も外側で処理される。
+**Note**: `add_middleware` is LIFO, so adding `CORSMiddleware` last places it
+outermost. Calling it after `setup_middlewares()` makes CORS run on the outside.
 
 ---
 
-## 5. CORS とプリフライトリクエスト
+## 5. CORS and preflight requests
 
-`OPTIONS` リクエスト（プリフライト）は `CORSMiddleware` が自動で処理する。`@app.options(...)` を定義する必要はない。
+`OPTIONS` requests (preflight) are handled automatically by `CORSMiddleware`. You
+do not need to define `@app.options(...)`.
 
 ---
 
-## 6. テストでの CORS ヘッダー確認
+## 6. Checking CORS headers in tests
 
 ```python
 def test_cors_header() -> None:

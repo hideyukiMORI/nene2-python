@@ -1,9 +1,9 @@
-# How-to: integrating AsyncUseCase with FastAPI
+# How-to: AsyncUseCase と FastAPI の統合
 
-## Basic AsyncUseCaseProtocol implementation
+## AsyncUseCaseProtocol の基本実装
 
-`AsyncUseCaseProtocol` is a Protocol (structural subtyping), so no inheritance is
-needed. Just implementing `async def execute(self, input_: I) -> O` conforms.
+`AsyncUseCaseProtocol` は Protocol（構造的部分型）なので継承不要です。
+`async def execute(self, input_: I) -> O` を実装するだけで適合します。
 
 ```python
 from dataclasses import dataclass
@@ -23,15 +23,15 @@ class FetchUserOutput:
 
 class FetchUserUseCase:
     async def execute(self, input_: FetchUserInput) -> FetchUserOutput:
-        # async work such as an external API call or DB access
+        # 外部 API 呼び出し・DB アクセスなど非同期処理
         return FetchUserOutput(user_id=input_.user_id, name="Alice")
 ```
 
 ---
 
-## Integration with FastAPI Depends
+## FastAPI Depends との統合
 
-Passing a factory function to `Depends()` is the standard pattern.
+ファクトリ関数を `Depends()` に渡すのが標準パターンです。
 
 ```python
 from fastapi import Depends, FastAPI
@@ -55,10 +55,9 @@ async def get_user(
 
 ---
 
-## DI for a UseCase with external dependencies
+## 外部依存を持つ UseCase の DI
 
-A UseCase that takes a repository or external client gets those injected via
-Depends too.
+リポジトリや外部クライアントを受け取る UseCase は、依存も Depends で注入します。
 
 ```python
 class FetchUserUseCase:
@@ -82,9 +81,9 @@ def get_fetch_user_use_case(
 
 ---
 
-## Concurrent execution
+## 並行実行
 
-Use `asyncio.gather()` to run multiple AsyncUseCases concurrently.
+複数の AsyncUseCase を並行実行するには `asyncio.gather()` を使います。
 
 ```python
 import asyncio
@@ -105,38 +104,37 @@ async def dashboard(
 
 ---
 
-## A note on isinstance()
+## isinstance() の注意点
 
-`AsyncUseCaseProtocol` is `@runtime_checkable`, but `isinstance()` only checks for
-the presence of an `execute` attribute (it does not distinguish sync from async).
+`AsyncUseCaseProtocol` は `@runtime_checkable` ですが、`isinstance()` は
+`execute` 属性の存在のみを確認します（sync/async の区別はしません）。
 
 ```python
-# isinstance() returns True for a sync UseCase too (false positive)
+# isinstance() は sync UseCase も True を返す（false positive）
 isinstance(sync_use_case, AsyncUseCaseProtocol)  # → True
 
-# the correct way to check for async
+# 正しい非同期確認方法
 import inspect
 inspect.iscoroutinefunction(use_case.execute)  # → True/False
 ```
 
-Type safety is guaranteed by `mypy --strict` static analysis. See ADR-0010 for details.
+型安全性は `mypy --strict` の静的解析で保証します。詳細は ADR-0010 を参照してください。
 
 ---
 
-## The blocking problem of sync DB calls
+## 同期 DB 呼び出しのブロッキング問題
 
-Making a sync DB call (e.g. the SQLAlchemy sync API) inside an `async def` handler
-blocks the event loop and stalls other requests.
+`async def` ハンドラーで同期の DB 呼び出し（SQLAlchemy sync API 等）を行うと、イベントループをブロックして他のリクエストが詰まる。
 
 ```python
-# ❌ a sync DB call inside async def blocks
+# ❌ async def 内での同期 DB 呼び出しはブロッキング
 @app.get("/notes")
 async def list_notes() -> JSONResponse:
-    notes = session.execute(select(Note)).scalars().all()  # blocks!
+    notes = session.execute(select(Note)).scalars().all()  # ブロック！
     return JSONResponse(...)
 ```
 
-**Solution 1: run it in a thread pool with `run_in_threadpool`**
+**解決策1: `run_in_threadpool` でスレッドプールで実行する**
 
 ```python
 from nene2.middleware import run_in_threadpool
@@ -147,19 +145,18 @@ async def list_notes() -> JSONResponse:
     return JSONResponse(...)
 ```
 
-**Solution 2: use a `def` (sync) handler**
+**解決策2: `def`（同期）ハンドラーを使う**
 
-If you use a sync DB, don't make the handler `async def`. FastAPI runs it in a
-thread pool automatically.
+同期 DB を使う場合は、ハンドラーを `async def` にしない。FastAPI が自動でスレッドプールで実行する。
 
 ```python
-# ✅ def handler + sync DB = no problem
+# ✅ def ハンドラー + 同期 DB = 問題なし
 @app.get("/notes")
 def list_notes() -> JSONResponse:
     notes = session.execute(select(Note)).scalars().all()
     return JSONResponse(...)
 ```
 
-**Solution 3: migrate to the SQLAlchemy async API**
+**解決策3: SQLAlchemy async API に移行する**
 
-Longer term, consider migrating to SQLAlchemy's async API (`AsyncSession`).
+長期的には SQLAlchemy の async API（`AsyncSession`）への移行を検討する。
