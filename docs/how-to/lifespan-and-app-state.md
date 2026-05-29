@@ -1,12 +1,14 @@
-# How-to: Lifespan と app.state
+# How-to: lifespan and app.state
 
-FastAPI の `lifespan` コンテキストマネージャーと `app.state` を使ったリソース管理パターンを説明する。
+Resource management patterns using FastAPI's `lifespan` context manager and
+`app.state`.
 
 ---
 
-## 1. Lifespan の基本パターン
+## 1. Basic lifespan pattern
 
-DB 接続・キャッシュ・外部クライアントなど、アプリ起動時に初期化して終了時にクリーンアップするリソースは `lifespan` で管理する。
+Resources that are initialized at app startup and cleaned up at shutdown — DB
+connections, caches, external clients — are managed with `lifespan`.
 
 ```python
 from contextlib import asynccontextmanager
@@ -15,10 +17,10 @@ from fastapi import FastAPI
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    # 起動時: リソース初期化
+    # startup: initialize resources
     app.state.db = await create_db_connection()
     yield
-    # 終了時: クリーンアップ
+    # shutdown: clean up
     await app.state.db.close()
 
 app = FastAPI(lifespan=lifespan)
@@ -26,22 +28,24 @@ app = FastAPI(lifespan=lifespan)
 
 ---
 
-## 2. app.state の型安全なアクセス
+## 2. Type-safe access to app.state
 
-`app.state` は `starlette.datastructures.State` オブジェクトで、任意の属性を動的に追加できる。型アノテーションがないため、アクセス時に型チェックが効かない。
+`app.state` is a `starlette.datastructures.State` object to which arbitrary
+attributes can be added dynamically. Since it has no type annotations, type
+checking doesn't apply when accessing it.
 
-**推奨: 型付きアクセサー関数を定義する**
+**Recommended: define typed accessor functions**
 
 ```python
 from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 def get_db(request: Request) -> AsyncSession:
-    db: AsyncSession = request.app.state.db  # type: ignore[attr-defined]  # reason: lifespan で確実に設定される
+    db: AsyncSession = request.app.state.db  # type: ignore[attr-defined]  # reason: always set by lifespan
     return db
 ```
 
-または、型付きラッパーを定義する:
+Or define a typed wrapper:
 
 ```python
 from dataclasses import dataclass
@@ -60,23 +64,26 @@ def get_app_state(request: Request) -> AppState:
 
 ---
 
-## 3. TestClient と lifespan
+## 3. TestClient and lifespan
 
-`TestClient` を通常の使い方（コンテキストマネージャーなし）だと、lifespan が実行されない。
+If you use `TestClient` the usual way (without the context manager), lifespan does
+not run.
 
 ```python
-# ❌ lifespan が実行されない
+# ❌ lifespan does not run
 client = TestClient(app)
-r = client.get("/")  # app.state.db が未設定で AttributeError
+r = client.get("/")  # AttributeError because app.state.db is unset
 
-# ✅ with ブロックで lifespan を実行する
+# ✅ run lifespan with a with-block
 with TestClient(app) as client:
-    r = client.get("/")  # lifespan が起動・終了する
+    r = client.get("/")  # lifespan starts up and shuts down
 ```
 
-ただし、別のテストが先に `with TestClient(app)` を実行していると `app.state` が持続し、`with` なしでも偶然動作することがある。これはテスト順依存のバグになりうるため、常に `with` ブロックを使う。
+Note that if another test ran `with TestClient(app)` first, `app.state` may
+persist and it might happen to work even without `with`. That is a test-order
+dependent bug, so always use a `with`-block.
 
-**pytest fixture パターン**:
+**pytest fixture pattern**:
 
 ```python
 from collections.abc import Generator
@@ -90,13 +97,14 @@ def client() -> Generator[TestClient, None, None]:
         yield c
 ```
 
-戻り値型は `Generator[TestClient, None, None]` にする（`TestClient` 単体では型エラーになる）。
+Make the return type `Generator[TestClient, None, None]` (just `TestClient` is a
+type error).
 
 ---
 
-## 4. TtlCache を app.state で管理する
+## 4. Managing a TtlCache via app.state
 
-`nene2.cache.TtlCache` を `app.state` に格納すると、テスト時にグローバル変数を避けられる。
+Storing `nene2.cache.TtlCache` on `app.state` avoids a global variable in tests.
 
 ```python
 from contextlib import asynccontextmanager
@@ -111,13 +119,13 @@ from nene2.cache import TtlCache
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.cache = TtlCache[dict[str, object]](ttl_seconds=60.0)
     yield
-    # TtlCache はクリーンアップ不要（メモリのみ）
+    # TtlCache needs no cleanup (memory only)
 
 app = FastAPI(lifespan=lifespan)
 
 
 def get_cache(request: Request) -> TtlCache[dict[str, object]]:
-    cache: TtlCache[dict[str, object]] = request.app.state.cache  # type: ignore[attr-defined]  # reason: lifespan で確実に設定される
+    cache: TtlCache[dict[str, object]] = request.app.state.cache  # type: ignore[attr-defined]  # reason: always set by lifespan
     return cache
 
 
@@ -134,26 +142,27 @@ def get_item(
     return JSONResponse({"source": "fresh", **result})
 ```
 
-**グローバル変数 vs app.state の比較**:
+**Global variable vs. app.state**:
 
-| 方法 | メリット | デメリット |
+| Approach | Pro | Con |
 |---|---|---|
-| グローバル変数 | シンプル | テスト間で状態が共有される |
-| `app.state` | テストごとに独立した `TestClient` でリセット可能 | `type: ignore` が必要 |
+| Global variable | Simple | State shared across tests |
+| `app.state` | Resettable per test with an independent `TestClient` | Requires `type: ignore` |
 
 ---
 
-## 6. app.state に設定した値が lifespan 後に消える
+## 5. Values set on app.state disappear after lifespan
 
-`app.state` への設定は `lifespan` 内で行う。`startup` イベント（旧 API）は FastAPI 0.93+ では非推奨。
+Set values on `app.state` inside `lifespan`. The `startup` event (old API) is
+deprecated in FastAPI 0.93+.
 
 ```python
-# ❌ 旧 API（非推奨）
+# ❌ old API (deprecated)
 @app.on_event("startup")
 async def startup() -> None:
     app.state.db = await create_db_connection()
 
-# ✅ lifespan を使う
+# ✅ use lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.db = await create_db_connection()

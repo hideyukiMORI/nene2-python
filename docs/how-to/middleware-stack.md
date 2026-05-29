@@ -1,9 +1,10 @@
-# How-To: ミドルウェアスタックの正しい設定
+# How-to: configuring the middleware stack correctly
 
-## 推奨: `setup_middlewares()` を使う
+## Recommended: use `setup_middlewares()`
 
-手動で `add_middleware` を並べる代わりに、フレームワーク提供のヘルパーを使うと
-LIFO 順序ミス（500 に `X-Request-Id` が付かない等）を防げる。
+Instead of lining up `add_middleware` calls by hand, use the framework-provided
+helper to avoid LIFO ordering mistakes (such as a 500 not getting an
+`X-Request-Id`).
 
 ```python
 from nene2.middleware import setup_middlewares
@@ -18,87 +19,88 @@ setup_middlewares(
 )
 ```
 
-有効なスタック（外側 → 内側）:
+Resulting stack (outer → inner):
 
 ```
 CORS → RequestId → SecurityHeaders → SizeLimit → Throttle → RequestLogging → ErrorHandler
 ```
 
-カスタムミドルウェアが必要な場合のみ、以下の手動登録パターンを使う。
+Use the manual registration pattern below only when you need custom middleware.
 
 ---
 
-## 手動登録（TL;DR）
+## Manual registration (TL;DR)
 
 ```python
-# この順序で add_middleware を呼ぶ
-app.add_middleware(ErrorHandlerMiddleware)           # 最内側
+# call add_middleware in this order
+app.add_middleware(ErrorHandlerMiddleware)           # innermost
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(ThrottleMiddleware, limit=100, window=60)
 app.add_middleware(RequestSizeLimitMiddleware, max_bytes=1_048_576)
 app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(RequestIdMiddleware)              # 最外側
+app.add_middleware(RequestIdMiddleware)              # outermost
 ```
 
 ---
 
-## なぜこの順序なのか
+## Why this order
 
-### Starlette の LIFO ルール
+### Starlette's LIFO rule
 
-`app.add_middleware()` は **後から追加したものが外側**（LIFO）になる。
+`app.add_middleware()` makes **the last one added the outermost** (LIFO).
 
 ```
 add_middleware(A)  →  B(A(Router))
 add_middleware(B)
 ```
 
-リクエストは外側から内側へ（B → A → Router）、
-レスポンスは内側から外側へ（Router → A → B）流れる。
+The request flows outer → inner (B → A → Router), and the response flows
+inner → outer (Router → A → B).
 
-### ErrorHandler を最外側にすると何が壊れるか
+### What breaks if ErrorHandler is outermost
 
 ```python
-# ❌ 間違い
+# ❌ wrong
 app.add_middleware(RequestIdMiddleware)
-app.add_middleware(ErrorHandlerMiddleware)  # 最外側
-# スタック: ErrorHandler(RequestId(Router))
+app.add_middleware(ErrorHandlerMiddleware)  # outermost
+# stack: ErrorHandler(RequestId(Router))
 ```
 
-ハンドラーが例外を raise したとき:
+When a handler raises an exception:
 
-1. `ErrorHandlerMiddleware.dispatch` が例外を捕捉
-2. `problem_details_response(...)` で **新しい Response を直接 return**
-3. この Response は内側の `RequestId` ミドルウェアを **通過しない**
-4. 結果: **500 エラーに `X-Request-Id` が付かない**
+1. `ErrorHandlerMiddleware.dispatch` catches the exception
+2. it returns a **brand new Response directly** via `problem_details_response(...)`
+3. that Response **does not pass through** the inner `RequestId` middleware
+4. result: **the 500 error has no `X-Request-Id`**
 
-同じ理由で `SecurityHeadersMiddleware` が内側にあると、
-エラーレスポンスにセキュリティヘッダーが付かない。
+For the same reason, if `SecurityHeadersMiddleware` is inner, error responses
+won't get security headers.
 
-### 正しい順序のスタック図
+### The correct stack diagram
 
 ```
-RequestIdMiddleware            ← 全レスポンス（200〜5xx）に X-Request-Id を付与
-  └─ SecurityHeadersMiddleware ← 全レスポンスにセキュリティヘッダーを付与
-       └─ RequestSizeLimitMiddleware ← 413 を直接返す（ErrorHandler 不要）
-            └─ ThrottleMiddleware   ← 429 を直接返す（ErrorHandler 不要）
+RequestIdMiddleware            ← adds X-Request-Id to every response (200–5xx)
+  └─ SecurityHeadersMiddleware ← adds security headers to every response
+       └─ RequestSizeLimitMiddleware ← returns 413 directly (no ErrorHandler needed)
+            └─ ThrottleMiddleware   ← returns 429 directly (no ErrorHandler needed)
                  └─ RequestLoggingMiddleware
-                      └─ ErrorHandlerMiddleware ← ハンドラー例外を 500 に変換
+                      └─ ErrorHandlerMiddleware ← converts handler exceptions to 500
                            └─ Router (FastAPI handlers)
 ```
 
-`RequestSizeLimitMiddleware` と `ThrottleMiddleware` は自身で `problem_details_response()` を
-返すため、ErrorHandler の内外に置いても 413/429 の形式は変わらない。
-ただし `X-Request-Id` が付くかどうかは `RequestIdMiddleware` の位置次第。
+`RequestSizeLimitMiddleware` and `ThrottleMiddleware` return
+`problem_details_response()` themselves, so placing them inside or outside the
+ErrorHandler doesn't change the 413/429 format. Whether `X-Request-Id` is attached
+depends on the position of `RequestIdMiddleware`.
 
 ---
 
-## 使用しないミドルウェアがある場合
+## When some middleware is unused
 
-一部のミドルウェアを省略しても、残りの順序は同じルールに従う:
+Even if you omit some middleware, the rest follows the same ordering rule:
 
 ```python
-# ThrottleMiddleware と RequestLoggingMiddleware を省略した場合
+# when ThrottleMiddleware and RequestLoggingMiddleware are omitted
 app.add_middleware(ErrorHandlerMiddleware)
 app.add_middleware(RequestSizeLimitMiddleware, max_bytes=1_048_576)
 app.add_middleware(SecurityHeadersMiddleware)
@@ -107,33 +109,33 @@ app.add_middleware(RequestIdMiddleware)
 
 ---
 
-## ErrorHandlerMiddleware.install() を使う場合
+## When using ErrorHandlerMiddleware.install()
 
-`install()` は `add_middleware` と `add_exception_handler` をまとめて行うが、
-他のミドルウェアとの順序設定は手動で行う必要がある:
+`install()` does `add_middleware` and `add_exception_handler` together, but you
+still need to set the order relative to other middleware manually:
 
 ```python
-# install() は最初に呼ぶ（最内側になる）
-ErrorHandlerMiddleware.install(app)          # 内側
+# call install() first (it becomes innermost)
+ErrorHandlerMiddleware.install(app)          # inner
 
-# その後に他のミドルウェアを追加
+# then add the other middleware
 app.add_middleware(RequestSizeLimitMiddleware, max_bytes=1_048_576)
 app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(RequestIdMiddleware)       # 外側
+app.add_middleware(RequestIdMiddleware)       # outer
 ```
 
 ---
 
-## よくある質問
+## FAQ
 
-**Q: `RequestSizeLimitMiddleware` は ErrorHandler の内外どちらに置くべきか?**
+**Q: Should `RequestSizeLimitMiddleware` go inside or outside the ErrorHandler?**
 
-A: 内外どちらでも機能するが、`RequestIdMiddleware` より内側にすることで
-413 レスポンスにも `X-Request-Id` が付く。上記の推奨順序に従えばよい。
+A: It works either way, but placing it inside `RequestIdMiddleware` means the 413
+response also gets an `X-Request-Id`. Just follow the recommended order above.
 
-**Q: カスタムミドルウェアはどこに追加するか?**
+**Q: Where do I add custom middleware?**
 
-A: そのミドルウェアの性質による:
-- 全レスポンスに何かを追加したい → `RequestIdMiddleware` の直前（外側）
-- ハンドラー例外をキャッチしたい → `ErrorHandlerMiddleware` の直後（内側）
-- リクエストを早期拒否したい → `RequestSizeLimitMiddleware` や `ThrottleMiddleware` の近く
+A: It depends on the middleware's nature:
+- want to add something to every response → right before `RequestIdMiddleware` (outer)
+- want to catch handler exceptions → right after `ErrorHandlerMiddleware` (inner)
+- want to reject requests early → near `RequestSizeLimitMiddleware` or `ThrottleMiddleware`

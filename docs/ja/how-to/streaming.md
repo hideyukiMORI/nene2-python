@@ -1,12 +1,12 @@
-# How-to: streaming responses
+# How-to: ストリーミングレスポンス
 
-Streaming patterns for SSE, NDJSON, and CSV using `StreamingResponse`.
+`StreamingResponse` を使った SSE・NDJSON・CSV のストリーミングパターンを説明する。
 
 ---
 
 ## 1. Server-Sent Events (SSE)
 
-Used for real-time notifications and progress updates.
+リアルタイム通知や進捗更新に使う。
 
 ```python
 import asyncio
@@ -30,18 +30,18 @@ async def stream_events(topic: str) -> StreamingResponse:
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",  # disable nginx proxy buffering
+            "X-Accel-Buffering": "no",  # nginx プロキシのバッファリングを無効化
         },
     )
 ```
 
-SSE format: each message ends with `data: ...\n\n` (two newlines).
+SSE フォーマット: 各メッセージは `data: ...\n\n`（改行2つ）で終わる。
 
 ---
 
 ## 2. NDJSON (Newline Delimited JSON)
 
-Used for streaming large amounts of data.
+大量データのストリーミング転送に使う。
 
 ```python
 import json
@@ -63,7 +63,7 @@ async def export_items() -> StreamingResponse:
 
 ---
 
-## 3. CSV streaming
+## 3. CSV ストリーミング
 
 ```python
 import csv
@@ -96,36 +96,32 @@ def export_users_csv() -> StreamingResponse:
 
 ---
 
-## 4. `response_model` cannot be used
+## 4. `response_model` は使えない
 
-`StreamingResponse` is incompatible with the `response_model` parameter. It would
-appear in the OpenAPI schema but no validation is performed.
+`StreamingResponse` は `response_model` パラメーターと互換がない。OpenAPI スキーマに含まれるが、バリデーションは行われない。
 
 ```python
-# ❌ don't specify response_model on a StreamingResponse
+# ❌ StreamingResponse に response_model は指定しない
 @app.get("/stream", response_model=SomeModel)
 def stream() -> StreamingResponse: ...
 
-# ✅ omit response_model
+# ✅ response_model は省略
 @app.get("/stream")
 def stream() -> StreamingResponse: ...
 ```
 
 ---
 
-## 5. Coexistence with middleware
+## 5. ミドルウェアとの共存
 
-nene2's `RequestIdMiddleware` and `SecurityHeadersMiddleware` also apply to a
-`StreamingResponse`. Even during streaming, the response headers get an
-`X-Request-Id`.
+nene2 の `RequestIdMiddleware`・`SecurityHeadersMiddleware` は `StreamingResponse` にも適用される。ストリーミング中でもレスポンスヘッダーに `X-Request-Id` が付く。
 
 ---
 
-## 6. Testing
+## 6. テスト
 
-Inside a `client.stream()` context, `r.text` / `r.content` cannot be used
-(`ResponseNotRead`). Collect chunks with `r.iter_lines()` / `r.iter_text()` /
-`r.iter_bytes()`.
+`client.stream()` コンテキスト内では `r.text` / `r.content` は使えない（`ResponseNotRead`）。
+`r.iter_lines()` / `r.iter_text()` / `r.iter_bytes()` でチャンクを収集する。
 
 ```python
 def test_sse_stream() -> None:
@@ -144,9 +140,9 @@ def test_csv_stream() -> None:
     with TestClient(app) as client:
         with client.stream("GET", "/export/users.csv") as r:
             assert r.status_code == 200
-            # ✅ collect text with iter_text()
+            # ✅ iter_text() でテキストを収集
             content = "".join(r.iter_text())
-            # ❌ r.text would raise ResponseNotRead
+            # ❌ r.text は ResponseNotRead になる
         lines = [l for l in content.splitlines() if l]
         assert lines[0] == "id,name,email"
 ```

@@ -1,28 +1,28 @@
-# How-to: メールアドレスのパースと parseaddr() の挙動
+# How-to: parsing email addresses and the behavior of parseaddr()
 
-## parseaddr() は寛容なパーサー
+## parseaddr() is a lenient parser
 
-`email.utils.parseaddr()` は RFC 2822 準拠のフォーマット（`"Name <addr@example.com>"` 形式）を解析しますが、
-**不正なアドレスを渡してもエラーを送出せず、空文字列を返します**。
+`email.utils.parseaddr()` parses RFC 2822 formats (`"Name <addr@example.com>"`),
+but **it does not raise on a malformed address — it returns an empty string**.
 
 ```python
 from email.utils import parseaddr
 
-# 正常ケース
+# Valid cases
 parseaddr("Alice <alice@example.com>")  # → ("Alice", "alice@example.com")
 parseaddr("alice@example.com")          # → ("", "alice@example.com")
 
-# 不正なアドレス — エラーにならず ("", "") を返す
+# Malformed addresses — no error, returns ("", "")
 parseaddr("not-an-email")               # → ("", "")
 parseaddr("")                           # → ("", "")
 parseaddr("bad @ format")              # → ("", "")
 ```
 
-## HTTP 境界での検証は別途行うこと
+## Validate at the HTTP boundary separately
 
-`parseaddr()` の戻り値が空かどうかで有効性を確認しても、
-**セキュリティ上の検証としては不十分**です。ユーザーが入力したアドレスは
-Pydantic の `EmailStr` や正規表現で検証した後に `parseaddr()` を使ってください。
+Checking whether `parseaddr()`'s return value is empty is **not sufficient as a
+security check**. Validate user-supplied addresses with Pydantic's `EmailStr` or a
+regular expression *before* using `parseaddr()`.
 
 ```python
 import re
@@ -37,12 +37,11 @@ def validate_and_parse(raw: str) -> tuple[str, str] | None:
     return name, addr
 ```
 
-## ヘッダーインジェクション対策
+## Guarding against header injection
 
-`Subject` や `From` ヘッダーに CR/LF (`\r\n`) が含まれると
-**メールヘッダーインジェクション**が発生します。`email.message.EmailMessage` を使えば
-自動的にエスケープされますが、`smtplib.sendmail()` に生文字列を渡す場合は
-事前に CR/LF を除去してください。
+If a `Subject` or `From` header contains CR/LF (`\r\n`), **email header
+injection** can occur. `email.message.EmailMessage` escapes this automatically,
+but if you pass a raw string to `smtplib.sendmail()`, strip CR/LF beforehand.
 
 ```python
 import re
@@ -52,6 +51,6 @@ def sanitize_header(value: str) -> str:
     return _INJECT_RE.sub("", value)
 ```
 
-## 関連 Issue
+## Related issue
 
-- [FT182] #511: parseaddr() の寛容な挙動を How-to ドキュメントに記載
+- [FT182] #511: document parseaddr()'s lenient behavior in a how-to guide

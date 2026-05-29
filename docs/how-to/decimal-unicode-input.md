@@ -1,51 +1,51 @@
-# How-to: decimal モジュールと Unicode 数字入力
+# How-to: the decimal module and Unicode digit input
 
-## Python の Decimal は Unicode 全角数字を受け入れる
+## Python's Decimal accepts Unicode full-width digits
 
-`decimal.Decimal()` は Unicode の全角数字（U+FF10〜U+FF19: ０１２３４５６７８９）を
-そのまま数値として解釈します。HTTP API を通じてユーザーが全角数字を入力した場合、
-**Pydantic の `str` フィールドを通過してしまう**ことがあります。
+`decimal.Decimal()` interprets Unicode full-width digits (U+FF10–U+FF19:
+０１２３４５６７８９) as numbers as-is. When a user submits full-width digits through
+an HTTP API, they can **pass straight through a Pydantic `str` field**.
 
 ```python
 from decimal import Decimal
 
-Decimal("１２３")   # → Decimal('123')  ← 正常に変換される
+Decimal("１２３")   # → Decimal('123')  ← converted normally
 Decimal("１.５")   # → Decimal('1.5')
 ```
 
-## 問題: 想定外の入力が通過する可能性
+## Problem: unexpected input may slip through
 
-金融計算 API で `price: str = Field(...)` としている場合、
-クライアントが `"１０００"` を送ると `Decimal("１０００")` → `Decimal('1000')` として処理されます。
-これ自体はエラーではありませんが、**入力の正規化が必要な場合**（ログ記録・DB 保存等）は
-Unicode 正規化を行ってから処理してください。
+In a financial-calculation API that declares `price: str = Field(...)`, if a
+client sends `"１０００"` it is processed as `Decimal("１０００")` → `Decimal('1000')`.
+That is not an error in itself, but **when you need normalized input** (logging,
+DB storage, etc.) perform Unicode normalization before processing.
 
 ```python
 import unicodedata
 from decimal import Decimal
 
 def parse_decimal_safe(value: str) -> Decimal:
-    """Unicode 正規化（NFKC）して Decimal に変換する."""
+    """Normalize (NFKC) then convert to Decimal."""
     normalized = unicodedata.normalize("NFKC", value.strip())
     return Decimal(normalized)
 ```
 
-`unicodedata.normalize("NFKC", ...)` は全角数字を半角に変換します。
+`unicodedata.normalize("NFKC", ...)` converts full-width digits to half-width.
 
 ```python
 unicodedata.normalize("NFKC", "１２３")  # → "123"
 unicodedata.normalize("NFKC", "１.５")  # → "1.5"
 ```
 
-## Pydantic でのバリデーション
+## Validation with Pydantic
 
-Pydantic の `model_validator` を使って入力値の正規化を強制することを推奨します。
+We recommend forcing input normalization with a Pydantic `model_validator`.
 
 ```python
 from pydantic import BaseModel, Field, model_validator
 
 class PriceRequest(BaseModel):
-    price: str = Field(max_length=20, description="価格（半角数字）")
+    price: str = Field(max_length=20, description="Price (half-width digits)")
 
     @model_validator(mode="before")
     @classmethod
@@ -56,6 +56,6 @@ class PriceRequest(BaseModel):
         return values
 ```
 
-## 関連 Issue
+## Related issue
 
-- [FT176] #500: parse_decimal_safe() の Unicode 全角数字受け入れ挙動を文書化
+- [FT176] #500: document the full-width Unicode digit acceptance behavior of `parse_decimal_safe()`

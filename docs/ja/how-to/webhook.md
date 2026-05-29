@@ -1,13 +1,12 @@
-# How-to: receiving webhooks and verifying HMAC-SHA256 signatures
+# How-to: Webhook 受信と HMAC-SHA256 署名検証
 
-A pattern for receiving webhooks from external services such as GitHub or Stripe
-and verifying their HMAC-SHA256 signatures.
+GitHub や Stripe などの外部サービスから Webhook を受信し、HMAC-SHA256 署名を検証するパターンを説明する。
 
 ---
 
-## 1. Basic pattern (GitHub style)
+## 1. 基本パターン（GitHub 方式）
 
-GitHub sends the signature in an `X-Hub-Signature-256: sha256=<hex>` header.
+GitHub は `X-Hub-Signature-256: sha256=<hex>` ヘッダーで署名を送る。
 
 ```python
 from fastapi import FastAPI, Request
@@ -32,16 +31,15 @@ async def github_webhook(request: Request) -> JSONResponse:
 
     payload = await request.json()
     event = request.headers.get("X-GitHub-Event", "unknown")
-    # ... process the event
+    # ... イベント処理
     return JSONResponse({"status": "received", "event": event})
 ```
 
 ---
 
-## 2. Stripe style (signature with a timestamp)
+## 2. Stripe 方式（timestamp 付き署名）
 
-Stripe sends `Stripe-Signature: t=<timestamp>,v1=<hex>`. You HMAC the timestamp +
-body.
+Stripe は `Stripe-Signature: t=<timestamp>,v1=<hex>` 形式で送る。timestamp + body を HMAC する。
 
 ```python
 import hashlib
@@ -60,7 +58,7 @@ async def stripe_webhook(request: Request) -> JSONResponse:
     timestamp = parts.get("t", "")
     v1_sig = parts.get("v1", "")
 
-    # Stripe style: HMAC of "timestamp." + body
+    # Stripe 方式: "timestamp." + body を HMAC する
     signed_payload = f"{timestamp}.".encode() + body
     if not verify_hmac_signature(signed_payload, WEBHOOK_SECRET, v1_sig):
         return JSONResponse({"error": "Invalid signature"}, status_code=401)
@@ -71,54 +69,51 @@ async def stripe_webhook(request: Request) -> JSONResponse:
 
 ---
 
-## 3. Double reading: `await request.body()` → `await request.json()`
+## 3. `await request.body()` → `await request.json()` の二重読み取り
 
-Signature verification needs the raw bytes (`body()`), but you also want to parse
-it as JSON afterward. FastAPI caches the body internally, so you can call both.
+署名検証では生バイト（`body()`）が必要だが、その後 JSON としてもパースしたい。
+FastAPI はボディを内部でキャッシュするので、両方呼び出せる。
 
 ```python
 @app.post("/webhooks/example")
 async def handler(request: Request) -> JSONResponse:
-    # ✅ json() still works even after calling body() first
-    body = await request.body()        # raw bytes (for signature verification)
-    payload = await request.json()     # JSON parse (uses the internal cache)
+    # ✅ body() を先に呼んでも json() は正常に動く
+    body = await request.body()        # 生バイト取得（署名検証用）
+    payload = await request.json()     # JSON パース（内部キャッシュを使う）
     return JSONResponse({"size": len(body), "action": payload.get("action")})
 ```
 
-`json.loads(body)` works too, but `await request.json()` is more consistent with
-Pydantic model conversion.
+`json.loads(body)` でも動作するが、`await request.json()` の方が Pydantic モデル変換と統一感がある。
 
 ---
 
-## 4. The `verify_hmac_signature()` API
+## 4. `verify_hmac_signature()` の API
 
 ```python
 from nene2.security import verify_hmac_signature
 
 verify_hmac_signature(
-    body: bytes,       # the bytes to verify
-    secret: str,       # the shared secret
-    signature: str,    # the signature string to verify (prefix allowed)
+    body: bytes,       # 検証するバイト列
+    secret: str,       # 共有シークレット
+    signature: str,    # 検証対象の署名文字列（prefix 込み可）
     *,
-    prefix: str = "",  # the signature prefix (e.g. "sha256=")
+    prefix: str = "",  # 署名の prefix（例: "sha256="）
 ) -> bool
 ```
 
-Protected against timing attacks via `hmac.compare_digest()`. Do not use `==` to
-compare signatures.
+`hmac.compare_digest()` で timing attack 対策済み。署名の比較に `==` を使わないこと。
 
 ---
 
-## 5. When to use this vs. BearerTokenMiddleware
+## 5. BearerTokenMiddleware との使い分け
 
-| Pattern | Auth method | nene2 support |
+| パターン | 認証方法 | nene2 サポート |
 |---|---|---|
-| API client auth | `Authorization: Bearer <token>` | `BearerTokenMiddleware` |
-| Webhook signature verification | request body + secret | `verify_hmac_signature()` |
+| API クライアント認証 | `Authorization: Bearer <token>` | `BearerTokenMiddleware` |
+| Webhook 署名検証 | リクエストボディ + シークレット | `verify_hmac_signature()` |
 
-Add webhook endpoints to `BearerTokenMiddleware`'s `exclude_paths` and do your own
-signature verification. Because the middleware reads the raw body,
-`BearerTokenMiddleware` can't be used on it.
+Webhook エンドポイントは `BearerTokenMiddleware` の `exclude_paths` に加えて、
+自前の署名検証を行う。ミドルウェアでは raw body を読む関係で `BearerTokenMiddleware` は使用できない。
 
 ```python
 from nene2.middleware import BearerTokenMiddleware
@@ -126,13 +121,13 @@ from nene2.middleware import BearerTokenMiddleware
 app.add_middleware(
     BearerTokenMiddleware,
     verifier=token_verifier,
-    exclude_paths=["/webhooks/"],  # exclude webhook endpoints
+    exclude_paths=["/webhooks/"],  # Webhook エンドポイントを除外
 )
 ```
 
 ---
 
-## 6. Testing
+## 6. テスト
 
 ```python
 import hashlib

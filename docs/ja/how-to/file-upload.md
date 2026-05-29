@@ -1,10 +1,10 @@
-# How-to: file upload
+# How-to: ファイルアップロード
 
-File upload patterns using FastAPI's `UploadFile`.
+FastAPI の `UploadFile` を使ったファイルアップロードパターンを説明する。
 
 ---
 
-## 1. Basic pattern
+## 1. 基本パターン
 
 ```python
 from fastapi import FastAPI, UploadFile
@@ -22,14 +22,13 @@ async def upload_file(file: UploadFile) -> JSONResponse:
     }, status_code=201)
 ```
 
-**`await file.read()` requires `async def`.** It cannot be used in a `def` (sync)
-handler.
+**`await file.read()` は `async def` が必要**。`def`（同期）ハンドラーでは使えない。
 
 ---
 
-## 2. Validating the content type
+## 2. コンテントタイプの検証
 
-FastAPI does not validate `content_type` automatically. Check it manually.
+FastAPI は `content_type` を自動検証しない。手動でチェックする。
 
 ```python
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
@@ -49,16 +48,15 @@ async def upload_image(file: UploadFile) -> JSONResponse:
 
 ---
 
-## 3. Validating by magic bytes (file signature)
+## 3. マジックバイト（ファイルシグネチャ）による検証
 
-The Content-Type header can be spoofed. Verify the file format by its leading
-bytes (magic bytes).
+Content-Type ヘッダーは偽装できる。ファイルの先頭バイト（マジックバイト）でファイル形式を確認する。
 
 ```python
 MAGIC_BYTES: dict[bytes, str] = {
     b"\xff\xd8\xff": "image/jpeg",
     b"\x89PNG\r\n\x1a\n": "image/png",
-    b"RIFF": "image/webp",  # WebP uses a RIFF header
+    b"RIFF": "image/webp",  # WebP は RIFF ヘッダー
 }
 
 def detect_image_type(data: bytes) -> str | None:
@@ -85,16 +83,15 @@ async def upload_image_secure(file: UploadFile) -> JSONResponse:
 
 ---
 
-## 4. File size limits
+## 4. ファイルサイズ制限
 
-The `max_request_bytes` parameter of `setup_middlewares()` limits the size of all
-requests.
+`setup_middlewares()` の `max_request_bytes` パラメーターで全リクエストのサイズを制限できる。
 
 ```python
 setup_middlewares(app, max_request_bytes=10 * 1024 * 1024)  # 10 MB
 ```
 
-To limit per endpoint, check manually:
+エンドポイントごとに制限したい場合は手動チェック:
 
 ```python
 MAX_SIZE = 5 * 1024 * 1024  # 5 MB
@@ -112,14 +109,14 @@ async def upload(file: UploadFile) -> JSONResponse:
 
 ---
 
-## 5. Testing
+## 5. テスト
 
 ```python
 from io import BytesIO
 from fastapi.testclient import TestClient
 
 def test_upload_image() -> None:
-    # minimal valid JPEG (JPEG magic bytes)
+    # 最小有効 JPEG（JPEG マジックバイト）
     fake_jpeg = b"\xff\xd8\xff" + b"\x00" * 100
     r = client.post(
         "/images",
@@ -128,17 +125,16 @@ def test_upload_image() -> None:
     assert r.status_code == 201
 ```
 
-Pass a `(filename, fileobj, content_type)` tuple via the `files=` parameter.
+`files=` パラメーターで `(filename, fileobj, content_type)` のタプルを渡す。
 
 ---
 
-## Note: the parameter name is `max_request_bytes`
+## 注意: `max_request_bytes` のパラメーター名
 
-The `setup_middlewares()` parameter is `max_request_bytes` (a byte count).
-`max_request_size` does not exist.
+`setup_middlewares()` のパラメーター名は `max_request_bytes`（バイト数）。`max_request_size` は存在しない。
 
 ```python
-# ✅ correct
+# ✅ 正しい
 setup_middlewares(app, max_request_bytes=10_000_000)
 
 # ❌ TypeError

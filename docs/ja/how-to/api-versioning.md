@@ -1,10 +1,10 @@
-# How-to: API versioning
+# How-to: API バージョニング
 
-Separate endpoints into `/v1`, `/v2` using FastAPI's `APIRouter` + `prefix`.
+FastAPI の `APIRouter` + `prefix` でエンドポイントを `/v1`, `/v2` に分離するパターン。
 
 ---
 
-## Basic structure
+## 基本構成
 
 ```python
 from fastapi import APIRouter, FastAPI
@@ -26,18 +26,17 @@ app.include_router(v1_router)
 app.include_router(v2_router)
 ```
 
-An `APIRouter`'s `prefix` is **prepended automatically** to the paths inside the
-router. You do not write `/v1` on the in-router paths (it would be duplicated).
+`APIRouter` の `prefix` はルーター内のパスに **自動的に付加**される。
+ルーター内のパスに `/v1` を書く必要はない（二重にならない）。
 
 ---
 
-## Share the domain layer; absorb version differences in the HTTP layer
+## ドメイン層は共有、HTTP 層でバージョン差分を吸収
 
-Keep logic shared across versions in the domain layer, and express the
-per-version differences in the Pydantic models.
+バージョン間の共有ロジックはドメイン層に置き、各バージョンの Pydantic モデルで差分を表現する。
 
 ```python
-# Domain layer (version-independent)
+# ドメイン層（バージョン非依存）
 @dataclass(frozen=True, slots=True)
 class User:
     user_id: int
@@ -46,7 +45,7 @@ class User:
     email: str
     age: int
 
-# v1: joined into full_name
+# v1: full_name に結合
 class UserResponseV1(BaseModel):
     user_id: int
     full_name: str
@@ -60,7 +59,7 @@ class UserResponseV1(BaseModel):
             email=user.email,
         )
 
-# v2: split first_name/last_name + add age + email → contact_email
+# v2: first_name/last_name を分離 + age を追加 + email → contact_email
 class UserResponseV2(BaseModel):
     user_id: int
     first_name: str
@@ -81,14 +80,13 @@ class UserResponseV2(BaseModel):
 
 ---
 
-## OpenAPI schema
+## OpenAPI スキーマ
 
-Setting `tags=["v1"]` / `tags=["v2"]` on each `APIRouter` groups them per version
-in the Swagger UI. `UserResponseV1` / `UserResponseV2` are defined separately in
-the schema.
+`tags=["v1"]` / `tags=["v2"]` を `APIRouter` に指定すると Swagger UI でバージョンごとに
+グループ化される。スキーマには `UserResponseV1` / `UserResponseV2` が個別に定義される。
 
 ---
 
-## See also
+## 参照
 
 - FT109: `docs/field-trials/2026-05-field-trial-109.md`

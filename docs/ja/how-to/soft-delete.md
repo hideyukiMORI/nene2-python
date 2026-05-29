@@ -1,10 +1,10 @@
-# How-to: soft delete (logical deletion)
+# How-to: ソフトデリート（論理削除）
 
-A pattern for logical deletion using a `deleted_at: datetime | None` field.
+`deleted_at: datetime | None` フィールドで論理削除を実装するパターン。
 
 ---
 
-## Domain entity
+## ドメイン Entity
 
 ```python
 from dataclasses import dataclass
@@ -21,12 +21,11 @@ class Article:
         return self.deleted_at is not None
 ```
 
-The `is_deleted` property keeps the business logic inside the domain, so callers
-don't have to reason about `deleted_at is not None`.
+`is_deleted` プロパティでビジネスロジックをドメインに閉じ込め、呼び出し側が `deleted_at is not None` を意識しないようにする。
 
 ---
 
-## Updating a frozen dataclass: dataclasses.replace()
+## frozen dataclass の更新: dataclasses.replace()
 
 ```python
 from dataclasses import replace
@@ -34,28 +33,26 @@ from dataclasses import replace
 article = replace(article, deleted_at=datetime.now(UTC))
 ```
 
-A `frozen=True` dataclass can't have its fields mutated directly, but `replace()`
-creates a new instance.
+`frozen=True` な dataclass は直接フィールドを変更できないが、`replace()` で新しいインスタンスを作れる。
 
 ---
 
-## DELETE endpoint (idempotent)
+## DELETE エンドポイント（冪等）
 
 ```python
 @app.delete("/articles/{article_id}", status_code=204)
 def delete_article(article_id: int) -> None:
     article = _store.get(article_id)
     if article is None or article.is_deleted:
-        return  # idempotent: already-deleted or missing also returns 204
+        return  # 冪等: 既に削除済みや存在しない場合も 204
     _store[article_id] = replace(article, deleted_at=datetime.now(UTC))
 ```
 
-Per RFC 9110, DELETE is idempotent. A DELETE against a missing or already-deleted
-resource also returns 204.
+RFC 9110 に従い、DELETE は冪等にする。存在しないリソースや削除済みリソースへの DELETE も 204 を返す。
 
 ---
 
-## Excluding in list / get
+## 一覧・取得での除外
 
 ```python
 def _active_articles() -> list[Article]:
@@ -70,27 +67,27 @@ def get_article(article_id: int) -> ArticleResponse | JSONResponse:
     article = _store.get(article_id)
     if article is None or article.is_deleted:
         return problem_details_response("not-found", "Not Found", 404, "Article not found.")
-    return ArticleResponse.from_domain(article)  # return the model on success (default pattern)
+    return ArticleResponse.from_domain(article)  # 成功時はモデルを返す（既定パターン）
 ```
 
 ---
 
-## Excluding deleted_at from the response
+## deleted_at をレスポンスから除外する
 
-Simply don't define a `deleted_at` field on `ArticleResponse`. Pydantic does not
-serialize fields that aren't defined.
+`ArticleResponse` に `deleted_at` フィールドを定義しないだけでよい。
+Pydantic は定義されていないフィールドをシリアライズしない。
 
 ```python
 class ArticleResponse(BaseModel):
     article_id: int
     title: str
-    # deleted_at not included → the logical-delete implementation detail doesn't leak to the public API
+    # deleted_at は含めない → 公開 API に論理削除の実装詳細が漏れない
 ```
 
-Returning `deleted_at` only on admin endpoints is the recommended design.
+管理用エンドポイントのみ `deleted_at` を返す設計が推奨される。
 
 ---
 
-## See also
+## 参照
 
 - FT110: `docs/field-trials/2026-05-field-trial-110.md`

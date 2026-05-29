@@ -144,13 +144,45 @@ function sidebarJa() {
       ],
     }],
     '/ja/how-to/': [{
-      text: 'ハウツーガイド',
+      text: '基本',
       items: [
         { text: '新しいプロジェクトを始める',          link: '/ja/how-to/new-project' },
         { text: '新しいドメインを追加する',            link: '/ja/how-to/add-new-domain' },
         { text: 'SQLAlchemy リポジトリを実装する',    link: '/ja/how-to/sqlalchemy-repository' },
         { text: '認証を設定する',                     link: '/ja/how-to/configure-auth' },
+        { text: 'カスタム認証ミドルウェア',           link: '/ja/how-to/custom-auth-middleware' },
         { text: 'MCP セットアップ',                   link: '/ja/howto/mcp-setup' },
+      ],
+    }, {
+      text: 'パターン',
+      items: [
+        { text: 'レスポンスパターン',                 link: '/ja/how-to/response-patterns' },
+        { text: 'バリデーションエラーを扱う',         link: '/ja/how-to/validation' },
+        { text: 'RFC 9457 Problem Details',           link: '/ja/how-to/problem-details' },
+        { text: 'FastAPI Depends パターン',           link: '/ja/how-to/dependency-injection' },
+        { text: 'ミドルウェアスタックの設定',         link: '/ja/how-to/middleware-stack' },
+        { text: 'Lifespan と app.state',              link: '/ja/how-to/lifespan-and-app-state' },
+        { text: 'AsyncUseCase と FastAPI の統合',     link: '/ja/how-to/async-use-case' },
+        { text: '並行処理パターンの選び方',           link: '/ja/how-to/concurrency-patterns' },
+        { text: 'BackgroundTasks',                    link: '/ja/how-to/background-tasks' },
+        { text: 'ドメインイベントパターン',           link: '/ja/how-to/domain-events' },
+        { text: 'ソフトデリート（論理削除）',         link: '/ja/how-to/soft-delete' },
+        { text: 'API バージョニング',                 link: '/ja/how-to/api-versioning' },
+        { text: 'CORS 設定',                          link: '/ja/how-to/cors' },
+      ],
+    }, {
+      text: 'I/O・データ・入力',
+      items: [
+        { text: 'ファイルアップロード',               link: '/ja/how-to/file-upload' },
+        { text: 'ストリーミングレスポンス',           link: '/ja/how-to/streaming' },
+        { text: '構造化ログ（structlog）',            link: '/ja/how-to/structured-logging' },
+        { text: 'Webhook と HMAC 署名検証',           link: '/ja/how-to/webhook' },
+        { text: 'decimal と Unicode 数字入力',        link: '/ja/how-to/decimal-unicode-input' },
+        { text: 'メールアドレスのパース',             link: '/ja/how-to/email-address-parsing' },
+      ],
+    }, {
+      text: 'テスト・リリース',
+      items: [
         { text: 'テストを実行する',                   link: '/ja/how-to/run-tests' },
         { text: '実DB統合テストの実行',               link: '/ja/how-to/run-integration-tests' },
         { text: 'リリースと PyPI 公開',               link: '/ja/how-to/release-and-publish' },

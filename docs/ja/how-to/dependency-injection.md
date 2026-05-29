@@ -1,72 +1,69 @@
-# How-to: FastAPI Depends patterns
+# How-to: FastAPI Depends パターン
 
-How to use FastAPI's `Depends()`, and the convention of standardizing on the
-`Annotated` style.
+FastAPI の `Depends()` の使い方と、`Annotated` スタイルへの統一パターンを説明する。
 
 ---
 
-## 1. Two Depends styles
+## 1. 2 つの Depends スタイル
 
-FastAPI has two ways to write `Depends()`.
+FastAPI には `Depends()` の書き方が 2 通りある。
 
 ```python
-# Style A: = Depends(...) (default-value style)
+# スタイル A: = Depends(...) （デフォルト値スタイル）
 def handler(
     use_case: FetchUserUseCase = Depends(get_fetch_user_use_case),
 ) -> JSONResponse: ...
 
-# Style B: Annotated[T, Depends(...)] (Annotated style)
+# スタイル B: Annotated[T, Depends(...)] （Annotated スタイル）
 def handler(
     use_case: Annotated[FetchUserUseCase, Depends(get_fetch_user_use_case)],
 ) -> JSONResponse: ...
 ```
 
-**Recommended: standardize on the `Annotated` style (Style B).**
+**推奨: `Annotated` スタイル（スタイル B）に統一する**
 
 ---
 
-## 2. SyntaxError from mixing styles
+## 2. スタイル混在で起きる SyntaxError
 
-Mixing `= Depends(...)` and `Annotated[T, Depends()]` in the same function raises a
-**SyntaxError**.
+`= Depends(...)` と `Annotated[T, Depends()]` を同じ関数に混在させると **SyntaxError** が発生する。
 
 ```python
 # ❌ SyntaxError: parameter without a default follows parameter with a default
 def list_articles(
-    filter_: ArticleFilter = Depends(get_filter),   # has a default
-    pagination: Annotated[PaginationQueryParser, Depends()],  # no default
+    filter_: ArticleFilter = Depends(get_filter),   # デフォルト値あり
+    pagination: Annotated[PaginationQueryParser, Depends()],  # デフォルト値なし
 ) -> JSONResponse: ...
 
-# ✅ standardize on the Annotated style
+# ✅ Annotated スタイルに統一
 def list_articles(
     filter_: Annotated[ArticleFilter, Depends(get_filter)],
     pagination: Annotated[PaginationQueryParser, Depends()],
 ) -> JSONResponse: ...
 ```
 
-As a Python rule, a parameter without a default cannot follow one with a default.
-`Annotated[T, Depends()]` has no default, so it cannot come after `= Depends(...)`.
+Python の仕様として、デフォルト値を持つ引数の後にデフォルト値なしの引数は置けない。
+`Annotated[T, Depends()]` はデフォルト値を持たないため、`= Depends(...)` の後には書けない。
 
 ---
 
-## 3. The correct way to use PaginationQueryParser
+## 3. PaginationQueryParser の正しい使い方
 
-Use `PaginationQueryParser` with `Annotated[T, Depends()]`. There is no
-`as_depends()`.
+`PaginationQueryParser` は `Annotated[T, Depends()]` で使う。`as_depends()` は存在しない。
 
 ```python
 from typing import Annotated
 from fastapi import Depends
 from nene2.http import PaginationQueryParser
 
-# ✅ correct
+# ✅ 正しい
 def list_items(
     pagination: Annotated[PaginationQueryParser, Depends()],
 ) -> JSONResponse:
     result = use_case.execute(pagination.limit, pagination.offset)
     ...
 
-# ❌ as_depends() does not exist
+# ❌ as_depends() は存在しない
 def list_items(
     pagination: PaginationQueryParser = Depends(PaginationQueryParser.as_depends()),
 ) -> JSONResponse: ...
@@ -74,10 +71,9 @@ def list_items(
 
 ---
 
-## 4. Custom filter + pagination
+## 4. カスタムフィルター + ページネーション
 
-When combining multiple `Depends()` parameters, standardize all of them on the
-`Annotated` style.
+複数の `Depends()` パラメーターを組み合わせる場合はすべて `Annotated` スタイルで統一する。
 
 ```python
 from dataclasses import dataclass
@@ -113,16 +109,16 @@ def list_items(
     filter_: Annotated[ItemFilter, Depends(get_item_filter)],
     pagination: Annotated[PaginationQueryParser, Depends()],
 ) -> JSONResponse:
-    # filter: filter_.status, filter_.tag
-    # pagination: pagination.limit, pagination.offset
+    # フィルター: filter_.status, filter_.tag
+    # ページネーション: pagination.limit, pagination.offset
     ...
 ```
 
 ---
 
-## 5. Injecting a cache via Depends
+## 5. Depends でキャッシュを注入する
 
-An example of injecting an `app.state` cache in the `Annotated` style.
+`Annotated` スタイルで `app.state` のキャッシュを注入する例。
 
 ```python
 from fastapi import Request
