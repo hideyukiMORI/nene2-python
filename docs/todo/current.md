@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.140 / FT262（graphlib）完了 / CI グリーン**
+現状: **v1.8.141 / FT263（tomllib）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT262（graphlib — TopologicalSorter / 循環検出）完了。診断なし（262 % 3 = 1）・ペンテストなし（262 % 4 = 2）。
-依存グラフをトポロジカルソートし、CycleError から循環パス（args[1]）を抽出して 422 で報告（自己循環も検出）。
-`add(node, *deps)` は依存先が先に来る方向。ノード/エッジ数を上限化し DoS を防止。
-**サンドボックス 5 tests**、フレームワーク本体 466 tests 据え置き。FT243〜FT262 の 20 本連続フィールドトライアルを完走。
+FT263（tomllib — TOML 読み込み）完了。診断なし（263 % 3 = 2）・ペンテストなし（263 % 4 = 3）。
+tomllib は読み取り専用でコード実行の余地がなく（yaml.load や eval と対照的）、設定の安全なパースに適する。
+`loads`（str）と `load`（バイナリファイル）の使い分け、入力サイズ上限・TOMLDecodeError を 422。
+**サンドボックス 5 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT264 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT262（graphlib — TopologicalSorter / 循環検出）完了。診断なし（
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.141 | FT263: tomllib — TOML 読み込み（読み取り専用・安全な設定パース） |
 | v1.8.140 | FT262: graphlib — TopologicalSorter（トポロジカルソート・循環検出） |
 | v1.8.139 | FT261: mimetypes — guess_type / アップロード検証（セキュリティ診断合格・Content-Type 非信頼） |
 | v1.8.138 | FT260: zipfile — zip slip / zip bomb 対策（クラッカーペンテスト合格） |
@@ -106,13 +107,13 @@ FT262（graphlib — TopologicalSorter / 循環検出）完了。診断なし（
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT262（全 262 件）
+**実施済み**: FT1〜FT263（全 263 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT263 を開始（263 % 3 = 2 → セキュリティ診断なし、263 % 4 = 3 → クラッカーペンテストなし）
-- テーマ候補: `tomllib` モジュール（TOML 読み込み・安全な設定パース）
+- FT264 を開始（264 % 3 = 0 → **セキュリティ診断あり**、264 % 4 = 0 → **クラッカーペンテストあり**）
+- テーマ候補: `ast.literal_eval`（eval の安全な代替・コード実行なし）
 
 ---
 
@@ -120,7 +121,7 @@ FT262（graphlib — TopologicalSorter / 循環検出）完了。診断なし（
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT263 実施（tomllib、診断・ペンテストなし） | FT |
+| 高 | — | FT264 実施（ast.literal_eval、診断＋ペンテスト両方） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
