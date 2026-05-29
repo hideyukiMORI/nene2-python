@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.114 / FT236（string.Template）完了 / CI グリーン**
+現状: **v1.8.115 / FT237（http.cookies）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT236（string.Template — substitute / safe_substitute）完了。診断なし（236 % 3 = 2）・**クラッカーペンテストあり（236 % 4 = 0）合格**。
-`string.Template` は `$name` の純粋名前置換のみで式評価・属性アクセスをせず SSTI に構造的に安全（`str.format`/Jinja とは対照的）。
-ペンテスト: `${7*7}`・`${x.__class__}`・`{0.__class__}`・`{{7*7}}` 全てリテラル、単一パス置換でネスト注入なし。全攻撃防御。
-**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT237 以降も継続中。
+FT237（http.cookies — SimpleCookie / Morsel）完了。**セキュリティ診断あり（237 % 3 = 0）合格**・ペンテストなし（237 % 4 = 1）。
+name/value を RFC 6265 token/octet で検証しクッキー・CRLF ヘッダーインジェクションを全遮断。HttpOnly/Secure/SameSite=Lax/Path=/ を既定付与。
+`SimpleCookie.load` は CRLF 混入で fail-closed（全破棄）。診断の全カテゴリ合格。
+**サンドボックス 6 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT238 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT236（string.Template — substitute / safe_substitute）完了。診断なし
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.115 | FT237: http.cookies — SimpleCookie / Morsel（セキュリティ診断合格・セキュア既定） |
 | v1.8.114 | FT236: string.Template — substitute / safe_substitute（クラッカーペンテスト合格・SSTI 安全） |
 | v1.8.113 | FT235: pprint — pformat / pp（width/depth 制限・JsonValue 型安全） |
 | v1.8.112 | FT234: ipaddress — ip_address / ip_network / is_global（セキュリティ診断合格・IP ベース SSRF） |
@@ -80,13 +81,13 @@ FT236（string.Template — substitute / safe_substitute）完了。診断なし
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT236（全 236 件）
+**実施済み**: FT1〜FT237（全 237 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT237 を開始（237 % 3 = 0 → **セキュリティ診断あり**、237 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `http.cookies` モジュール（SimpleCookie / Morsel・クッキーインジェクション）
+- FT238 を開始（238 % 3 = 1 → セキュリティ診断なし、238 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `calendar` モジュール（monthrange / weekday / isleap / Calendar）
 
 ---
 
@@ -94,7 +95,7 @@ FT236（string.Template — substitute / safe_substitute）完了。診断なし
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT237 実施（http.cookies、セキュリティ診断あり） | FT |
+| 高 | — | FT238 実施（calendar、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
