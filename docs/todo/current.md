@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.129 / FT251（fractions）完了 / CI グリーン**
+現状: **v1.8.130 / FT252（json）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT251（fractions — Fraction / 有理数演算）完了。診断なし（251 % 3 = 2）・ペンテストなし（251 % 4 = 3）。
-文字列入力で厳密生成（1/3+1/6=1/2、float 経由の誤差回避）、自動既約化。
-巨大分母制限は用途別: 合計は拒否、近似は limit_denominator で縮約前提のため許容（実装中に pi 近似が 422 になる罠を発見・修正）。
-**サンドボックス 7 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT252 以降も継続中。
+FT252（json — loads/dumps の堅牢化）完了。**セキュリティ診断あり（252 % 3 = 0）＋クラッカーペンテストあり（252 % 4 = 0）両方合格**。
+`json.loads` の落とし穴を堅牢化: `parse_constant` で NaN/Infinity 拒否、`object_pairs_hook` で重複キー（パーサ差異攻撃）拒否、深さ/サイズ/整数桁数で DoS 防止。
+ペンテスト: NaN 系 4・重複キー 2・深いネスト/巨大整数/サイズの DoS 5 をすべて遮断（深さ 5000 を 5ms で 422）。allow_nan=False で安全シリアライズ。
+**サンドボックス 8 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT253 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ FT251（fractions — Fraction / 有理数演算）完了。診断なし（251 %
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.130 | FT252: json — loads/dumps の堅牢化（診断＋ペンテスト合格） |
 | v1.8.129 | FT251: fractions — Fraction / limit_denominator（厳密有理数・用途別分母制限） |
 | v1.8.128 | FT250: decimal — Decimal / quantize / 丸めモード（金額計算・文字列受け） |
 | v1.8.127 | FT249: hmac — new / compare_digest（セキュリティ診断合格・署名検証） |
@@ -95,13 +96,13 @@ FT251（fractions — Fraction / 有理数演算）完了。診断なし（251 %
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT251（全 251 件）
+**実施済み**: FT1〜FT252（全 252 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT252 を開始（252 % 3 = 0 → **セキュリティ診断あり**、252 % 4 = 0 → **クラッカーペンテストあり**）
-- テーマ候補: `json` モジュール（loads/dumps の堅牢化・深さ・重複キー・Infinity/NaN・巨大数）
+- FT253 を開始（253 % 3 = 1 → セキュリティ診断なし、253 % 4 = 1 → クラッカーペンテストなし）
+- テーマ候補: `copy` モジュール（copy / deepcopy・再帰参照）
 
 ---
 
@@ -109,7 +110,7 @@ FT251（fractions — Fraction / 有理数演算）完了。診断なし（251 %
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT252 実施（json、診断＋ペンテスト両方） | FT |
+| 高 | — | FT253 実施（copy、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
