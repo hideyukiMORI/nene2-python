@@ -51,6 +51,54 @@ jobs:
         # Transitive via mcp>=1.0. Re-evaluate when pyjwt releases a fix. (#280)
         run: uv run pip-audit --ignore-vuln PYSEC-2025-183
 
+  integration-db:
+    name: Real-DB integration tests
+    runs-on: ubuntu-latest
+    # 実 PostgreSQL / MySQL に対してリポジトリ層を検証する（#747）。
+    # SQLite だけでは露見しなかった lastrowid 由来の採番バグを CI で恒常的に防ぐ。
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: nene2
+          POSTGRES_DB: nene2_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: nene2
+          MYSQL_DATABASE: nene2_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -uroot -pnene2"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.14
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: integration tests (PostgreSQL + MySQL)
+        env:
+          NENE2_TEST_POSTGRES_URL: postgresql+psycopg2://postgres:nene2@127.0.0.1:5432/nene2_test
+          NENE2_TEST_MYSQL_URL: mysql+pymysql://root:nene2@127.0.0.1:3306/nene2_test
+        run: uv run pytest tests/integration/ -v --no-cov
+
   package-build:
     name: Package build verification
     runs-on: ubuntu-latest

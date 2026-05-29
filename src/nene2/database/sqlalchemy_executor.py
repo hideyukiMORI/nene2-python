@@ -6,11 +6,31 @@ Supports SQLite, MySQL, and PostgreSQL via SQLAlchemy's engine URL.
 from collections.abc import Callable
 from typing import Any
 
-from sqlalchemy import Connection, Engine, text
-from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy import Connection, CursorResult, Engine, text
+from sqlalchemy.exc import IntegrityError, OperationalError, ProgrammingError
 
 from .exceptions import DatabaseConnectionException, DatabaseIntegrityException
 from .interfaces import DatabaseQueryExecutorInterface, DatabaseTransactionManagerInterface
+
+
+def _insert_id(conn: Connection, result: CursorResult[Any]) -> int:
+    """Return the new row's PK after an INSERT, portably across dialects.
+
+    SQLite and MySQL expose the value via DBAPI ``lastrowid``. PostgreSQL
+    (psycopg2) does not, so fall back to ``lastval()`` on the same connection
+    (valid for SERIAL/IDENTITY columns within the current transaction). If no
+    sequence was touched, fall back to ``rowcount``.
+    """
+    if result.lastrowid:
+        return result.lastrowid
+    if conn.dialect.name == "postgresql":
+        try:
+            value = conn.execute(text("SELECT lastval()")).scalar()
+        except (OperationalError, ProgrammingError):
+            return result.rowcount
+        if value is not None:
+            return int(value)
+    return result.rowcount
 
 
 class SqlAlchemyQueryExecutor(DatabaseQueryExecutorInterface):
@@ -75,7 +95,7 @@ class SqlAlchemyQueryExecutor(DatabaseQueryExecutorInterface):
             with self._engine.begin() as conn:
                 result = conn.execute(text(sql), params or {})
                 if sql.strip().upper().startswith("INSERT"):
-                    return result.lastrowid or result.rowcount
+                    return _insert_id(conn, result)
                 return result.rowcount
         except IntegrityError as exc:
             raise DatabaseIntegrityException(str(exc)) from exc
@@ -112,7 +132,7 @@ class _BoundQueryExecutor(DatabaseQueryExecutorInterface):
         except OperationalError as exc:
             raise DatabaseConnectionException(str(exc)) from exc
         if sql.strip().upper().startswith("INSERT"):
-            return result.lastrowid or result.rowcount
+            return _insert_id(self._conn, result)
         return result.rowcount
 
 

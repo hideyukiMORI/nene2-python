@@ -5,21 +5,22 @@ automated publish (TestPyPI → PyPI → GitHub Release)**. The automation lives
 [`.github/workflows/publish.yml`](../../.github/workflows/publish.yml) and triggers
 on `v*` tags via **PyPI Trusted Publishing** (OIDC — no long-lived tokens).
 
-## One-time setup (maintainer, cannot be automated)
+## One-time setup (maintainer — already done)
 
-The publish workflow uses Trusted Publishing and GitHub Environments. These must be
-configured once on the PyPI side and in the repo settings:
+The publish workflow uses Trusted Publishing and GitHub Environments. This is
+**already configured** and operational; it is recorded here for reference and
+recovery:
 
 1. **PyPI / TestPyPI — Trusted Publisher** for `nene2-python`:
    - Owner: `hideyukiMORI`, Repository: `nene2-python`
    - Workflow: `publish.yml`
    - Environment: `pypi` (on pypi.org) and `testpypi` (on test.pypi.org)
-   - Register at https://pypi.org/manage/account/publishing/ and the TestPyPI equivalent.
-2. **GitHub repo → Settings → Environments**: create `testpypi` and `pypi`
-   (optionally add required reviewers on `pypi` for a manual approval gate).
+   - Registered at https://pypi.org/manage/account/publishing/ and the TestPyPI equivalent.
+2. **GitHub repo → Settings → Environments**: `testpypi` and `pypi` exist
+   (add required reviewers on `pypi` for a manual approval gate if desired).
 
-Until step 1 is done, `pip install nene2-python` is unavailable — the package has
-never been published (the FT sandboxes install it from the local wheel / `git+`).
+The package is **published** — `pip install nene2-python` installs the latest
+release (v1.8.163+) directly from PyPI.
 
 ## Release procedure (per release)
 
@@ -67,5 +68,5 @@ excluded by `[tool.hatch.build.targets.wheel] packages = ["src/nene2"]`).
   [`docs/todo/current.md`](../todo/current.md) milestone table; `CHANGELOG.md`
   records release-grained aggregated entries.
 - This procedure corresponds to the **FT7-class "publish flow" trial** (#541): the
-  build is verified and the automation is in place; the only remaining step is the
-  maintainer's one-time Trusted Publishing setup followed by the first `v*` tag.
+  flow is fully operational — v1.8.163 was published to PyPI through it and is
+  installable via `pip install nene2-python`.

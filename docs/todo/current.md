@@ -1,21 +1,26 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.163 PyPI 公開済み / オープン Issue なし / CI グリーン**
+現状: **v1.8.164 / 実DB統合テスト導入・マルチDB対応を実測検証 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-#541 を解消（v1.8.163）。調査の結果、公開フロー（`publish.yml`: build→TestPyPI→PyPI→
-GitHub Release・Trusted Publishing）は既に**完全稼働**しており（Environments 設定済み・
-v1.8.64〜66 で公開実績あり、PyPI にも公開済みだった）、**v1.8.163 を新規リリース**した:
-- `v1.8.163` タグ push → publish.yml が build/TestPyPI/PyPI/GitHub Release すべて success
-- クリーン venv で **`pip install nene2-python==1.8.163` が PyPI から成功**を確認・GitHub Release 作成
-- 整備（PR #745）: CI `package-build` ジョブ追加、CHANGELOG 集約エントリ [1.8.163]
-  （github-release のノート抽出が空になる問題を解消）、リリース手順 how-to（EN/JA）
+#747 に対応（v1.8.164）。「`sqlite/mysql/pgsql` 対応」という未検証の約束を実測で検証し、
+潜んでいたマルチDBバグを修正した:
+- **発見・修正**: `SqlAlchemyQueryExecutor.write()` の INSERT 採番が `result.lastrowid`
+  依存で、psycopg2（PostgreSQL）は lastrowid 非対応のため `rowcount`(=1) にフォールバック。
+  `save()` が常に `id=1` を返す重大バグだった → PostgreSQL では `lastval()` フォールバックに修正
+- **実DB統合テスト** `tests/integration/`（PostgreSQL/MySQL、各9ケース）を追加。環境変数
+  未設定ならskip（デフォルト `uv run pytest` は SQLite のまま高速：466 passed, 9 skipped）
+- **CI** に `integration-db` ジョブ（postgres:16 / mysql:8 service container）追加
+- `pymysql` を dev 依存に追加（`mysql+pymysql://` ドライバが未導入だった）
+- how-to [`run-integration-tests.md`](../how-to/run-integration-tests.md)（EN/JA）追加
+- ついでに #541 のリリース how-to の「未公開・メンテナ待ち」誤記（EN/JA）を訂正
 
-直前の対応: #540（FT ループ目的・終着点明文化・v1.8.162）、#539（response_model 統一・
+直前の対応: #541（PyPI 公開フロー解消・v1.8.163 を PyPI 公開）、#540（FT ループ目的・
+終着点明文化・v1.8.162）、#539（response_model 統一・
 v1.8.161）、#553（#578 で実装済みを確認し close）、ハウスキーピング（サンドボックス
 5.1G→79M 整理・orphan ブランチ 8 本削除）。**フレームワーク本体 466 tests 据え置き。
 オープン Issue ゼロ。**
@@ -39,6 +44,7 @@ v1.8.161）、#553（#578 で実装済みを確認し close）、ハウスキー
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.164 | feat: 実DB統合テスト（#747）— PostgreSQL/MySQL を CI service container で検証。psycopg2 lastrowid 非対応による INSERT 採番バグ（`save()` が常に id=1）を発見・修正。pymysql 追加 |
 | v1.8.163 | feat: PyPI 公開フロー検証（#541）— ビルド検証・CI package-build ジョブ・CHANGELOG 連携・リリース how-to |
 | v1.8.162 | docs: FT ループの目的・終着点を明文化（#540）— field-trial-methodology.md（EN/JA） |
 | v1.8.161 | fix: handler の response_model 統一（#539）— Note/Tag/Comment に Response モデル定義・OpenAPI スキーマ出力 |
@@ -150,7 +156,6 @@ v1.8.161）、#553（#578 で実装済みを確認し close）、ハウスキー
 |---|---|---|---|
 | — | — | FT は保守 + オンデマンド（4 トリガー時のみ。[方法論](../explanation/field-trial-methodology.md)） | FT |
 | — | — | リリース時は `v*` タグ push → publish.yml が自動公開（[手順](../how-to/release-and-publish.md)） | infra |
-| 低 | — | PostgreSQL / MySQL 実 DB 統合テスト | infra |
 | 低 | — | PyJWT 推移的 CVE（PYSEC-2025-183）— mcp 修正待ち | 保留 |
 
 ---
@@ -162,6 +167,7 @@ v1.8.161）、#553（#578 で実装済みを確認し close）、ハウスキー
 | ~~handler response_model 未使用~~ | — | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | ✅ 2026-05-29 解消（v1.8.161）。Note/Tag/Comment 全ハンドラーに `XxxResponse`/`XxxListResponse` を定義し `response_model` 明示。OpenAPI に 6 レスポンススキーマが出力されることを確認。466 tests 据え置き |
 | ~~FT ループ目的の明文化~~ | — | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | ✅ 2026-05-29 解消（v1.8.162）。explanation/field-trial-methodology.md（EN/JA）に目的・3 フェーズ・終着点（網羅スイープ完了→保守+オンデマンド）を明文化。INDEX/roadmap からリンク |
 | ~~PyPI 公開フロー検証~~ | — | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | ✅ 2026-05-29 解消（v1.8.163）。公開フローは既に稼働中で **v1.8.163 を PyPI へ公開**（pip install で取得可能）。CI package-build ジョブ・CHANGELOG 連携・how-to 整備 |
+| ~~マルチDB対応が未検証~~ | — | [#747](https://github.com/hideyukiMORI/nene2-python/issues/747) | ✅ 2026-05-29 解消（v1.8.164）。実DB統合テスト（PostgreSQL/MySQL・CI service container）を追加。psycopg2 lastrowid 非対応で `save()` が常に id=1 を返す重大バグを発見・修正（lastval フォールバック）。pymysql 追加・how-to（EN/JA） |
 | ~~古い FT サンドボックス肥大化~~ | — | — | ✅ 2026-05-29 整理（5.1G→79M）。`ft-status.sh --clean-sandbox` を追加（.venv/キャッシュ削除・ソース保持・uv sync で再生可）。`--clean` は dist/ のみで誤記だった |
 | ~~マージ済み orphan リモートブランチ~~ | — | — | ✅ 2026-05-29 削除（merged 8 本）。未マージの提案 PR #545 のブランチのみ残置 |
 | ログ秘匿 Filter は形式依存の best-effort | 低 | — | FT220 D3。主防御は `SecretStr`。how-to に「秘匿は多層防御の保険」を明記予定 |
