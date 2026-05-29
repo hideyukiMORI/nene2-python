@@ -1,16 +1,16 @@
 # TODO — current
 
 最終更新: 2026-05-29
-現状: **v1.8.150 / FT272（tarfile）完了 / CI グリーン**
+現状: **v1.8.151 / FT273（marshal）完了 / CI グリーン**
 
 ---
 
 ## 状態サマリー
 
-FT272（tarfile — tar slip / tar bomb / symlink 対策）完了。診断なし（272 % 3 = 2）・**クラッカーペンテストあり（272 % 4 = 0）合格**。
-tar 固有の symlink/hardlink/デバイス member を種別制限（isfile/isdir のみ）で遮断、tar slip は resolve + is_relative_to + `\` 拒否、tar bomb は宣言サイズ + 実展開の二重上限。
-ペンテスト: tar slip 3・特殊 member 3・gz bomb をすべて 422。FT260(zipfile) の延長で CVE-2007-4559 系を防御。
-**サンドボックス 5 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT273 以降も継続中。
+FT273（marshal — 信頼できないデータに使わない）完了。**セキュリティ診断あり（273 % 3 = 0）合格**・ペンテストなし（273 % 4 = 1）。
+marshal.loads は細工バイトでインタプリタをクラッシュさせ得る（公式警告）→ ユーザー入力に一切使わず json + Pydantic で安全に往復。
+ソース監査で marshal.loads が存在しないことを確認（防御は「使わない」こと）。FT240(pickle)/FT264(eval) と並ぶ危険プリミティブ回避シリーズ。
+**サンドボックス 4 tests**、フレームワーク本体 466 tests 据え置き。フィールドトライアルループは FT274 以降も継続中。
 
 ---
 
@@ -34,6 +34,7 @@ tar 固有の symlink/hardlink/デバイス member を種別制限（isfile/isdi
 
 | バージョン | 主な内容 |
 |---|---|
+| v1.8.151 | FT273: marshal — 信頼できないデータに使わない（セキュリティ診断合格・json 代替） |
 | v1.8.150 | FT272: tarfile — tar slip / tar bomb / symlink 対策（クラッカーペンテスト合格） |
 | v1.8.149 | FT271: stat — モードビット解釈（world-writable/setuid 検出） |
 | v1.8.148 | FT270: ssl — create_default_context（セキュリティ診断合格・TLS 検証既定） |
@@ -116,13 +117,13 @@ tar 固有の symlink/hardlink/デバイス member を種別制限（isfile/isdi
 
 ## フィールドトライアル進捗
 
-**実施済み**: FT1〜FT272（全 272 件）
+**実施済み**: FT1〜FT273（全 273 件）
 
 索引: [`docs/field-trials/INDEX.md`](../field-trials/INDEX.md)
 
 **次のアクション**:
-- FT273 を開始（273 % 3 = 0 → **セキュリティ診断あり**、273 % 4 = 1 → クラッカーペンテストなし）
-- テーマ候補: `marshal` モジュール（信頼できないデータに使わない・json 代替）
+- FT274 を開始（274 % 3 = 1 → セキュリティ診断なし、274 % 4 = 2 → クラッカーペンテストなし）
+- テーマ候補: `colorsys` モジュール（RGB/HSV/HLS 変換）
 
 ---
 
@@ -130,7 +131,7 @@ tar 固有の symlink/hardlink/デバイス member を種別制限（isfile/isdi
 
 | 優先度 | Issue | タスク | 種別 |
 |---|---|---|---|
-| 高 | — | FT273 実施（marshal、セキュリティ診断あり） | FT |
+| 高 | — | FT274 実施（colorsys、診断・ペンテストなし） | FT |
 | 中 | [#539](https://github.com/hideyukiMORI/nene2-python/issues/539) | handler の response_model 統一 | enhancement |
 | 中 | [#540](https://github.com/hideyukiMORI/nene2-python/issues/540) | FT ループの目的・終着点を明文化 | docs |
 | 中 | [#541](https://github.com/hideyukiMORI/nene2-python/issues/541) | PyPI 公開フロー検証（uv publish） | enhancement |
