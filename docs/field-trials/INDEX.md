@@ -296,6 +296,7 @@
 | [FT260](2026-05-field-trial-260.md) | zipfile モジュール — zip slip / zip bomb 対策 | 🔍 | |
 | [FT261](2026-05-field-trial-261.md) | mimetypes モジュール — guess_type / アップロード検証 | 🔒 | |
 | [FT262](2026-05-field-trial-262.md) | graphlib モジュール — TopologicalSorter / 循環検出 |  | |
+| [FT263](2026-05-field-trial-263.md) | tomllib モジュール — TOML 読み込み・安全な設定パース |  | |
 
 ---
 
@@ -311,4 +312,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT262 / v1.8.140)*
+*最終更新: 2026-05-29 (FT263 / v1.8.141)*
