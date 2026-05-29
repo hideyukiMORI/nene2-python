@@ -302,6 +302,7 @@
 | [FT266](2026-05-field-trial-266.md) | types モジュール — MappingProxyType による読み取り専用ビュー |  | |
 | [FT267](2026-05-field-trial-267.md) | glob — パターンマッチ / パストラバーサル防御（Path.glob） | 🔒 | |
 | [FT268](2026-05-field-trial-268.md) | lzma モジュール — compress / decompress（解凍爆弾対策） | 🔍 | |
+| [FT269](2026-05-field-trial-269.md) | contextvars モジュール — ContextVar によるコンテキストローカル状態 |  | |
 
 ---
 
@@ -317,4 +318,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT268 / v1.8.146)*
+*最終更新: 2026-05-29 (FT269 / v1.8.147)*
