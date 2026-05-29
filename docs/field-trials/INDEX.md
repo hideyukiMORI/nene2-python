@@ -266,6 +266,7 @@
 | [FT230](2026-05-field-trial-230.md) | difflib モジュール — unified_diff / SequenceMatcher / get_close_matches |  | |
 | [FT231](2026-05-field-trial-231.md) | shlex モジュール — split / quote / join（シェルインジェクション対策） | 🔒 | |
 | [FT232](2026-05-field-trial-232.md) | fnmatch モジュール — fnmatch / filter / translate | 🔍 | |
+| [FT233](2026-05-field-trial-233.md) | textwrap モジュール — wrap / fill / shorten / indent |  | |
 
 ---
 
@@ -281,4 +282,4 @@ FT172, FT176, FT180, FT184, FT188, FT192, FT196, FT200, FT204, FT208, FT212, FT2
 
 ---
 
-*最終更新: 2026-05-29 (FT232 / v1.8.110)*
+*最終更新: 2026-05-29 (FT233 / v1.8.111)*
