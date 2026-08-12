@@ -208,8 +208,9 @@ jobs:
           set -euo pipefail
           # 完全一致でタイトルを探す。GitHub の検索インデックスは反映が遅れることがあるため、
           # `--search` ではなく取得後の完全一致で判定する（配布時に 19 艦で挙動が揺れないように）。
+          # `gh --jq` は `--arg` を受け付けない（あれは jq CLI のフラグ）ので、実体の jq へ渡す。
           existing="$(gh issue list --state open --limit 100 --json number,title \
-            --jq --arg t "$ISSUE_TITLE" 'map(select(.title == $t)) | .[0].number // empty')"
+            | jq -r --arg t "$ISSUE_TITLE" 'map(select(.title == $t)) | .[0].number // empty')"
 
           body="週次の \`schedule\` 実行が失敗しました。
 
