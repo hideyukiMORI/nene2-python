@@ -201,6 +201,10 @@ jobs:
     env:
       ISSUE_TITLE: '🔴 週次 CI（schedule）が失敗しています'
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # このジョブは意図的に checkout しない（コードを見る必要がないので速い）。
+      # そのぶん `gh` が git remote からリポジトリを特定できないため、明示的に渡す。
+      # これが無いと `failed to run git: fatal: not a git repository` で落ちる（実測）。
+      GH_REPO: ${{ github.repository }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Create or update the failure issue
