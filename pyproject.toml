@@ -1,6 +1,6 @@
 [project]
 name = "nene2-python"
-version = "1.8.169"
+version = "1.8.170"
 description = "NENE2 Python — minimal API framework following NENE2's design philosophy"
 readme = "README.md"
 license = {text = "MIT"}
@@ -25,12 +25,15 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
     "pydantic>=2.9",
-    "pydantic-settings>=2.6",
-    "python-multipart>=0.0.12",
+    # 下限はセキュリティ床でもある。以下 3 つは 2026-08-12 に既知脆弱性が確認された版を
+    # 利用者が選べないようにするための引き上げ（uv.lock はこのリポの CI と開発環境しか
+    # 守らないため、利用者へ伝播させるには宣言側を上げる必要がある）。
+    "pydantic-settings>=2.14.2",  # GHSA-4xgf-cpjx-pc3j
+    "python-multipart>=0.0.31",  # PYSEC-2026-3036 / 3037 / 3040
     "sqlalchemy>=2.0.49",
     "alembic>=1.18.4",
     "structlog>=24.0",
-    "mcp>=1.0",
+    "mcp>=1.28.1",  # PYSEC-2026-3481 / 3482 / 3483（上限は [tool.uv] の constraint 側で管理）
     "pyyaml>=6.0",
     "httpx>=0.27",
 ]
@@ -63,6 +66,27 @@ dev = [
     "pip-audit>=2.7",
     "psycopg2-binary>=2.9.12",
     "pymysql>=1.1",
+]
+
+# ---------------------------------------------------------------------------
+# uv — ローカル/CI の解決だけに効く制約
+#
+# constraint-dependencies は uv.lock の解決に適用されるが、配布物の依存要件
+# （[package.metadata] requires-dist）には漏れない。つまり利用者の解決には
+# 影響しないので、ライブラリに上限を書く際の副作用（下流の解決衝突）を伴わない。
+# ---------------------------------------------------------------------------
+[tool.uv]
+constraint-dependencies = [
+    # ① 何を止めているか: mcp 2.0 系への自動追随（`uv lock --upgrade` での意図しない飛び）。
+    # ② 理由: 2.0.0 で `mcp.server.fastmcp` が `mcp.server.mcpserver` へ改名され、
+    #    `src/nene2/mcp/server.py` の `from mcp.server.fastmcp import FastMCP` が
+    #    ModuleNotFoundError で壊れる（2026-08-12 に実測。MCP 系テスト 4 本が収集エラー）。
+    #    現行の advisory 要求は 1.28.1 以上であり、1.x 系で完全に充足している。
+    # ③ 外す条件: (a) 上流の mcp 1.x サポートが終了したとき、または
+    #    (b) 2.0 固有の機能が必要になったとき。どちらかが満たされたら外して移行する。
+    # ④ 参照: 移行の設計ノート（実測の移行規模・方針 4 案と推し・再現手順）は
+    #    docs/review/2026-08-12.md §2。解除時はそのまま着手できる状態で凍結してある。
+    "mcp<2",
 ]
 
 # ---------------------------------------------------------------------------
