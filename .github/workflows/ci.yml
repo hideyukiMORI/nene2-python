@@ -28,6 +28,11 @@ on:
     - cron: '30 0 * * 1'
   # schedule の初回発火を待たずに動作確認・再実行するための手動トリガー。
   workflow_dispatch:
+    inputs:
+      simulate_failure:
+        description: '意図的に check を失敗させ、失敗通知の経路（notify-failure）を検証する'
+        type: boolean
+        default: false
 
 # 同一 ref への連続 push で古い実行を打ち切り、CI 時間を無駄にしない。
 # 🔴 `github.event_name` を必ず group に含めること。含めないと schedule / workflow_dispatch の
@@ -46,6 +51,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # 失敗通知の経路そのものを検証するための踏み台。通常の実行では常にスキップされる。
+      # 「置いた ≠ 動いた」を分けるために、schedule の初回発火を待たずに
+      # notify-failure が本当に起票するかを確かめられるようにしてある。
+      - name: Simulate failure (validation only)
+        if: inputs.simulate_failure
+        run: |
+          echo "simulate_failure=true が指定されたため、意図的に失敗します。"
+          exit 1
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -156,4 +170,63 @@ jobs:
           # フレームワーク以外（example/tests）が配布物に混入していないことを保証
           if /tmp/verify/bin/python -c "import example" 2>/dev/null; then
             echo "ERROR: example package leaked into wheel"; exit 1
+          fi
+
+  # ===========================================================================
+  # 週次実行が失敗したら Issue を起票する
+  #
+  # なぜ必要か: 通知は届いているが受信箱が飽和している（2026-08-12 実測で未読 1,828 件・
+  # うち ci_activity 634 件・最古 3 ヶ月前）。週次の失敗を 1 件足しても山に埋もれるだけなので、
+  # **受信箱の外に残る痕跡**を作る。Issue は流れず、次にこのリポを開いた人／AI が必ず見る
+  # （repo-status の規約が毎回 `gh issue list --state open` を叩く）。
+  #
+  # 🔑 対象を schedule に限定するのが設計の芯。PR や push の失敗は、それを起こした本人が
+  # その場で見るので起票は不要。**誰も見ていない実行＝ schedule だけ**を拾う。
+  # ここを限定しないと Issue がスパム化し、「埋もれる」という元の問題に帰着する。
+  #
+  # ───────── フリートへ転記するときに差し替える箇所 ─────────
+  #   1. `needs:` … その艦の全ジョブ名を列挙する（ここだけが艦ごとに違う）
+  #   2. `env.ISSUE_TITLE` … 艦をまたいで一意になるようリポ名を入れてもよい
+  #   このジョブ自体は **言語非依存**。検知器（pip-audit / npm audit / composer audit）は
+  #   上流の check ジョブ側にあるので、このジョブは差し替え不要。
+  # ===========================================================================
+  notify-failure:
+    name: Open an issue when the scheduled run fails
+    # inputs.simulate_failure は、この経路自体を検証するための手動トリガー時のみ真になる。
+    if: failure() && (github.event_name == 'schedule' || inputs.simulate_failure)
+    needs: [check, integration-db, package-build]
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    env:
+      ISSUE_TITLE: '🔴 週次 CI（schedule）が失敗しています'
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Create or update the failure issue
+        run: |
+          set -euo pipefail
+          # 完全一致でタイトルを探す。GitHub の検索インデックスは反映が遅れることがあるため、
+          # `--search` ではなく取得後の完全一致で判定する（配布時に 19 艦で挙動が揺れないように）。
+          existing="$(gh issue list --state open --limit 100 --json number,title \
+            --jq --arg t "$ISSUE_TITLE" 'map(select(.title == $t)) | .[0].number // empty')"
+
+          body="週次の \`schedule\` 実行が失敗しました。
+
+          - 実行: ${RUN_URL}
+          - 発生: $(date -u '+%Y-%m-%d %H:%M UTC')
+          - トリガー: \`${{ github.event_name }}\`
+
+          週次実行が検知しているのは **外界の変化**（上流 advisory の追加）であり、
+          コードが変わっていなくても赤くなります。まず \`pip-audit\` の出力を確認してください。
+
+          このコメントは失敗のたびに追記されます。**復旧したら手でクローズしてください**
+          （自動クローズはしません — 誰も見ないまま閉じるのを防ぐため）。"
+
+          if [ -n "$existing" ]; then
+            echo "既存 Issue #${existing} に追記します（重複起票しない）"
+            gh issue comment "$existing" --body "$body"
+          else
+            echo "新規に起票します"
+            gh issue create --title "$ISSUE_TITLE" --body "$body"
           fi
