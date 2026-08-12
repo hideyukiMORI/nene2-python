@@ -1,13 +1,27 @@
 # TODO — current
 
-最終更新: 2026-05-29
-現状: **v1.8.166 / ドメイン不変条件を両サーフェス等価化（MCP の入力上限漏れを修正）/ CI グリーン**
+最終更新: 2026-08-12
+現状: **v1.8.167 / 依存の既知脆弱性 22 件を解消し CI を緑に復帰 / 471 tests・カバレッジ 93%**
 
 ---
 
 ## 状態サマリー
 
-#747 に対応（v1.8.164）。「`sqlite/mysql/pgsql` 対応」という未検証の約束を実測で検証し、
+**2026-08-12（v1.8.167）— 依存関係のセキュリティ更新。**
+2026-05-30 を最後に約 2ヶ月半コミットが無く、その間 CI も走っていなかった。コードは
+変わっていないが**上流 advisory データのほうが動いた**結果、`pip-audit` が
+**22 件（出力 27 行）/ 8 パッケージ**を検出して CI が赤になっていた。
+
+- `uv.lock` の更新のみで 22 件すべてを閉鎖（**依存宣言は無変更**・すべて下限のみのため）。
+  pyjwt 2.13.0 / cryptography 50.0.0 / starlette 1.6.0 / mcp 1.29.0 /
+  python-multipart 0.0.32 / msgpack 1.2.1 / pydantic-settings 2.15.0 / pip 26.2.1
+- **新規の `--ignore-vuln` はゼロ**（既存の `PYSEC-2025-183` 1 件のみ据え置き）
+- `mcp` は 1.x 系最新の **1.29.0 で停止**。2.0.0 は `mcp.server.fastmcp` を削除しており
+  移行は別タスク（下記「次のタスク」参照）。advisory 要求の 1.28.1 は 1.29.0 で充足
+- Python **3.12 / 3.14 の両方**で pytest・mypy・ruff・pip-audit を確認
+- 再発の根: **定期再検査の装置が無い**こと。コード凍結中でも advisory は増える
+
+直前の対応: #747（実DB統合テスト・v1.8.164）。「`sqlite/mysql/pgsql` 対応」という未検証の約束を実測で検証し、
 潜んでいたマルチDBバグを修正した:
 - **発見・修正**: `SqlAlchemyQueryExecutor.write()` の INSERT 採番が `result.lastrowid`
   依存で、psycopg2（PostgreSQL）は lastrowid 非対応のため `rowcount`(=1) にフォールバック。
@@ -29,7 +43,9 @@ v1.8.161）、#553（#578 で実装済みを確認し close）、ハウスキー
 
 ## オープン PR
 
-なし（main ブランチはクリーン）
+- **#767** `chore/nanoid-ghsa-2v37` — npm lockfile の nanoid 3.3.12 → 3.3.18（GHSA-2v37-7h3g-55p8）。
+  内容は正しいが、上記の pip-audit 既存赤に阻まれて 2026-08-12 までマージできずにいた。
+  本件（v1.8.167）で赤が解消するため、rebase して CI 緑を確認のうえマージする。
 
 ---
 
@@ -158,6 +174,8 @@ v1.8.161）、#553（#578 で実装済みを確認し close）、ハウスキー
 | — | — | FT は保守 + オンデマンド（4 トリガー時のみ。[方法論](../explanation/field-trial-methodology.md)） | FT |
 | — | — | リリース時は `v*` タグ push → publish.yml が自動公開（[手順](../how-to/release-and-publish.md)） | infra |
 | 低 | — | PyJWT 推移的 CVE（PYSEC-2025-183）— mcp 修正待ち | 保留 |
+| 中 | — | **mcp 2.0 系への移行**（2026-08-12 判明）— 2.0.0 で `mcp.server.fastmcp` が削除され、`src/nene2/mcp/`・`src/example/mcp.py`・MCP 系テスト 4 本の全面書き換えが必要。v1.8.167 では 1.29.0 で停止し advisory だけ閉じた | 保守 |
+| 中 | — | **依存の定期再検査を仕組み化**（2026-08-12）— コード凍結中でも上流 advisory は増える。実際 2ヶ月半 CI が走らず 22 件が無検知で積み上がった。`schedule:` トリガーの CI か月次 `uv lock --upgrade` 運用の導入を検討 | infra |
 
 ---
 
