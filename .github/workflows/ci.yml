@@ -5,6 +5,37 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # 週次で main をフル実行する（push とは独立に）。
+  #
+  # 検知したいのは「コードの変化」ではなく **外界の変化** — 上流の advisory データである。
+  # 2026-05-30 から 2026-08-12 までの 74 日間、このリポジトリには 1 コミットも無く、
+  # CI も一度も走らなかった。その間にコードは 1 行も変わっていないのに `pip-audit` の
+  # 検出数は 0 → 22 件（pyjwt / cryptography / starlette を含む＝認証と TLS の面）へ増えていた。
+  # advisory は我々のコミットではなく、それ自身の時計で公開されるためである。
+  #
+  # ここでの検知器は `pip-audit`。`uv.lock` をコミットしていて `uv sync` がそれを尊重するので、
+  # 週次実行は「いま固定している版に対する既知脆弱性」を正確に測る。
+  #
+  # 毎時 00 分は GitHub Actions の高負荷帯で schedule が遅延しやすいと公式に明記されているため、
+  # 意図的に 30 分にずらしている。月曜 00:30 UTC = 09:30 JST（週明けの始業時刻）。
+  #
+  # 🔴 既知の限界: public リポジトリの scheduled workflow は、リポジトリの活動が 60 日間
+  # 無いと GitHub により **自動的に無効化される**。上記の空白は 74 日で、しきい値を 14 日
+  # 超えている。つまりこの装置は、それが検知しようとしている状態そのものによって止められうる。
+  # 「週次が動いている」ことを外側から確かめる仕組みは、この workflow では解決できない
+  # （docs/review/2026-08-12.md の後続タスク）。
+  schedule:
+    - cron: '30 0 * * 1'
+  # schedule の初回発火を待たずに動作確認・再実行するための手動トリガー。
+  workflow_dispatch:
+
+# 同一 ref への連続 push で古い実行を打ち切り、CI 時間を無駄にしない。
+# 🔴 `github.event_name` を必ず group に含めること。含めないと schedule / workflow_dispatch の
+# 実行が push の実行に cancel され、「設定したのに走らない」状態になる。設定ファイルは
+# 正しく見えるのに動かないため気づきにくい（nene-origin で実測された罠）。
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
 
 jobs:
   check:
